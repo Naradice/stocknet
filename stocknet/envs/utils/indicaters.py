@@ -75,13 +75,20 @@ def update_macd(new_tick, short_ema_value, long_ema_value, column = 'Close', sho
     new_data = new_tick[column]
     short_alpha = 2/(short_window+1)
     long_alpha = 2/(long_window+1)
-    
+
+    ##TODO replace here from hard code to function
     new_short_ema = short_ema_value* (1 - short_alpha) + new_data*short_alpha
     new_long_ema = long_ema_value * (1 - long_alpha) + new_data * long_alpha
     new_macd = new_short_ema - new_long_ema
     
     return new_short_ema, new_long_ema, new_macd
+
+def update_ema(new_tick, ema_value, window, column='Close'):
+    new_data = new_tick[column]
+    alpha = 2/(window+1)
     
+    new_ema = ema_value* (1 - alpha) + new_data*alpha
+    return new_ema
 
 def MACD_from_ohlc(data, column = 'Close', short_window=12, long_window=26, signal_window=9):
     '''

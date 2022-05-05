@@ -3,6 +3,8 @@ import pandas as pd
 
 class ProcessBase:
    
+    columns = []
+   
     def __init__(self, key:str):
         self.key = key
     
@@ -26,8 +28,7 @@ class ProcessBase:
         """
         raise Exception("Need to implement")
     
-    
-    def get_minimum_required_length(self):
+    def get_minimum_required_length(self) -> int:
         raise Exception("Need to implement")
     
     def concat(self, data:pd.DataFrame, new_data: pd.Series):
@@ -43,6 +44,9 @@ class ProcessBase:
             Boolean, dict: return (True, data: pd.dataFrame) if reverse_process is defined, otherwise (False, None)
         """
         return False, None
+    
+    def init_params(self, data: pd.DataFrame):
+        pass
     
 class MACDpreProcess(ProcessBase):
     
@@ -104,6 +108,59 @@ class MACDpreProcess(ProcessBase):
         short_ema = data_set[0]
         short_window = self.option['short_window']
         out = indicaters.revert_EMA(short_ema, short_window)
+        return True, out
+
+class EMApreProcess(ProcessBase):
+    
+    option = {
+        "column": "Close",
+        "window": 12
+    }
+    
+    last_data = None
+    
+    columns = ['EMA']
+    
+    def __init__(self, key='ema',window = 12, column = 'Close'):
+        super().__init__(key)
+        self.option['window'] = window
+        self.option['column'] = column
+
+    def run(self, data: pd.DataFrame):
+        option = self.option
+        target_column = option['column']
+        window = option['window']
+        self.option = option
+        column = self.columns[0]
+        
+        ema = indicaters.EMA(data[target_column], window)
+        self.last_data = pd.DataFrame({column:ema}).iloc[-self.get_minimum_required_length():]
+        return {'EMA':ema}
+    
+    def update(self, tick:pd.Series):
+        option = self.option
+        target_column = option['column']
+        window = option['window']
+        column = self.columns[0]
+        
+        
+        short_ema, long_ema, MACD = indicaters.update_ema(
+            new_tick=tick,
+            column=target_column,
+            window = window)
+        
+        new_data = pd.Series({column:short_ema})
+        self.last_data = self.concat(self.last_data.iloc[1:], new_data)
+        return new_data
+        
+    def get_minimum_required_length(self):
+        return self.option["window"]
+    
+    def revert(self, data_set:tuple):
+        #assume EMA is in 1st
+        ema = data_set[0]
+        window = self.option['window']
+        out = indicaters.revert_EMA(ema, window)
         return True, out
 
 class DiffPreProcess(ProcessBase):
@@ -177,7 +234,8 @@ class MinMaxPreProcess(ProcessBase):
             
         for column in columns:
             result[column], _max, _min =  standalization.mini_max_from_series(data[column], scale)
-            self.params[column] = (_min, _max)
+            if column not in self.params:
+                self.params[column] = (_min, _max)
         self.columns = columns
         return result
     
@@ -218,3 +276,4 @@ class MinMaxPreProcess(ProcessBase):
             return True, result
         else:
             raise Exception("number of data is different")
+            

@@ -2,13 +2,9 @@ import torch
 import torch.nn as nn
 from torch.optim import SGD
 
-dtype = torch.float32
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("device:", device)
-
 ##Added from FX NEXT MACD
 class Predictor(nn.Module):
-    def __init__(self, inputDim, hiddenDim, outputDim):
+    def __init__(self, inputDim, hiddenDim, outputDim, device):
         super(Predictor, self).__init__()
 
         self.rnn = nn.LSTM(input_size = inputDim,

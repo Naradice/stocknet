@@ -28,9 +28,13 @@ def revert_mini_max_from_series(series: pd.Series, _min, _max, scale = (0 ,1)):
     values = std * (_max - _min) + _min
     return values
 
-def mini_max_from_series(series: pd.Series, scale = (0,1)):
-    _max = series.max()
-    _min = series.min()
+def mini_max_from_series(series: pd.Series, scale = (0,1), opt = None):
+    if opt == None:
+        _max = series.max()
+        _min = series.min()
+    else:
+        _max = opt[0]
+        _min = opt[1]
     std = (series - _min)/(_max - _min)
     scaled = std * (scale[1] - scale[0]) + scale[0]
     return scaled, _max, _min

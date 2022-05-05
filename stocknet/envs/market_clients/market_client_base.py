@@ -1,12 +1,13 @@
 from abc import abstractmethod
 import random
+import pandas as pd
 
 class MarketClientBase:
     def __init__(self):
         pass
 
     @abstractmethod
-    def get_rates(self, frame, interval):
+    def get_rates(self, frame, interval) -> pd.DataFrame:
         raise Exception("Need to implement get_rates")
         pass
 
@@ -50,10 +51,6 @@ class MarketClientBase:
     @abstractmethod
     def reset(self):
         raise Exception("Need to implement reset")
-
-    @abstractmethod
-    def get_next_tick(self, frame=5):
-        raise Exception("Need to implement get_next_tick")
             
     @property
     def max(self):

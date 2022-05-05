@@ -14,11 +14,10 @@ class CSVClient():
         else:
             raise Exception(f"{self.frame} is not available in CSV Client.")
 
-    def __init__(self, file = None, provider="bitflayer", frame=5, columns = ['High', 'Low','Open','Close'], normalization = None):
-        self.frame = None
+    def __init__(self, file = None, file_frame=5, provider="bitflayer", frame=None, columns = ['High', 'Low','Open','Close'], normalization = None):
         self.kinds = 'bc'
         try:
-            self.frame = int(frame)
+            self.frame = int(file_frame)
         except Exception as e:
             print(e)
         self.index = 0
@@ -30,6 +29,8 @@ class CSVClient():
                     5:'/home/cow/python/torch/Stock/Data/bitcoin_5_2017T0710-2021T103022.csv'
                 }
         elif type(file) == str:
+            if file_frame != None:
+                self.frame = int(file_frame)
             self.files = {
                 self.frame: file
             }

@@ -80,7 +80,7 @@ class Dataset():
             process (ProcessBase): any process you define
             option (_type_): option for a process
         """
-        self.__preprocesess.append((process))
+        self.__preprocesess.append(process)
     
     def register_preprocesses(self, processes: list):
         """ register preprocess for data.
@@ -175,9 +175,53 @@ class ShiftDataset(Dataset):
     def __init__(self, data_client: MarketClientBase, observationDays=1, floor = 1,isTraining=True):
         super().__init__(data_client, observationDays, isTraining)
         self.shift = floor
+    
+    def __init_indicies(self):
+        length = len(self.data) - self.shift
+        if self.isTraining:
+            self.fromIndex = self.dataLength
+            self.toIndex = int(length*0.7)- self.shift
+        else:
+            self.fromIndex = int(length*0.7)+1
+            self.toIndex = length - self.shift
         
+        ##select random indices.
+        k=length - self.dataLength*2 -1
+        self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+
+    
+    def getInputs(self, ndx, shift=0):
+        inputs = []
+        if type(ndx) == int:
+            indicies = slice(ndx, ndx+1)
+            for index in self.indices[indicies]:
+                temp = (self.data[self.columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
+                inputs.append(temp)
+            return inputs[0]
+        elif type(ndx) == slice:
+            indicies = ndx
+            for index in self.indices[indicies]:
+                temp = (self.data[self.columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
+                inputs.append(temp)
+            return inputs
+    
+    def getNextInputs(self, ndx, shift=1):
+        inputs = []
+        if type(ndx) == int:
+            indicies = slice(ndx, ndx+1)
+            for index in self.indices[indicies]:
+                temp = self.data[self.columns].iloc[index+shift-1]
+                inputs.append(temp)
+            return inputs[0]
+        elif type(ndx) == slice:
+            indicies = ndx
+            for index in self.indices[indicies]:
+                temp = self.data[self.columns].iloc[index+shift-1]
+                inputs.append(temp)
+            return inputs
+     
     def outputFunc(self, ndx):
-        return super().outputFunc(ndx, self.shift)
+        return self.getNextInputs(ndx, self.shift)
     
     def __getitem__(self, ndx):
         return super().__getitem__(ndx)

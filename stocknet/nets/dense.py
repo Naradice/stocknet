@@ -47,13 +47,13 @@ class SimpleDense(nn.Module):
             return out
         
 class ConvDense16(nn.Module):
-    def __init__(self, size, lr=True):
+    def __init__(self, size, channel=5, lr=True):
         super().__init__()
         self.__lr = lr
         self.size = size
         dtype = torch.float32
         self.preprocess = nn.Sequential(
-            nn.Conv1d(5, 64, kernel_size=3, stride=1, padding=1, dtype=dtype),
+            nn.Conv1d(channel, 64, kernel_size=3, stride=1, padding=1, dtype=dtype),
             nn.Tanh(),
             nn.Conv1d(64, 64, kernel_size=3, stride=1, padding=1, dtype=dtype),
             nn.MaxPool1d(3, stride=2, padding=1),
@@ -103,3 +103,6 @@ class ConvDense16(nn.Module):
             return pfrl.action_value.DiscreteActionValue(out)
         else:
             return out
+        
+class LSTM:
+    pass

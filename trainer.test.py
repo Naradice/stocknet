@@ -1,4 +1,5 @@
 import pfrl
+from pfrl.agents import a3c
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
@@ -11,19 +12,36 @@ from stocknet.nets.dense import SimpleDense, ConvDense16
 from stocknet.trainer import RlTrainer
 from stocknet.envs.bc_env import BC5Env
 from stocknet.envs.market_clients.csv.client import CSVClient
+import stocknet.envs.utils.preprocess as process
+from pfrl import experiments, utils  # NOQA:E402
 
 dtype = torch.float32
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Lerning with device:", device)
 
+processes = 4
+seed = 1017
+process_seeds = numpy.arange(processes) + seed * processes
+def make_env(process_idx, test):
+    # Use different random seeds for train and test envs
+    process_seed = process_seeds[process_idx]
+    env_seed = 2**31 - 1 - process_seed if test else process_seed
+    data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
+    env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=3,useBudgetColumns=True, use_diff=True)
+    env.seed = int(env_seed)
+    env.add_indicater(process.MACDpreProcess())
+    processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
+    env.register_preprocesses(processes)
+    return env
+
 model_name = 'rl/bc_5min/macd/ConvDense16_mono_v1'
 max_step = 1000
-data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=["macd"],max_step=max_step, observationDays=3,useBudgetColumns=True, use_diff=True)
 
-
+env = make_env(0 , False)
 obs = env.reset()
 inputDim, size = obs.shape
+n_actions = env.action_space.n
+
 
 #model = SimpleDense(30,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
 model = ConvDense16(size)#.to(device=device)
@@ -36,20 +54,24 @@ explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.01, random_action_func
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
 gpu = 0
-agent = pfrl.agents.DoubleDQN(
-    model,
-    optimizer,
-    replay_buffer,
-    gamma,
-    explorer,
-    minibatch_size=batch_size,
-    replay_start_size=batch_size,
-    update_interval=1,
-    target_update_interval=50000,
-    phi=phi,
-    gpu=gpu
-)
-
+agent = a3c.A3C(
+        model,
+        optimizer,
+        t_max=5,
+        gamma=0.99,
+        beta=1e-2,
+        phi=phi,
+        max_grad_norm=40.0,
+    )
 trainer = RlTrainer()
-trainer.add_end_time(0,7)
-trainer.training_loop(env, agent, model_name, 10000, max_step_len=max_step, render=False)
+experiments.train_agent_async(
+            agent=agent,
+            outdir='models',
+            processes=5,
+            make_env=make_env,
+            steps=1000,
+            eval_n_episodes=None,
+            eval_n_steps=1000,
+            save_best_so_far_agent=True,
+        )
+#trainer.train_agent_async('/',5,make_env, agent=agent)

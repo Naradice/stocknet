@@ -4,7 +4,6 @@ predictions/next_boader_possibility/__init__.py
 stocknet/__init__.py
 stocknet/logger.py
 stocknet/trainer.py
-stocknet/trainer.test.py
 stocknet/validater.py
 stocknet.egg-info/PKG-INFO
 stocknet.egg-info/SOURCES.txt
