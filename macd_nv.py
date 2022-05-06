@@ -13,7 +13,7 @@ dtype = torch.float32
 torch.set_default_dtype(dtype)
 torch.manual_seed(1017)
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
 def training_auto_encoder(data_client, batch_size, observationDays, processes,epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
@@ -41,8 +41,8 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     print("input:", i.shape, "output:", o.shape)
 
     #model_name = 'bc_5min_ohlc_AE_v2'
-    model_name = f'{kinds}_{frame}min/macd/shift{shift}_LSTM16-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
-    model = Predictor(input_size,hiddenDim=16,outputDim=o.shape[0],device=device)
+    model_name = f'{kinds}_{frame}min/macd/shift{shift}_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
+    model = Predictor(input_size,hiddenDim=8,outputDim=o.shape[0],device=device)
     model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-5)
     #optimizer = optim.SGD(model.parameters(), lr=1e-6)

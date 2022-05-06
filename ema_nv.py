@@ -13,14 +13,15 @@ dtype = torch.float32
 torch.set_default_dtype(dtype)
 torch.manual_seed(1017)
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
 def training_auto_encoder(data_client, batch_size, observationDays, processes,epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
     macd_ps = process.EMApreProcess(window=12)
-    ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=1)
+    shift = 3
+    ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=shift)
     ds.add_indicater(macd_ps)
     ds.columns = macd_ps.columns
     ds.register_preprocesses(processes)
@@ -29,7 +30,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     
     batch_size=batch_size
     train_dl = DataLoader(ds, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
-    ds_val = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=False, floor=2)
+    ds_val = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=False, floor=shift)
     ds_val.add_indicater(macd_ps)
     ds_val.columns = macd_ps.columns
     ds_val.register_preprocesses(processes)
@@ -40,7 +41,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     print("input:", i.shape, "output:", o.shape)
 
     #model_name = 'bc_5min_ohlc_AE_v2'
-    model_name = f'{kinds}_{frame}min/macd/LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
+    model_name = f'{kinds}_{frame}min/ema/shift{shift}_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
     model = Predictor(input_size,hiddenDim=8,outputDim=o.shape[0],device=device)
     model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-5)

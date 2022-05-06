@@ -138,12 +138,12 @@ class BC5Env(gym.Env):
         self.viewer.register_ohlc(ohlc, 0, 'ROW OHLC Candle', *self.__ohlc_columns)
     
     def initialize_preprocess_params(self):
+        """
+        initialize parameters
+        to initialize a parameter of mini max, just run preprocesses to entire data
+        """
         if len(self.preprocess) > 0:
-            data = self.data_client.get_rates(-1)
-            for indicater in self.indicaters:
-                values_dict = indicater.run(self.dataSet)
-                for key, values in values_dict.items():
-                    data[key] = values
+            data = self.dataSet.copy()
             data = data.dropna()
             data = data[self.columns]
             for process in self.preprocess:

@@ -131,6 +131,8 @@ class Trainer():
         if n_epochs == -1:
             auto = True
             n_epochs = 10
+            max_cont_false = 5
+            false_count = 0
             
         self.val_decreased = False
         print(start_time,'start epocs')
@@ -172,8 +174,11 @@ class Trainer():
                     if min_loss > mean_loss:
                         min_loss = mean_loss
                         self.__save_model(model)
+                        false_count = 0
                     else:
-                        break
+                        false_count += 1
+                        if false_count == max_cont_false:
+                            break
                 else:
                     min_loss = mean_loss
                 

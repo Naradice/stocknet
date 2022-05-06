@@ -13,6 +13,21 @@ class CSVClient():
             self.columns = usecols
         else:
             raise Exception(f"{self.frame} is not available in CSV Client.")
+        
+    def __rolling_frame(self, from_frame:int, to_frame: int):
+        Highs = []
+        Lows = []
+        Opens = []
+        Closes = []
+        window = to_frame/from_frame
+        _window_ = window-1
+        ## TODO: replace hard code
+        for i in range(0, len(self.data)-window, window):
+            Highs.append(self.data['High'][i:i+window].max())
+            Lows.append(self.data['Low'][i:i+window].min())
+            Opens.append(self.data['Open'][i])
+            Closes.append(self.data['Close'][i+_window_])
+        self.data = pd.DataFrame({'High': Highs, 'Low':Lows, 'Open':Opens, 'Close':Closes})
 
     def __init__(self, file = None, file_frame=5, provider="bitflayer", frame=None, columns = ['High', 'Low','Open','Close'], normalization = None):
         self.kinds = 'bc'
@@ -29,14 +44,25 @@ class CSVClient():
                     5:'/home/cow/python/torch/Stock/Data/bitcoin_5_2017T0710-2021T103022.csv'
                 }
         elif type(file) == str:
-            if file_frame != None:
-                self.frame = int(file_frame)
             self.files = {
                 self.frame: file
             }
         else:
             raise Exception(f"unexpected file type is specified. {type(file)}")
         self.__read_csv__(columns)
+        if frame != None and file_frame != frame:
+            try:
+                to_frame = int(frame)
+            except Exception as e:
+                print(e)
+            if file_frame < to_frame:
+                self.__rolling_frame(from_frame=file_frame,to_frame=to_frame)
+                self.frame = to_frame
+            elif to_frame == file_frame:
+                print("file_frame and frame are same value. row file_frame is used.")
+            else:
+                raise Exception("frame should be greater than file_frame as we can't decrease the frame.")
+            
         self.__step_index = random.randint(0, len(self.data))
         ## TODO: change static string to var
         self.__high_max = self.get_min_max('High')[1]

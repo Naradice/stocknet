@@ -1,3 +1,5 @@
+from matplotlib.pyplot import close
+import numpy
 from stocknet.envs.utils import standalization, indicaters
 import pandas as pd
 
@@ -130,7 +132,6 @@ class EMApreProcess(ProcessBase):
         option = self.option
         target_column = option['column']
         window = option['window']
-        self.option = option
         column = self.columns[0]
         
         ema = indicaters.EMA(data[target_column], window)
@@ -162,6 +163,154 @@ class EMApreProcess(ProcessBase):
         window = self.option['window']
         out = indicaters.revert_EMA(ema, window)
         return True, out
+
+class BBANDpreProcess(ProcessBase):
+    
+    option = {
+        "column": "Close",
+        "window": 14,
+        'alpha':2
+    }
+    
+    last_data = None
+    
+    available_columns = ["MB","UB","LB","BB_Width"]
+    columns = available_columns
+    
+    def __init__(self, key='bolinger', window = 14, alpha=2, target_column = 'Close'):
+        super().__init__(key)
+        self.option['column'] = target_column
+        self.option['window'] = window
+        self.option['alpha'] = alpha
+
+    def run(self, data: pd.DataFrame):
+        option = self.option
+        target_column = option['column']
+        window = option['window']
+        alpha = option['alpha']
+        
+        ema, ub, lb, bwidth = indicaters.bolinger_from_ohlc(data, target_column, window=window, alpha=alpha)
+        self.last_data = pd.DataFrame({'MB':ema, 'UB': ub, 'LB':lb, 'BB_Width':bwidth, target_column:data[target_column] }).iloc[-self.get_minimum_required_length():]
+        return {'MB':ema, 'UB': ub, 'LB':lb, 'BB_Width':bwidth}
+    
+    def update(self, tick:pd.Series):
+        option = self.option
+        target_column = option['column']
+        window = option['window']
+        alpha = option['alpha']
+        
+        target_data = self.last_data[target_column].values
+        target_data = numpy.append(target_data, tick[target_column])
+        target_data = target_data[-window:]
+        
+        
+        new_sma = target_data.mean()
+        std = target_data.std(ddof=0)
+        new_ub = new_sma + alpha * std
+        new_lb = new_sma - alpha * std
+        new_width = alpha*2*std
+        
+        new_data = pd.Series({'MB':new_sma, 'UB': new_ub, 'LB':new_lb, 'BB_Width':new_width, target_column: tick[target_column]})
+        self.last_data = self.concat(self.last_data.iloc[1:], new_data)
+        return new_data[self.columns]
+        
+    def get_minimum_required_length(self):
+        return self.option['window']
+    
+    def revert(self, data_set:tuple):
+        #pass
+        return True, None
+
+class ATRpreProcess(ProcessBase):
+    
+    option = {
+        "ohlc_column": ('Open', 'High', 'Low', 'Close'),
+        "window": 14
+    }
+    
+    last_data = None
+    
+    available_columns = ["ATR"]
+    columns = available_columns
+    
+    def __init__(self, key='bolinger', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+        super().__init__(key)
+        self.option['column'] = ohlc_column_name
+        self.option['window'] = window
+
+    def run(self, data: pd.DataFrame):
+        option = self.option
+        target_columns = option['ohlc_column']
+        window = option['window']
+        
+        atr_series = indicaters.ATR_from_ohlc(data, target_columns, window=window)
+        self.last_data = data.iloc[-self.get_minimum_required_length():].copy()
+        last_atr = atr_series.iloc[-self.get_minimum_required_length():].values
+        self.last_data['ATR'] = last_atr
+        return {"ATR":atr_series.values}
+        
+    def update(self, tick:pd.Series):
+        option = self.option
+        target_columns = option['ohlc_column']
+        window = option['window']
+        
+        pre_data = self.last_data.iloc[-1]
+        new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, window)
+        tick["ATR"] = new_atr_value
+        self.last_data = self.concat(self.last_data.iloc[1:], tick)
+        return tick[["ATR"]]
+        
+    def get_minimum_required_length(self):
+        return self.option['window']
+    
+    def revert(self, data_set:tuple):
+        #pass
+        return True, None
+
+class RSIpreProcess(ProcessBase):
+    
+    option = {
+        "ohlc_column": ('Open', 'High', 'Low', 'Close'),
+        "window": 14
+    }
+    
+    last_data = None
+    
+    available_columns = ["ATR"]
+    columns = available_columns
+    
+    def __init__(self, key='bolinger', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+        super().__init__(key)
+        self.option['column'] = ohlc_column_name
+        self.option['window'] = window
+
+    def run(self, data: pd.DataFrame):
+        option = self.option
+        target_columns = option['ohlc_column']
+        window = option['window']
+        
+        atr_series = indicaters.ATR_from_ohlc(data, target_columns, window=window)
+        self.last_data = data.iloc[-self.get_minimum_required_length():]
+        self.last_data['ATR'] = atr_series.iloc[-self.get_minimum_required_length():]
+        return atr_series.values
+        
+    def update(self, tick:pd.Series):
+        option = self.option
+        target_columns = option['ohlc_column']
+        window = option['window']
+        
+        pre_data = self.last_data.iloc[-1]
+        new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, window)
+        tick["ATR"] = new_atr_value
+        self.last_data = self.concat(self.last_data.iloc[1:], tick)
+        return tick[["ATR"]]
+        
+    def get_minimum_required_length(self):
+        return self.option['window']
+    
+    def revert(self, data_set:tuple):
+        #pass
+        return True, None
 
 class DiffPreProcess(ProcessBase):
     

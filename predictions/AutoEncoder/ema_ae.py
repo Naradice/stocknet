@@ -42,7 +42,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     model_name = f'{kinds}_{frame}min/ema/AE-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
     model = AELinearModel(input_size,hidden_layer_num=hidden_layer_num,middle_layer_size=middle_layer_size, device=device)
     model = model.to(device)
-    optimizer = optim.Adam(model.parameters(), lr=1e-5)
+    optimizer = optim.Adam(model.parameters(), lr=1e-6)
     #optimizer = optim.SGD(model.parameters(), lr=1e-6)
     loss_fn = nn.MSELoss()
 
