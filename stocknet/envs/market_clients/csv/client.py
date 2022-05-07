@@ -1,5 +1,6 @@
 import pandas as pd
 import random
+import copy
 from stocknet.envs.utils import standalization
 
 class CSVClient():
@@ -35,7 +36,6 @@ class CSVClient():
             self.frame = int(file_frame)
         except Exception as e:
             print(e)
-        self.index = 0
         self.ask_positions = []
         if file == None:
             if provider == "bitflayer":
@@ -100,7 +100,7 @@ class CSVClient():
 
     def market_buy(self, amount) -> dict:
         boughtCoinRate = self.get_current_ask()
-        result = {"price":boughtCoinRate, "step":self.index, "amount":amount}
+        result = {"price":boughtCoinRate, "step":self.__step_index, "amount":amount}
         self.ask_positions.append(result)
         return result
 
@@ -139,6 +139,12 @@ class CSVClient():
     def reset(self):
         self.ask_positions = []#ignore if there is position
         self.__step_index = random.randint(0, len(self.data))
+
+    def get_holding_steps(self, position="ask"):
+        steps_diff = []
+        for ask_position in self.ask_positions:
+            steps_diff.append(self.__step_index - ask_position["step"])
+        return steps_diff
 
     def get_next_tick(self, frame=5):
         if self.__step_index < len(self.data)-2:
@@ -203,7 +209,8 @@ class CSVClient():
                 return [0.0]
         else:
             print(f'this is not implemented in get_diff_amount with position: {position}')
-            
+        
+    ##minimux should be done in this class?
     def get_diffs_with_minmax(self, position='ask')-> list:
         if position == 'ask':
             if len(self.ask_positions) > 0:

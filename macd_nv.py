@@ -20,7 +20,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
     macd_ps = process.MACDpreProcess()
-    shift = 2
+    shift = 3
     ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=shift)
     ds.add_indicater(macd_ps)
     ds.columns = macd_ps.columns

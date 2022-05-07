@@ -10,7 +10,7 @@ from stocknet.envs.utils.preprocess import ProcessBase
 
 class BC5Env(gym.Env):
 
-    def __init__(self, data_client:MarketClientBase, max_step:int, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, use_diff= True):
+    def __init__(self, data_client:MarketClientBase, max_step:int, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, use_diff= True, mono=False):
         '''
         init 
         '''        
@@ -29,8 +29,10 @@ class BC5Env(gym.Env):
         self.__ubc__ = useBudgetColumns
         self.__ff__ = featureFirst
         self.__ud__ = use_diff
-        self.INVALID_REWARD = 0#-.001
+        self.INVALID_REWARD = -.001
         self.VALID_REWARD = 0#0.0005
+        self.STAY_GOOD_REWARD = 0.0001
+        self.STAY_BAD_REWARD = 0#0.000001
         self.seed = 0
         #self.observationDays = observationDays
         self.dataLength = int((24*12)*observationDays)
@@ -53,9 +55,11 @@ class BC5Env(gym.Env):
             self.columns.append(self.ohlc_columns_dict['High'])
         if 'low' in columns:
             self.columns.append(self.ohlc_columns_dict['Low'])
-        
+            
+        self.b_mono = False
         if useBudgetColumns:
             ob_shape = (self.dataLength, len(self.columns) + 1)
+            self.b_mono = mono
         else:
             ob_shape = (self.dataLength, len(self.columns))
             
@@ -171,7 +175,7 @@ class BC5Env(gym.Env):
         self.soldCoinRate = 0
         self.budget = 1
         self.coin = 0
-        self.rewards = 0
+        self.current_pl = 0
         
         ## reset index
         self.__req_length = self.dataLength + self.indicaters_length + self.preprocess_length
@@ -228,7 +232,6 @@ class BC5Env(gym.Env):
         reward = 0
 
         reward = self.evaluate(action)        
-        self.rewards += reward
         self.obs, done = self.get_next_observation()
         
         if self.pl < -0.05:
@@ -281,18 +284,23 @@ class BC5Env(gym.Env):
         self.coins[:-1] = self.coins[1:len(self.coins)]
         self.coins[len(self.coins)-1] = self.coin
         
-    def __set_diff_as_bugets(self, mono=False):
+    def get_current_pl(self):
         diffs = self.data_client.get_diffs_with_minmax()
         amount = 0
         if len(diffs) > 1:
             print(f"Warning: diffs have two or more positions. {len(diffs)}")
         for diff in diffs:
             amount += diff
+        return amount
+        
+    def __set_diff_as_bugets(self, mono=False):
+        amount = self.get_current_pl()
         if mono:
             self.budgets = [amount for i in range(0, len(self.obs))]
         else:
             self.budgets[:-1] = self.budgets[1:len(self.budgets)]
             self.budgets[-1] = amount
+        return amount
         
     def __buyCoin__(self, amount=1):
         '''
@@ -308,9 +316,13 @@ class BC5Env(gym.Env):
             ## Simple Version
             #self.__set__simple_bugets(0)
             #self.__set__simple_coins(1)
-            self.__set_diff_as_bugets(mono=True)
-            self.coin = 1
             result = self.data_client.market_buy(amount=amount)
+            #result is {"price":boughtCoinRate, "step":self.index, "amount":amount}
+            current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
+            #print("bought", result["price"], "slip", current_amount)
+            self.current_pl = current_amount
+            
+            self.coin = 1
             
             return self.VALID_REWARD
         else:
@@ -323,32 +335,42 @@ class BC5Env(gym.Env):
             #self.__set__simple_bugets(1)
             #self.__set__simple_coins(0)
             self.__set__simple_bugets(0)
+            #amount = self.get_current_pl()
             results = self.data_client.sell_all_settlement()
+            #results are list of (bid, position["price"], (bid - position["price"]))
             self.budget = 1
             self.coin = 0
             count = 0
+            self.current_pl = 0
             
             for result in results:
                 count += 1
                 reward += result[2]/result[1]
                 self.pl += result[2]/result[1]
+            #print(f"Sold {count} position", "pl", amount,"reward", reward)
             reward = np.clip(reward, *self.reward_range)
             return reward
         else:
             return self.INVALID_REWARD
     
-    def __stay__(self, S=5, T=1/2):
+    def __stay__(self):
         reward = 0.0
-        self.__set_diff_as_bugets(mono=True)
-        #sell_price = self.bid
-        #for position in self.askPositions:
-        #    ask_diff = (sell_price - position['price'])/position['price']
-        #    step_diff = self.index - position['step']
-        #    if step_diff < S:
-        #        alpha = step_diff/S * T
-        #    else:
-        #        alpha = T
-        #    reward += alpha * ask_diff
+        amount = self.__set_diff_as_bugets(mono=self.b_mono)
+        diff = amount - self.current_pl
+        self.current_pl = amount
+        if diff >= 0:
+            reward += self.STAY_GOOD_REWARD
+            reward += amount
+            if amount > 0:
+                reward += diff*10
+            else:
+                reward += diff
+        elif diff < 0:
+            reward += self.STAY_BAD_REWARD
+            if amount > 0:
+                reward += amount + diff
+            else:
+                reward += diff*10
         return reward
     
     def get_params(self) -> dict:

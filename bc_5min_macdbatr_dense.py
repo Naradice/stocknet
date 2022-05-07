@@ -17,10 +17,10 @@ dtype = torch.float32
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Lerning with device:", device)
 
-model_name = 'rl/bc_5min/multi/Dense8_1day_mono_v2'
+model_name = 'rl/bc_5min/multi/Dense8_1h_v2'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=["Close"],max_step=max_step, observationDays=1,useBudgetColumns=True, use_diff=True)
+env = BC5Env(data_client, columns=["Close"],max_step=max_step, observationDays=1/24,useBudgetColumns=True, use_diff=True)
 env.add_indicater(process.MACDpreProcess())
 env.add_indicater(process.BBANDpreProcess())
 env.add_indicater(process.ATRpreProcess())

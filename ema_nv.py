@@ -20,7 +20,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
     macd_ps = process.EMApreProcess(window=12)
-    shift = 3
+    shift = 2
     ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=shift)
     ds.add_indicater(macd_ps)
     ds.columns = macd_ps.columns
@@ -41,7 +41,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     print("input:", i.shape, "output:", o.shape)
 
     #model_name = 'bc_5min_ohlc_AE_v2'
-    model_name = f'{kinds}_{frame}min/ema/shift{shift}_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
+    model_name = f'{kinds}_{frame}min/ema/shift{shift}_{int(observationDays*24)}h_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
     model = Predictor(input_size,hiddenDim=8,outputDim=o.shape[0],device=device)
     model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-5)

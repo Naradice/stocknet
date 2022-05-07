@@ -169,7 +169,7 @@ class Trainer():
                         break
                     else:
                         n_epochs+=1
-            else:
+            elif auto:
                 if epoch > 1:
                     if min_loss > mean_loss:
                         min_loss = mean_loss
@@ -181,7 +181,7 @@ class Trainer():
                             break
                 else:
                     min_loss = mean_loss
-                
+                n_epochs+=1
             epoch+=1
         #self.plot_validation_results()
         print(f'training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}')

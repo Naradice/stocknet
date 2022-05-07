@@ -83,3 +83,7 @@ class MarketClientBase:
     @abstractmethod
     def get_positions(self):
         pass
+    
+    @abstractmethod
+    def get_holding_steps(self, position="ask")-> list:
+        pass
