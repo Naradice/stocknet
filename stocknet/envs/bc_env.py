@@ -31,7 +31,7 @@ class BC5Env(gym.Env):
         self.__ud__ = use_diff
         self.INVALID_REWARD = -.001
         self.VALID_REWARD = 0#0.0005
-        self.STAY_GOOD_REWARD = 0.0001
+        self.STAY_GOOD_REWARD = .001
         self.STAY_BAD_REWARD = 0#0.000001
         self.seed = 0
         #self.observationDays = observationDays
@@ -138,8 +138,8 @@ class BC5Env(gym.Env):
             new_target_tick = process.update(new_target_tick)
         self.obs = ProcessBase.concat(None, self.obs.iloc[1:], new_target_tick)
         
-        ohlc = self.dataSet[self.__ohlc_columns].iloc[-self.dataLength:]
-        self.viewer.register_ohlc(ohlc, 0, 'ROW OHLC Candle', *self.__ohlc_columns)
+        #ohlc = self.dataSet[self.__ohlc_columns].iloc[-self.dataLength:]
+        #self.viewer.register_ohlc(ohlc, 0, 'ROW OHLC Candle', *self.__ohlc_columns)
     
     def initialize_preprocess_params(self):
         """
@@ -156,6 +156,7 @@ class BC5Env(gym.Env):
             self.preprocess_initialized = True
     
     def initialize_observation(self):
+        self.max_reward = (self.dataSet["Close"].max() - self.dataSet["Close"].min())/self.dataSet["Close"].min()
         obs = self.dataSet[self.columns].copy()
         for process in self.preprocess:
             result_dict = process.run(obs)
@@ -226,7 +227,7 @@ class BC5Env(gym.Env):
         else:
             raise Exception(f"The action number {action} exeeds the lengths in evaluate function.")
         return reward
-
+    
     def step(self, action): # actionを実行し、結果を返す
         done = False
         reward = 0
@@ -319,7 +320,7 @@ class BC5Env(gym.Env):
             result = self.data_client.market_buy(amount=amount)
             #result is {"price":boughtCoinRate, "step":self.index, "amount":amount}
             current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
-            #print("bought", result["price"], "slip", current_amount)
+            print("bought", result["price"], "slip", current_amount)
             self.current_pl = current_amount
             
             self.coin = 1
@@ -345,10 +346,11 @@ class BC5Env(gym.Env):
             
             for result in results:
                 count += 1
-                reward += result[2]/result[1]
+                reward += (result[2]/result[1])/self.max_reward
                 self.pl += result[2]/result[1]
-            #print(f"Sold {count} position", "pl", amount,"reward", reward)
             reward = np.clip(reward, *self.reward_range)
+            print(f"Sold {count} position","reward", reward)
+            
             return reward
         else:
             return self.INVALID_REWARD
@@ -371,6 +373,9 @@ class BC5Env(gym.Env):
                 reward += amount + diff
             else:
                 reward += diff*10
+        reward = np.clip(reward, *self.reward_range)
+        if diff != 0:
+            print(f"Stay","reward", reward)
         return reward
     
     def get_params(self) -> dict:

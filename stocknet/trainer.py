@@ -34,7 +34,8 @@ def check_directory(model_name:str) -> None:
         os.makedirs('models')
 
 def load_model(model, model_name):
-    model_path = f'models/{model_name}.torch'
+    dir_name, version = __remove_version_str(model_name)
+    model_path = f'models/{dir_name}/model_{version}.torch'
     if os.path.exists(model_path):
         model.load_state_dict(torch.load(model_path))
     else:
