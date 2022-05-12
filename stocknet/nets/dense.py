@@ -83,13 +83,16 @@ class ConvDense16(nn.Module):
             nn.Conv1d(512, 512, kernel_size=3, stride=1, padding=1, dtype=dtype),
             nn.Tanh()
         )
-        self.avgpool = nn.AdaptiveAvgPool1d(int(size/(2**5)))
+        #self.avgpool = nn.AdaptiveAvgPool1d(int(size/(2**5)))
+        self.avgpool = nn.AdaptiveAvgPool1d(int(size/(2)))
         
         self.classifier = nn.Sequential(
-            nn.Linear(int(size/(2**5)) * 512, int(size/(2**8)) * 512),
+            #nn.Linear(int(size/(2**5)) * 512, int(size/(2**8)) * 512),
+            nn.Linear(int(size/(2)) * 512, int(size) * 512),
             nn.Tanh(),
             nn.Dropout(p=0.5),
-            nn.Linear(int(size/(2**8)) * 512, 512),
+            #nn.Linear(int(size/(2**8)) * 512, 512),
+            nn.Linear(int(size) * 512, 512),
             nn.Tanh(),
             nn.Dropout(p=0.5),
             nn.Linear(512, 3)# 3 is action space
@@ -98,7 +101,7 @@ class ConvDense16(nn.Module):
     def forward(self, inputs):
         out = self.preprocess(inputs)
         out = self.avgpool(out)
-        out = self.classifier(out.view(-1, int(self.size/(2**5)) * 512))
+        out = self.classifier(out.view(-1, int(self.size/(2)) * 512))
         if self.__lr:
             return pfrl.action_value.DiscreteActionValue(out)
         else:

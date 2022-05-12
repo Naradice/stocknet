@@ -256,9 +256,10 @@ class ATRpreProcess(ProcessBase):
         
         pre_data = self.last_data.iloc[-1]
         new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, window)
-        tick["ATR"] = new_atr_value
-        self.last_data = self.concat(self.last_data.iloc[1:], tick)
-        return tick[["ATR"]]
+        df = tick.copy()
+        df["ATR"] = new_atr_value
+        self.last_data = self.concat(self.last_data.iloc[1:], df)
+        return df[["ATR"]]
         
     def get_minimum_required_length(self):
         return self.option['window']

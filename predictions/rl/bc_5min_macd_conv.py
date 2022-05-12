@@ -34,7 +34,7 @@ batch_size = 32
 
 optimizer = torch.optim.Adam(model.parameters(), eps=1e-5)
 gamma = 0.9
-explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.01, random_action_func=env.action_space.sample)
+explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.2, random_action_func=env.action_space.sample)
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
 gpu = -1
@@ -53,5 +53,5 @@ agent = pfrl.agents.DoubleDQN(
 )
 
 trainer = RlTrainer()
-trainer.add_end_time(0,10)
+trainer.add_end_time(0,5)
 trainer.training_loop(env, agent, model_name, 10000, max_step_len=max_step, render=False)
