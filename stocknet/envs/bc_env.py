@@ -135,14 +135,15 @@ class BC5Env(gym.Env):
         
     def __update_observation(self, tick:pd.Series):
         # update indicater of dataSet
+        df = tick.copy()
         for indicater in self.indicaters:
             new_data = indicater.update(tick)
             for column in indicater.columns:
-                tick[column] = new_data[column]
-        self.dataSet = ProcessBase.concat(None, self.dataSet.iloc[1:], tick)
+                df[column] = new_data[column]
+        self.dataSet = ProcessBase.concat(None, self.dataSet.iloc[1:], df)
         
         # update preprocess
-        new_target_tick = tick[self.columns]
+        new_target_tick = df[self.columns]
         for process in self.preprocess:
             new_target_tick = process.update(new_target_tick)
         self.obs = ProcessBase.concat(None, self.obs.iloc[1:], new_target_tick)

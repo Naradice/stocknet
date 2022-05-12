@@ -20,14 +20,13 @@ print("Lerning with device:", device)
 model_name = 'rl/bc_5min/macd/ConvDense16_mono_v1'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=3,useBudgetColumns=True, use_diff=True)
+env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=3,useBudgetColumns=True)
 env.add_indicater(process.MACDpreProcess())
 processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
 env.register_preprocesses(processes)
 
 obs = env.reset()
 inputDim, size = obs.shape
-
 #model = SimpleDense(30,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
 model = ConvDense16(size)#.to(device=device)
 criterion = nn.MSELoss() #評価関数の宣言
@@ -38,7 +37,7 @@ gamma = 0.9
 explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.01, random_action_func=env.action_space.sample)
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
-gpu = 0
+gpu = -1
 agent = pfrl.agents.DoubleDQN(
     model,
     optimizer,

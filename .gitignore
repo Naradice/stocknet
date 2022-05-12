@@ -10,6 +10,7 @@ pyvenv.cfg
 #git
 .git/
 #IgnoreFolders
+stocknet.egg-info/
 Study/
 Data/
 data/
