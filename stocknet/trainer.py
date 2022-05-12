@@ -132,7 +132,7 @@ class Trainer():
         if n_epochs == -1:
             auto = True
             n_epochs = 10
-            max_cont_false = 5
+            max_cont_false = 2
             false_count = 0
             
         self.val_decreased = False

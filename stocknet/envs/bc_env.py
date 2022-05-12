@@ -10,10 +10,20 @@ from stocknet.envs.utils.preprocess import ProcessBase
 
 class BC5Env(gym.Env):
 
-    def __init__(self, data_client:MarketClientBase, max_step:int, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, use_diff= True, mono=False):
-        '''
-        init 
-        '''        
+    def __init__(self, data_client:MarketClientBase, max_step:int, frames:list = None, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
+        """ Bitcoin Environment of OpenGym
+        Assuming the data_client provide ohlc without regular market close
+
+        Args:
+            data_client (MarketClientBase): Client to provide ohlc data
+            max_step (int): max step to caliculate min max of reward
+            frames (list, Optional): Some of 5m 30m 1h, 2h, 1d. If specified, frames ticks are also provided as observation output in addition to datraclient frame.
+            columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
+            observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
+            useBudgetColumns (bool, optional): If True, difference from bought rate and current rate is provided as observation. Defaults to True.
+            featureFirst (bool, optional): If true (FeatreNum, ObservationLength), otherwie (ObservationLength, FeatureNum). Defaults to True.
+            mono (bool, optional): Tentative Param for testing purpose. Return budget result with simple format. Defaults to False.
+        """
         self.data_client = data_client
         self.max_step = max_step
         ## initialize render params
@@ -28,7 +38,6 @@ class BC5Env(gym.Env):
         ## initialize params
         self.__ubc__ = useBudgetColumns
         self.__ff__ = featureFirst
-        self.__ud__ = use_diff
         self.INVALID_REWARD = -.001
         self.VALID_REWARD = 0#0.0005
         self.STAY_GOOD_REWARD = .001

@@ -3,6 +3,7 @@ import random
 import pandas as pd
 
 class MarketClientBase:
+    
     def __init__(self):
         pass
 
