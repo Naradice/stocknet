@@ -27,3 +27,5 @@ logs/
 venv/
 build/
 data_source/
+/stocknet.egg-info
+/dist

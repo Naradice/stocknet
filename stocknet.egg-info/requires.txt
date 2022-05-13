@@ -1,5 +1,0 @@
-torch
-gym==0.22
-numpy
-pfrl
-pandas
