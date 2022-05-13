@@ -1,4 +1,3 @@
-from matplotlib.pyplot import close
 import numpy
 from stocknet.envs.utils import standalization, indicaters
 import pandas as pd
@@ -121,9 +120,13 @@ class EMApreProcess(ProcessBase):
     
     last_data = None
     
-    columns = ['EMA']
+    @property
+    def columns(self):
+        return {
+            "EMA":f'{self.key}_EMA'
+        }
     
-    def __init__(self, key='ema',window = 12, column = 'Close'):
+    def __init__(self, key='ema', window = 12, column = 'Close'):
         super().__init__(key)
         self.option['window'] = window
         self.option['column'] = column
@@ -132,17 +135,17 @@ class EMApreProcess(ProcessBase):
         option = self.option
         target_column = option['column']
         window = option['window']
-        column = self.columns[0]
+        column = self.columns["EMA"]
         
         ema = indicaters.EMA(data[target_column], window)
         self.last_data = pd.DataFrame({column:ema}).iloc[-self.get_minimum_required_length():]
-        return {'EMA':ema}
+        return {column:ema}
     
     def update(self, tick:pd.Series):
         option = self.option
         target_column = option['column']
         window = option['window']
-        column = self.columns[0]
+        column = self.columns["EMA"]
         
         
         short_ema, long_ema, MACD = indicaters.update_ema(
@@ -174,8 +177,14 @@ class BBANDpreProcess(ProcessBase):
     
     last_data = None
     
-    available_columns = ["MB","UB","LB","BB_Width"]
-    columns = available_columns
+    @property
+    def columns(self):
+        return {
+            "MB": f"{self.key}_MB",
+            "UB": f"{self.key}_UB",
+            "LB": f"{self.key}_LB",
+            "Width": f"{self.key}_Width"
+        }
     
     def __init__(self, key='bolinger', window = 14, alpha=2, target_column = 'Close'):
         super().__init__(key)
@@ -190,8 +199,14 @@ class BBANDpreProcess(ProcessBase):
         alpha = option['alpha']
         
         ema, ub, lb, bwidth = indicaters.bolinger_from_ohlc(data, target_column, window=window, alpha=alpha)
-        self.last_data = pd.DataFrame({'MB':ema, 'UB': ub, 'LB':lb, 'BB_Width':bwidth, target_column:data[target_column] }).iloc[-self.get_minimum_required_length():]
-        return {'MB':ema, 'UB': ub, 'LB':lb, 'BB_Width':bwidth}
+        
+        out_column_dict = self.columns
+        c_ema = out_column_dict['MB']
+        c_ub = out_column_dict['UB']
+        c_lb = out_column_dict['LB']
+        c_width = out_column_dict['Width']
+        self.last_data = pd.DataFrame({c_ema:ema, c_ub: ub, c_lb:lb, c_width:bwidth, target_column:data[target_column] }).iloc[-self.get_minimum_required_length():]
+        return {c_ema:ema, c_ub: ub, 'LB':lb, 'BB_Width':bwidth}
     
     def update(self, tick:pd.Series):
         option = self.option
@@ -210,7 +225,14 @@ class BBANDpreProcess(ProcessBase):
         new_lb = new_sma - alpha * std
         new_width = alpha*2*std
         
-        new_data = pd.Series({'MB':new_sma, 'UB': new_ub, 'LB':new_lb, 'BB_Width':new_width, target_column: tick[target_column]})
+        out_column_dict = self.columns
+        c_ema = out_column_dict['MB']
+        c_ub = out_column_dict['UB']
+        c_lb = out_column_dict['LB']
+        c_width = out_column_dict['Width']
+
+        
+        new_data = pd.Series({c_ema:new_sma, 'UB': new_ub, 'LB':new_lb, 'BB_Width':new_width, target_column: tick[target_column]})
         self.last_data = self.concat(self.last_data.iloc[1:], new_data)
         return new_data[self.columns]
         

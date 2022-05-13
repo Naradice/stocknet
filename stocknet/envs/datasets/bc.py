@@ -12,14 +12,23 @@ class Dataset():
     Basic OHLC dataset
     """
 
-    def __init__(self, data_client: MarketClientBase,  observationDays=1, isTraining = True):
+    def __init__(self, data_client: MarketClientBase,  observationDays=1, out_ohlc__columns = ["Open", "High", "Low", "Close"], isTraining = True):
         
         self.__rowdata__ = data_client.get_rates(-1)
         #self.dtype = torch.float32
         
         self.__initialized =  False
         columns_dict = data_client.get_ohlc_columns()
-        self.columns = [columns_dict['Open'], columns_dict['High'], columns_dict['Low'], columns_dict['Close']]
+        self.columns = []
+        __ohlc_columns = [str.lower(value) for value in out_ohlc__columns]
+        if 'open' in __ohlc_columns:
+            self.columns.append(columns_dict['Open'])
+        if 'high' in __ohlc_columns:
+            self.columns.append(columns_dict['High'])
+        if 'low' in __ohlc_columns:
+            self.columns.append(columns_dict['Low'])
+        if 'close' in __ohlc_columns:
+            self.columns.append(columns_dict['Close'])
                 
         self.budget_org = 100000
         self.leverage = 25
@@ -72,6 +81,10 @@ class Dataset():
         for column, values in values_dict.items():
             self.__rowdata__[column] = values
             self.columns.append(column)
+            
+    def add_indicaters(self, processes: list):
+        for process in processes:
+            self.add_indicater(process)
     
     def register_preprocess(self, process: ProcessBase):
         """ register preprocess for data.
@@ -172,8 +185,8 @@ class Dataset():
             
 class ShiftDataset(Dataset):
     
-    def __init__(self, data_client: MarketClientBase, observationDays=1, floor = 1,isTraining=True):
-        super().__init__(data_client, observationDays, isTraining)
+    def __init__(self, data_client: MarketClientBase, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"] ,floor = 1,isTraining=True):
+        super().__init__(data_client, observationDays, out_ohlc__columns, isTraining)
         self.shift = floor
     
     def __init_indicies(self):
