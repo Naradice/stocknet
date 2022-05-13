@@ -101,13 +101,12 @@ class BC5Env(gym.Env):
         req_length = process.get_minimum_required_length() - 1
         if self.indicaters_length < req_length:
             self.indicaters_length = req_length
-        for column in process.columns:
+        for key, column in process.columns.items():
             self.columns.append(column)
         
     def add_indicaters(self, processes: list):
         for process in processes:
             self.add_indicater(process)
-        self.indicaters.append(processes)
         
     def register_preprocess(self, process:ProcessBase):
         self.preprocess_initialized = False
@@ -167,6 +166,7 @@ class BC5Env(gym.Env):
     
     def initialize_observation(self):
         self.max_reward = (self.dataSet["Close"].max() - self.dataSet["Close"].min())
+        print(self.max_reward)
         obs = self.dataSet[self.columns].copy()
         for process in self.preprocess:
             result_dict = process.run(obs)
@@ -213,27 +213,27 @@ class BC5Env(gym.Env):
         else:
             return self.obs.iloc[-self.dataLength:].to_numpy()
         
-    def evaluate(self, action):
+    def evaluate(self, action, debug=False):
         reward = 0
         if action == 1:
             '''
             buy coin with 10 point if possible.
             if you don't have much budget, return negative reward 
             '''
-            reward = self.__buyCoin__()
+            reward = self.__buyCoin__(debug=debug)
 
         elif action == 2:
             '''
             sell coin with 100% if possible. (R_sell - R_buy)/R_buy
             if you don't have coin, return negative reward
             '''
-            reward = self.__sellCoin__()
+            reward = self.__sellCoin__(debug)
 
         elif action == 0:
             '''
             hold.
             '''
-            reward = self.__stay__()
+            reward = self.__stay__(debug)
         else:
             raise Exception(f"The action number {action} exeeds the lengths in evaluate function.")
         return reward
@@ -242,7 +242,7 @@ class BC5Env(gym.Env):
         done = False
         reward = 0
 
-        reward = self.evaluate(action)        
+        reward = self.evaluate(action)
         self.obs, done = self.get_next_observation()
         
         if self.pl*0.001 < -50000:
@@ -313,7 +313,7 @@ class BC5Env(gym.Env):
             self.budgets[-1] = amount
         return amount
         
-    def __buyCoin__(self, amount=1):
+    def __buyCoin__(self, amount=1, debug=False):
         '''
         buy coin using all budget
         '''
@@ -330,7 +330,8 @@ class BC5Env(gym.Env):
             result = self.data_client.market_buy(amount=amount)
             #result is {"price":boughtCoinRate, "step":self.index, "amount":amount}
             current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
-            print("bought", result["price"], "slip", current_amount)
+            if debug:
+                print("bought", result["price"], "slip", current_amount)
             self.current_pl = current_amount
             
             self.coin = 1
@@ -339,7 +340,7 @@ class BC5Env(gym.Env):
         else:
             return self.INVALID_REWARD
         
-    def __sellCoin__(self):
+    def __sellCoin__(self, debug):
         if self.coin > 0:
             #add base reward for valid action
             reward = self.VALID_REWARD
@@ -359,20 +360,21 @@ class BC5Env(gym.Env):
                 reward += result[2]/self.max_reward
                 self.pl += result[2]
             reward = np.clip(reward, *self.reward_range)
-            print(f"Sold {count} position","reward", reward)
+            if debug:
+                print(f"Sold {count} position","reward", reward)
             
             return reward
         else:
             return self.INVALID_REWARD
     
-    def __stay__(self):
+    def __stay__(self, debug):
         reward = 0.0
         amount = self.__set_diff_as_bugets(mono=self.b_mono)
         diff = amount - self.current_pl
         self.current_pl = amount
         if diff >= 0:
             reward += self.STAY_GOOD_REWARD
-            #reward += amount
+            reward += amount
             if amount > 0:
                 reward += diff*5
             else:
@@ -380,12 +382,12 @@ class BC5Env(gym.Env):
         elif diff < 0:
             reward += self.STAY_BAD_REWARD
             if amount > 0:
-                #reward += amount + diff
+                reward += amount + diff
                 reward = diff
             else:
                 reward += diff*3
         reward = np.clip(reward, *self.reward_range)
-        if diff != 0:
+        if debug and diff != 0:
             print(f"Stay","reward", reward)
         return reward
     
