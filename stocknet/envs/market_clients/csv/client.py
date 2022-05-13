@@ -215,9 +215,17 @@ class CSVClient():
     def __getitem__(self, ndx):
         return self.data.iloc[ndx]
         
-    def get_min_max(self, column):
+    def get_min_max(self, column, data_length = 0):
         if column in self.data.columns:
-            return self.data[column].min(), self.data[column].max()
+            if data_length == 0:
+                return self.data[column].min(), self.data[column].max()
+            else:
+                if data_length > 0:
+                    target_df = self.data[column].iloc[self.__step_index:self.__step_index + data_length]
+                else:
+                    target_df = self.data[column].iloc[self.__step_index + data_length + 1:self.__step_index +1]
+                return target_df.min(), target_df.max()
+                    
         else:
             raise ValueError(f"{column} is not defined in {self.data.columns}")
         

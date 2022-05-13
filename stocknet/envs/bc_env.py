@@ -165,8 +165,6 @@ class BC5Env(gym.Env):
             self.preprocess_initialized = True
     
     def initialize_observation(self):
-        self.max_reward = (self.dataSet["Close"].max() - self.dataSet["Close"].min())
-        print(self.max_reward)
         obs = self.dataSet[self.columns].copy()
         for process in self.preprocess:
             result_dict = process.run(obs)
@@ -191,6 +189,9 @@ class BC5Env(gym.Env):
         ## reset index
         self.__req_length = self.dataLength + self.indicaters_length + self.preprocess_length
         self.data_client.reset()
+        column = self.__ohlc_columns[3]
+        _min, _max = self.data_client.get_min_max(column, data_length = 0)#When client is change, this need to be implemente d in the other way
+        self.max_reward = _max - _min
         self.dataSet = self.data_client.get_rates(self.__req_length)
         
         ## add inidicaters to dataSet and columns
@@ -242,7 +243,7 @@ class BC5Env(gym.Env):
         done = False
         reward = 0
 
-        reward = self.evaluate(action)
+        reward = self.evaluate(action, True)
         self.obs, done = self.get_next_observation()
         
         if self.pl*0.001 < -50000:
