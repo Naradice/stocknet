@@ -1,54 +1,8 @@
 import numpy
 from stocknet.envs.utils import standalization, indicaters
 import pandas as pd
+from stocknet.envs.utils.process import ProcessBase
 
-class ProcessBase:
-   
-    columns = []
-   
-    def __init__(self, key:str):
-        self.key = key
-    
-    def run(self, data: pd.DataFrame) -> dict:
-        """ process to apply additionally. if an existing key is specified, overwrite existing values
-
-        Args:
-            data (pd.DataFrame): row data of dataset
-
-        """
-        raise Exception("Need to implement process method")
-    
-    def update(self, tick:pd.Series) -> pd.Series:
-        """ update data using next tick
-
-        Args:
-            tick (pd.DataFrame): new data
-
-        Returns:
-            dict: appended data
-        """
-        raise Exception("Need to implement")
-    
-    def get_minimum_required_length(self) -> int:
-        raise Exception("Need to implement")
-    
-    def concat(self, data:pd.DataFrame, new_data: pd.Series):
-        return pd.concat([data, pd.DataFrame.from_records([new_data])], ignore_index=True)
-    
-    def revert(self, data_set: tuple):
-        """ revert processed data to row data with option value
-
-        Args:
-            data (tuple): assume each series or values or processed data is passed
-            
-        Returns:
-            Boolean, dict: return (True, data: pd.dataFrame) if reverse_process is defined, otherwise (False, None)
-        """
-        return False, None
-    
-    def init_params(self, data: pd.DataFrame):
-        pass
-    
 class MACDpreProcess(ProcessBase):
     
     option = {
@@ -60,12 +14,13 @@ class MACDpreProcess(ProcessBase):
     
     last_data = None
     
-    columns = ['ShortEMA', 'LongEMA', 'MACD', 'Signal']
-    
     def __init__(self, key='macd', option=None):
         super().__init__(key)
         if option != None:
             self.option.update(option)
+        self.columns = {
+            'S_EMA': f'{key}_S_EMA', 'L_EMA':f'{key}_L_EMA', 'MACD':f'{key}_MACD', 'Signal':f'{key}_Signal'
+        }
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -76,8 +31,14 @@ class MACDpreProcess(ProcessBase):
         self.option = option
         
         short_ema, long_ema, MACD, Signal = indicaters.MACD_from_ohlc(data, target_column, short_window, long_window, signal_window)
-        self.last_data = pd.DataFrame({'ShortEMA':short_ema, 'LongEMA': long_ema, 'MACD':MACD, 'Signal':Signal}).iloc[-self.get_minimum_required_length():]
-        return {'ShortEMA':short_ema, 'LongEMA': long_ema, 'MACD':MACD, 'Signal':Signal}
+        
+        cs_ema = self.columns['S_EMA']
+        cl_ema = self.columns['L_EMA']
+        c_macd = self.columns['MACD']
+        c_signal = self.columns['Signal']
+        
+        self.last_data = pd.DataFrame({cs_ema:short_ema, cl_ema: long_ema, c_macd:MACD, c_signal:Signal}).iloc[-self.get_minimum_required_length():]
+        return {cs_ema:short_ema, cl_ema: long_ema, c_macd:MACD, c_signal:Signal}
     
     def update(self, tick:pd.Series):
         option = self.option
@@ -86,15 +47,20 @@ class MACDpreProcess(ProcessBase):
         long_window = option['long_window']
         signal_window = option['signal_window']
         
+        cs_ema = self.columns['S_EMA']
+        cl_ema = self.columns['L_EMA']
+        c_macd = self.columns['MACD']
+        c_signal = self.columns['Signal']
+        
         
         short_ema, long_ema, MACD = indicaters.update_macd(
             new_tick=tick,
-            short_ema_value=self.last_data['ShortEMA'].iloc[-1],
-            long_ema_value=self.last_data['LongEMA'].iloc[-1],
+            short_ema_value=self.last_data[cs_ema].iloc[-1],
+            long_ema_value=self.last_data[cl_ema].iloc[-1],
             column=target_column, short_window = short_window, long_window = long_window)
-        Signal = (self.last_data['MACD'].iloc[-signal_window + 1:].sum() + MACD)/signal_window
+        Signal = (self.last_data[c_macd].iloc[-signal_window + 1:].sum() + MACD)/signal_window
         
-        new_data = pd.Series({'ShortEMA':short_ema, 'LongEMA': long_ema, 'MACD':MACD, 'Signal':Signal})
+        new_data = pd.Series({cs_ema:short_ema, cl_ema: long_ema, c_macd:MACD, c_signal:Signal})
         self.last_data = self.concat(self.last_data.iloc[1:], new_data)
         return new_data
         
@@ -102,9 +68,11 @@ class MACDpreProcess(ProcessBase):
         return self.option["long_window"] + self.option["signal_window"] - 2
     
     def revert(self, data_set:tuple):
+        cs_ema = self.columns['S_EMA']
+        
         if type(data_set) == pd.DataFrame:
-            if 'ShortEMA' in data_set:
-                data_set = (data_set['ShortEMA'],)
+            if cs_ema in data_set:
+                data_set = (data_set[cs_ema],)
         #assume ShortEMA is in 1st
         short_ema = data_set[0]
         short_window = self.option['short_window']
@@ -120,16 +88,13 @@ class EMApreProcess(ProcessBase):
     
     last_data = None
     
-    @property
-    def columns(self):
-        return {
-            "EMA":f'{self.key}_EMA'
-        }
-    
     def __init__(self, key='ema', window = 12, column = 'Close'):
         super().__init__(key)
         self.option['window'] = window
         self.option['column'] = column
+        self.columns = {
+            "EMA":f'{key}_EMA'
+        }
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -177,20 +142,18 @@ class BBANDpreProcess(ProcessBase):
     
     last_data = None
     
-    @property
-    def columns(self):
-        return {
-            "MB": f"{self.key}_MB",
-            "UB": f"{self.key}_UB",
-            "LB": f"{self.key}_LB",
-            "Width": f"{self.key}_Width"
-        }
-    
     def __init__(self, key='bolinger', window = 14, alpha=2, target_column = 'Close'):
         super().__init__(key)
         self.option['column'] = target_column
         self.option['window'] = window
         self.option['alpha'] = alpha
+        
+        self.columns = {
+            "MB": f"{key}_MB",
+            "UB": f"{key}_UB",
+            "LB": f"{key}_LB",
+            "Width": f"{key}_Width"
+        }
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -200,13 +163,13 @@ class BBANDpreProcess(ProcessBase):
         
         ema, ub, lb, bwidth = indicaters.bolinger_from_ohlc(data, target_column, window=window, alpha=alpha)
         
-        out_column_dict = self.columns
-        c_ema = out_column_dict['MB']
-        c_ub = out_column_dict['UB']
-        c_lb = out_column_dict['LB']
-        c_width = out_column_dict['Width']
+        c_ema = self.columns['MB']
+        c_ub = self.columns['UB']
+        c_lb = self.columns['LB']
+        c_width = self.columns['Width']
+        
         self.last_data = pd.DataFrame({c_ema:ema, c_ub: ub, c_lb:lb, c_width:bwidth, target_column:data[target_column] }).iloc[-self.get_minimum_required_length():]
-        return {c_ema:ema, c_ub: ub, 'LB':lb, 'BB_Width':bwidth}
+        return {c_ema:ema, c_ub: ub, c_lb:lb, c_width:bwidth}
     
     def update(self, tick:pd.Series):
         option = self.option
@@ -225,16 +188,14 @@ class BBANDpreProcess(ProcessBase):
         new_lb = new_sma - alpha * std
         new_width = alpha*2*std
         
-        out_column_dict = self.columns
-        c_ema = out_column_dict['MB']
-        c_ub = out_column_dict['UB']
-        c_lb = out_column_dict['LB']
-        c_width = out_column_dict['Width']
-
+        c_ema = self.columns['MB']
+        c_ub = self.columns['UB']
+        c_lb = self.columns['LB']
+        c_width = self.columns['Width']
         
-        new_data = pd.Series({c_ema:new_sma, 'UB': new_ub, 'LB':new_lb, 'BB_Width':new_width, target_column: tick[target_column]})
+        new_data = pd.Series({c_ema:new_sma, c_ub: new_ub, c_lb:new_lb, c_width:new_width, target_column: tick[target_column]})
         self.last_data = self.concat(self.last_data.iloc[1:], new_data)
-        return new_data[self.columns]
+        return new_data[[c_ema, c_ub, c_lb, c_width]]
         
     def get_minimum_required_length(self):
         return self.option['window']
@@ -255,10 +216,11 @@ class ATRpreProcess(ProcessBase):
     available_columns = ["ATR"]
     columns = available_columns
     
-    def __init__(self, key='bolinger', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+    def __init__(self, key='atr', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
         super().__init__(key)
         self.option['column'] = ohlc_column_name
         self.option['window'] = window
+        self.columns = {'ATR': f'{key}_ATR'}
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -268,8 +230,10 @@ class ATRpreProcess(ProcessBase):
         atr_series = indicaters.ATR_from_ohlc(data, target_columns, window=window)
         self.last_data = data.iloc[-self.get_minimum_required_length():].copy()
         last_atr = atr_series.iloc[-self.get_minimum_required_length():].values
-        self.last_data['ATR'] = last_atr
-        return {"ATR":atr_series.values}
+        
+        c_atr = self.columns['ATR']
+        self.last_data[c_atr] = last_atr
+        return {c_atr:atr_series.values}
         
     def update(self, tick:pd.Series):
         option = self.option
@@ -279,9 +243,10 @@ class ATRpreProcess(ProcessBase):
         pre_data = self.last_data.iloc[-1]
         new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, window)
         df = tick.copy()
-        df["ATR"] = new_atr_value
+        c_atr = self.columns['ATR']
+        df[c_atr] = new_atr_value
         self.last_data = self.concat(self.last_data.iloc[1:], df)
-        return df[["ATR"]]
+        return df[[c_atr]]
         
     def get_minimum_required_length(self):
         return self.option['window']
@@ -299,34 +264,39 @@ class RSIpreProcess(ProcessBase):
     
     last_data = None
     
-    available_columns = ["ATR"]
+    available_columns = ["RSI"]
     columns = available_columns
     
-    def __init__(self, key='bolinger', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+    def __init__(self, key='rsi', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
         super().__init__(key)
         self.option['column'] = ohlc_column_name
         self.option['window'] = window
+        self.columns = {
+            "RSI": f'{key}_RSI'
+        }
 
     def run(self, data: pd.DataFrame):
         option = self.option
         target_columns = option['ohlc_column']
         window = option['window']
+        c_rsi = self.columns['RSI']
         
-        atr_series = indicaters.ATR_from_ohlc(data, target_columns, window=window)
+        atr_series = indicaters.RSI_from_ohlc(data, target_columns, window=window)
         self.last_data = data.iloc[-self.get_minimum_required_length():]
-        self.last_data['ATR'] = atr_series.iloc[-self.get_minimum_required_length():]
+        self.last_data[c_rsi] = atr_series.iloc[-self.get_minimum_required_length():]
         return atr_series.values
         
     def update(self, tick:pd.Series):
         option = self.option
         target_columns = option['ohlc_column']
         window = option['window']
+        c_rsi = self.columns['RSI']
         
         pre_data = self.last_data.iloc[-1]
-        new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, window)
-        tick["ATR"] = new_atr_value
+        new_atr_value = indicaters.update_RSI(pre_data, tick, target_columns, window)
+        tick[c_rsi] = new_atr_value
         self.last_data = self.concat(self.last_data.iloc[1:], tick)
-        return tick[["ATR"]]
+        return tick[[c_rsi]]
         
     def get_minimum_required_length(self):
         return self.option['window']
@@ -338,7 +308,7 @@ class RSIpreProcess(ProcessBase):
 class RollingProcess(ProcessBase):
     last_tick:pd.DataFrame = None
     
-    def __init__(self, key = "diff"):
+    def __init__(self, key = "roll"):
         super().__init__(key)
         
     def run(self, data: pd.DataFrame) -> dict:
@@ -384,118 +354,3 @@ class RollingProcess(ProcessBase):
             return True, result
         else:
             raise Exception("number of data is different")
-
-class DiffPreProcess(ProcessBase):
-    
-    last_tick:pd.DataFrame = None
-    
-    def __init__(self, key = "diff"):
-        super().__init__(key)
-        
-    def run(self, data: pd.DataFrame) -> dict:
-        columns = data.columns
-        result = {}
-        for column in columns:
-            result[column] = data[column].diff()
-        
-        self.last_tick = data.iloc[-1]
-        return result
-    
-    def update(self, tick:pd.Series):
-        """ assuming data is previous result of run()
-
-        Args:
-            data (pd.DataFrame): previous result of run()
-            tick (pd.Series): new row data
-            option (Any, optional): Currently no option (Floor may be added later). Defaults to None.
-        """
-        new_data = tick - self.last_tick
-        self.last_tick = tick
-        return new_data
-        
-    
-    def get_minimum_required_length(self):
-        return 2
-    
-    def revert(self, data_set: tuple):
-        columns = self.last_tick.columns
-        result = []
-        if type(data_set) == pd.DataFrame:
-            data_set = tuple(data_set[column] for column in columns)
-        if len(data_set) == len(columns):
-            for i in range(0, len(columns)):
-                last_data = self.last_tick[columns[i]]
-                data = data_set[i]
-                row_data = [last_data]
-                for index in range(len(data)-1, -1, -1):
-                    last_data = data[index] - last_data
-                    row_data.append(last_data)
-                row_data = reversed(row_data)
-                result.append(row_data)
-            return True, result
-        else:
-            raise Exception("number of data is different")
-
-class MinMaxPreProcess(ProcessBase):
-    
-    opiton = {}
-    params = {}
-    
-    def __init__(self, key: str = 'minmax', scale = (-1, 1)):
-        self.opiton['scale'] = scale
-        super().__init__(key)
-    
-    def run(self, data: pd.DataFrame) -> dict:
-        columns = data.columns
-        result = {}
-        option = self.opiton
-        if 'scale' in option:
-            scale = option['scale']
-        else:
-            scale = (-1, 1)
-            
-        for column in columns:
-            result[column], _max, _min =  standalization.mini_max_from_series(data[column], scale)
-            if column not in self.params:
-                self.params[column] = (_min, _max)
-        self.columns = columns
-        return result
-    
-    def update(self, tick:pd.Series):
-        columns = self.columns
-        scale = self.opiton['scale']
-        result = {}
-        for column in columns:
-            _min, _max = self.params[column]
-            new_value = tick[column]
-            if new_value < _min:
-                _min = new_value
-                self.params[column] = (_min, _max)
-            if new_value > _max:
-                _max = new_value
-                self.params[column] = (_min, _max)
-            
-            scaled_new_value = standalization.mini_max(new_value, _min, _max, scale)
-            result[column] = scaled_new_value
-            
-        new_data = pd.Series(result)
-        return new_data
-
-    def get_minimum_required_length(self):
-        return 1
-    
-    def revert(self, data_set:tuple):
-        columns = self.columns
-        if type(data_set) == pd.DataFrame:
-            return standalization.revert_mini_max_from_data(data_set, self.params, self.opiton['scale'])
-        elif len(data_set) == len(columns):
-            result = []
-            for i in range(0, len(columns)):
-                _min, _max = self.params[columns[i]]
-                data = data_set[i]
-                row_data = standalization.revert_mini_max_from_data(data, (_min, _max), self.opiton['scale'])
-                result.append(row_data)
-            return True, result
-        else:
-            raise Exception("number of data is different")
-            
