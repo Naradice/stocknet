@@ -137,7 +137,7 @@ class BC5Env(gym.Env):
         df = tick.copy()
         for indicater in self.indicaters:
             new_data = indicater.update(tick)
-            for column in indicater.columns:
+            for key,column in indicater.columns.items():
                 df[column] = new_data[column]
         self.dataSet = ProcessBase.concat(None, self.dataSet.iloc[1:], df)
         
