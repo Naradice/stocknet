@@ -199,7 +199,6 @@ class CSVClient():
             tick = self.data.iloc[self.__step_index]
             return tick, True
         
-    @property
     def max(self, column):
         if column in self.data.columns:
             return self.data[column].max()
@@ -207,7 +206,6 @@ class CSVClient():
             raise ValueError(f"{column} is not defined in {self.data.columns}")
             return None
         
-    @property
     def min(self, column):
         if column in self.data.columns:
             return self.data[column].min()

@@ -1,4 +1,5 @@
 import pfrl
+from stocknet.nets.dense import SimpleDense, ConvDense16
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
@@ -17,10 +18,10 @@ dtype = torch.float32
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Lerning with device:", device)
 
-model_name = 'rl/bc_5min/multi/Dense8_30m_v3'
+model_name = 'rl/bc_5min/multi/Conv_30m_v2'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=1/48,useBudgetColumns=True, use_diff=True)
+env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=1/48,useBudgetColumns=True)
 env.add_indicater(process.MACDpreProcess())
 env.add_indicater(process.BBANDpreProcess())
 env.add_indicater(process.ATRpreProcess())
@@ -31,18 +32,18 @@ obs = env.reset()
 inputDim, size = obs.shape
 print(inputDim, size, env.columns)
 
-model = SimpleDense(8,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
-#model = ConvDense16(size)#.to(device=device)
+#model = SimpleDense(8,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
+model = ConvDense16(size, channel=inputDim)#.to(device=device)
 criterion = nn.MSELoss() #評価関数の宣言
 batch_size = 1
 
 optimizer = torch.optim.Adam(model.parameters(), eps=1e-6)
 #optimizer = torch.optim.SGD(model.parameters(), lr=1e-6)
 gamma = 0.99
-explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.02, random_action_func=env.action_space.sample)
+explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.2, random_action_func=env.action_space.sample)
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
-gpu = 0
+gpu = -1
 agent = pfrl.agents.DoubleDQN(
     model,
     optimizer,

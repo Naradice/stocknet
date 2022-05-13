@@ -166,7 +166,7 @@ class BC5Env(gym.Env):
             self.preprocess_initialized = True
     
     def initialize_observation(self):
-        self.max_reward = (self.dataSet["Close"].max() - self.dataSet["Close"].min())/self.dataSet["Close"].min()
+        self.max_reward = (self.dataSet["Close"].max() - self.dataSet["Close"].min())
         obs = self.dataSet[self.columns].copy()
         for process in self.preprocess:
             result_dict = process.run(obs)
@@ -245,7 +245,7 @@ class BC5Env(gym.Env):
         reward = self.evaluate(action)        
         self.obs, done = self.get_next_observation()
         
-        if self.pl < -0.05:
+        if self.pl*0.001 < -50000:
             done = True
         if self.__ubc__:
             self.obs["budgets"] = self.budgets
@@ -356,8 +356,8 @@ class BC5Env(gym.Env):
             
             for result in results:
                 count += 1
-                reward += (result[2]/result[1])/self.max_reward
-                self.pl += result[2]/result[1]
+                reward += result[2]/self.max_reward
+                self.pl += result[2]
             reward = np.clip(reward, *self.reward_range)
             print(f"Sold {count} position","reward", reward)
             
@@ -372,17 +372,18 @@ class BC5Env(gym.Env):
         self.current_pl = amount
         if diff >= 0:
             reward += self.STAY_GOOD_REWARD
-            reward += amount
+            #reward += amount
             if amount > 0:
-                reward += diff*10
+                reward += diff*5
             else:
                 reward += diff
         elif diff < 0:
             reward += self.STAY_BAD_REWARD
             if amount > 0:
-                reward += amount + diff
+                #reward += amount + diff
+                reward = diff
             else:
-                reward += diff*10
+                reward += diff*3
         reward = np.clip(reward, *self.reward_range)
         if diff != 0:
             print(f"Stay","reward", reward)
