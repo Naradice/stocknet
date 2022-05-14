@@ -239,11 +239,11 @@ class ATRpreProcess(ProcessBase):
         option = self.option
         target_columns = option['ohlc_column']
         window = option['window']
+        c_atr = self.columns['ATR']
         
         pre_data = self.last_data.iloc[-1]
-        new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, window)
+        new_atr_value = indicaters.update_ATR(pre_data, tick, target_columns, c_atr, window)
         df = tick.copy()
-        c_atr = self.columns['ATR']
         df[c_atr] = new_atr_value
         self.last_data = self.concat(self.last_data.iloc[1:], df)
         return df[[c_atr]]

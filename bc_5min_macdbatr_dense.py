@@ -20,10 +20,10 @@ dtype = torch.float32
 device = "cpu"
 print("Lerning with device:", device)
 
-model_name = 'rl/bc_5min/multi/Conv_30m_v2'
+model_name = 'rl/bc_5min/multi/Conv_1h_v2'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=1/48,useBudgetColumns=True)
+env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=1/24,useBudgetColumns=True)
 env.add_indicaters([idc.MACDpreProcess(), idc.BBANDpreProcess(), idc.ATRpreProcess()])
 processes = [prc.MinMaxPreProcess(scale=(-1,1))]
 env.register_preprocesses(processes)

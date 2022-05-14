@@ -217,7 +217,7 @@ def ATR_from_ohlc(data: pd.DataFrame, ohlc_columns = ('Open', 'High', 'Low', 'Cl
     #df["ATR"] = df["TR"].rolling(window=n).mean()
     return df["ATR"]
 
-def update_ATR(pre_data:pd.Series, new_data: pd.Series, ohlc_columns = ('Open', 'High', 'Low', 'Close'), window = 14):
+def update_ATR(pre_data:pd.Series, new_data: pd.Series, ohlc_columns = ('Open', 'High', 'Low', 'Close'), atr_column = 'ATR', window = 14):
     """ latest caliculate atr
 
     Args:
@@ -232,7 +232,7 @@ def update_ATR(pre_data:pd.Series, new_data: pd.Series, ohlc_columns = ('Open', 
     high_cn = ohlc_columns[1]
     low_cn = ohlc_columns[2]
     close_cn = ohlc_columns[3]
-    pre_tr = pre_data['ATR']
+    pre_tr = pre_data[atr_column]
     
     hl = new_data[high_cn] - new_data[low_cn]
     hpc = abs(new_data[high_cn] - pre_data[close_cn])

@@ -137,7 +137,7 @@ class BC5Env(gym.Env):
         df = tick.copy()
         for indicater in self.indicaters:
             new_data = indicater.update(tick)
-            for column in indicater.columns:
+            for key,column in indicater.columns.items():
                 df[column] = new_data[column]
         self.dataSet = ProcessBase.concat(None, self.dataSet.iloc[1:], df)
         
@@ -190,7 +190,7 @@ class BC5Env(gym.Env):
         self.__req_length = self.dataLength + self.indicaters_length + self.preprocess_length
         self.data_client.reset()
         column = self.__ohlc_columns[3]
-        _min, _max = self.data_client.get_min_max(column, data_length = 0)#When client is change, this need to be implemente d in the other way
+        _min, _max = self.data_client.get_min_max(column, data_length = self.max_step)#When client is change, this need to be implemente d in the other way
         self.max_reward = _max - _min
         self.dataSet = self.data_client.get_rates(self.__req_length)
         
@@ -243,10 +243,10 @@ class BC5Env(gym.Env):
         done = False
         reward = 0
 
-        reward = self.evaluate(action, True)
+        reward = self.evaluate(action, False)
         self.obs, done = self.get_next_observation()
         
-        if self.pl*0.001 < -50000:
+        if self.pl < -500000:
             done = True
         if self.__ubc__:
             self.obs["budgets"] = self.budgets
