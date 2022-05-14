@@ -4,8 +4,7 @@ import pandas as pd
 def sum(data):
     amount = 0
     if type(data) == list:
-        for value in data:
-            amount += value
+            amount = sum(data)
     else:#check more
         amount = data.sum()
     return amount
@@ -30,7 +29,7 @@ def revert_EMA(data, interval:int):
     else:
         raise Exception("data length should be greater than interval")
 
-def update_EMA(last_ema_value, new_value, window:int):
+def update_EMA(last_ema_value, new_value, window:int, a=None):
     """
     update Non weighted EMA with alpha= 2/(1+window)
     
@@ -40,10 +39,12 @@ def update_EMA(last_ema_value, new_value, window:int):
         window (int): window size
     """
     alpha = 2/(1+window)
+    if a != None:
+        alpha = a
     return last_ema_value * (1 - alpha) + new_value*alpha
     
 
-def EMA(data, interval):
+def EMA(data, interval, a=None):
     '''
     return list of EMA. remove interval -1 length from the data
     if data length is less than interval, return EMA with length of data as interval
@@ -56,6 +57,8 @@ def EMA(data, interval):
         lastValue = data[0]
         ema = [lastValue]
         alpha = 2/(interval+1)
+        if a != None:
+            alpha = a
         for i in range(1, len(data)):
             lastValue = lastValue * (1 - alpha) + data[i]*alpha
             ema.append(lastValue)
@@ -63,27 +66,34 @@ def EMA(data, interval):
     else:
         raise Exception("data list has no value")
     
-def EWA(data:pd.DataFrame, window:int, alpha=None):
+def EWA(data:pd.DataFrame, window:int, alpha=None, adjust = True):
     """ Caliculate Exponential Weighted Moving Average
 
     Args:
         data (pd.DataFrame): ohlc data
         window (int): window size
         alpha(float, optional): specify weight value. Defaults to 2/(1+window). 0 < alpha <= 1.
+        adjust(bool, optional): same as pandas. Detauls to True
     """
     if len(data) > window:
         if type(data) == pd.DataFrame or type(data) == pd.Series:
             data_cp = data.copy()
             if alpha == None:
-                return data_cp.ewm(span=window, adjust=True).mean()
+                return data_cp.ewm(span=window, adjust=adjust).mean()
             else:
-                return data_cp.ewa(span=window, adjust=True, alpha=alpha)
-        lastValue = data[0]
-        ema = [lastValue]
-        alpha = 2/(window+1)
-        for i in range(1, len(data)):
-            lastValue = lastValue * (1 - alpha) + data[i]*alpha
-            ema.append(lastValue)
+                return data_cp.ewa(adjust=adjust, alpha=alpha)
+        ema = []
+        alp = 2/(window+1)
+        if alpha != None:
+            alp = alpha
+        if adjust:
+            for y_index in range(0, len(data)):
+                nume = [data[x_index] * (1-alp)**(y_index - x_index) for x_index in range(0, y_index+1) ]
+                denom = [(1-alp)**(y_index - x_index) for x_index in range(0, y_index+1) ]
+                y_t = nume/denom
+                ema.append(y_t)
+        else:
+            raise NotImplemented
         return ema
     else:
         raise Exception("data list has no value")
@@ -248,9 +258,37 @@ def RSI_from_ohlc(data:pd.DataFrame, column = 'Close', window=14):
     df["change"] = df[column].diff()
     df["gain"] = np.where(df["change"]>=0, df["change"], 0)
     df["loss"] = np.where(df["change"]<0, -1*df["change"], 0)
-    df["avgGain"] = df["gain"].ewm(alpha=1/window, min_periods=window).mean() ##tradeview said exponentially weighted moving average with aplpha = 1/length is used
-    df["avgLoss"] = df["loss"].ewm(alpha=1/window, min_periods=window).mean()
+    df["avgGain"] = df["gain"].ewm(alpha=1/window, adjust=False).mean() ##tradeview said exponentially weighted moving average with aplpha = 1/length is used
+    df["avgLoss"] = df["loss"].ewm(alpha=1/window, adjust=False).mean()
     df["rs"] = df["avgGain"]/df["avgLoss"]
     df["rsi"] = 100 - (100/ (1 + df["rs"]))
-    return df["rsi"]
+    return df[["avgGain", "avgLoss", "rsi"]]
 
+def update_RSI(pre_data:pd.Series, new_data:pd.Series, columns = ("avgGain", "avgLoss", "rsi", "Close"), window=14):
+    """ caliculate lastest RSI
+
+    Args:
+        pre_data (pd.Series): assume "avgGain", "avgLoss", "rsi" and target_column are available
+        new_data (pd.Series): assume [column] is available
+        columns (tuple(str), optional): Defaults to ("avgGain", "avgLoss", "rsi", "Close").
+        window (int, optional): alpha=1/window. Defaults to 14.
+    """
+    c_again = columns[0]
+    c_aloss = columns[1]
+    c_rsi = columns[2]
+    t_column = columns[3]
+    
+    change = new_data[t_column] - pre_data[t_column]
+    gain = 0
+    loss = 0
+    if change >= 0:
+        gain = change
+    else:
+        loss = change
+    
+    avgGain = update_EMA(pre_data[c_again], gain, window=-1, a=1/window)
+    avgLoss = update_EMA(pre_data[c_aloss], loss, window=-1, a=1/window)
+    rs = avgGain/avgLoss
+    rsi = 100 - (100/(1+rs))
+    return avgGain, avgLoss, rsi
+    

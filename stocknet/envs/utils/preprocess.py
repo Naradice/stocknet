@@ -267,34 +267,44 @@ class RSIpreProcess(ProcessBase):
     available_columns = ["RSI"]
     columns = available_columns
     
-    def __init__(self, key='rsi', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+    def __init__(self, key='rsi', window = 14, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
         super().__init__(key)
         self.option['column'] = ohlc_column_name
         self.option['window'] = window
         self.columns = {
-            "RSI": f'{key}_RSI'
+            "RSI": f'{key}_RSI',
+            "GAIN": f'{key}_AVG_GAIN',
+            "LOSS": f'{key}_AVG_LOSS'
         }
 
     def run(self, data: pd.DataFrame):
         option = self.option
-        target_columns = option['ohlc_column']
+        target_column = option['ohlc_column'][0]
         window = option['window']
         c_rsi = self.columns['RSI']
+        c_gain = self.columns['GAIN']
+        c_loss = self.columns['LOSS']
         
-        atr_series = indicaters.RSI_from_ohlc(data, target_columns, window=window)
+        atr_series = indicaters.RSI_from_ohlc(data, target_column, window=window)
+        atr_series.columns = [c_gain, c_loss, c_rsi]
         self.last_data = data.iloc[-self.get_minimum_required_length():]
         self.last_data[c_rsi] = atr_series.iloc[-self.get_minimum_required_length():]
-        return atr_series.values
+        return atr_series[c_rsi].values
         
     def update(self, tick:pd.Series):
         option = self.option
-        target_columns = option['ohlc_column']
+        target_column = option['ohlc_column'][0]
         window = option['window']
         c_rsi = self.columns['RSI']
+        c_gain = self.columns['GAIN']
+        c_loss = self.columns['LOSS']
+        columns = (c_gain, c_loss, c_rsi, target_column)
         
         pre_data = self.last_data.iloc[-1]
-        new_atr_value = indicaters.update_RSI(pre_data, tick, target_columns, window)
-        tick[c_rsi] = new_atr_value
+        new_gain_val, new_loss_val, new_rsi_value = indicaters.update_RSI(pre_data, tick, columns, window)
+        tick[c_gain] = new_gain_val
+        tick[c_loss] = new_loss_val
+        tick[c_rsi] = new_rsi_value
         self.last_data = self.concat(self.last_data.iloc[1:], tick)
         return tick[[c_rsi]]
         
@@ -305,11 +315,18 @@ class RSIpreProcess(ProcessBase):
         #pass
         return True, None
 
+
+####
+# Not implemented as I can't caliculate required length
+####
 class RollingProcess(ProcessBase):
     last_tick:pd.DataFrame = None
     
-    def __init__(self, key = "roll"):
+    def __init__(self, key = "roll", frame_from:int = 5, frame_to: int = 30):
         super().__init__(key)
+        self.frame_from = frame_from
+        self.frame_to = frame_to
+        raise NotImplemented
         
     def run(self, data: pd.DataFrame) -> dict:
         columns = data.columns

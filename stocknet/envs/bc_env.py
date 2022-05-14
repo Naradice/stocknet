@@ -17,7 +17,7 @@ class BC5Env(gym.Env):
         Args:
             data_client (MarketClientBase): Client to provide ohlc data
             max_step (int): max step to caliculate min max of reward
-            frames (list, Optional): Some of 5m 30m 1h, 2h, 1d. If specified, frames ticks are also provided as observation output in addition to datraclient frame.
+            frames (list, Optional): minutes of frames like 5m 30m 60m, 120m, 1440 and so on. If specified, frames ticks are also provided as observation output in addition to data client frame.
             columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
             observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
             useBudgetColumns (bool, optional): If True, difference from bought rate and current rate is provided as observation. Defaults to True.

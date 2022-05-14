@@ -39,7 +39,7 @@ class CSVClient():
     def __get_rolling_start_index(self):
         pass
 
-    def __init__(self, file = None, file_frame: int= Frame.MIN5, provider="bitflayer", frame:int=None, columns = ['High', 'Low','Open','Close'], date_column = "Timestamp", normalization = None):
+    def __init__(self, file = None, frame: int= Frame.MIN5, provider="bitflayer", out_frame:int=None, columns = ['High', 'Low','Open','Close'], date_column = "Timestamp", normalization = None):
         """CSV Client for bitcoin, etc. currently bitcoin in available only.
         Need to change codes to use settings file
         
@@ -47,14 +47,14 @@ class CSVClient():
             file (str, optional): You can directly specify the file name. Defaults to None.
             file_frame (int, optional): You can specify the frame of data. CSV need to exist. Defaults to 5.
             provider (str, optional): Provider of data to load csv file. Defaults to "bitflayer".
-            frame (int, optional): output frame. Ex F_5MIN can convert to F_30MIN. Defaults to None.
+            out_frame (int, optional): output frame. Ex F_5MIN can convert to F_30MIN. Defaults to None.
             columns (list, optional): ohlc columns name. Defaults to ['High', 'Low','Open','Close'].
             date_column (str, optional): If specified, time is parsed. Otherwise ignored. Defaults to Timestamp
             normalization (_type_, optional): Need to implement.... Defaults to None. Nomalize the output based on this option.
         """
         self.kinds = 'bc'
         try:
-            self.frame = file_frame
+            self.frame = frame
         except Exception as e:
             print(e)
         self.ask_positions = []
@@ -72,15 +72,15 @@ class CSVClient():
             raise Exception(f"unexpected file type is specified. {type(file)}")
         self.__read_csv__(columns, date_column)
         self.date_column = date_column
-        if frame != None and file_frame != frame:
+        if out_frame != None and frame != out_frame:
             try:
-                to_frame = int(frame)
+                to_frame = int(out_frame)
             except Exception as e:
                 print(e)
-            if file_frame < to_frame:
-                self.data = self.__rolling_frame(from_frame=file_frame, to_frame=to_frame)
+            if frame < to_frame:
+                self.data = self.__rolling_frame(from_frame=frame, to_frame=to_frame)
                 self.frame = to_frame
-            elif to_frame == file_frame:
+            elif to_frame == frame:
                 print("file_frame and frame are same value. row file_frame is used.")
             else:
                 raise Exception("frame should be greater than file_frame as we can't decrease the frame.")

@@ -12,7 +12,7 @@ class Dataset():
     Basic OHLC dataset
     """
 
-    def __init__(self, data_client: MarketClientBase,  observationDays=1, out_ohlc__columns = ["Open", "High", "Low", "Close"], isTraining = True):
+    def __init__(self, data_client: MarketClientBase,  observationDays=1, out_ohlc_columns = ["Open", "High", "Low", "Close"], isTraining = True):
         
         self.__rowdata__ = data_client.get_rates(-1)
         #self.dtype = torch.float32
@@ -20,7 +20,7 @@ class Dataset():
         self.__initialized =  False
         columns_dict = data_client.get_ohlc_columns()
         self.columns = []
-        __ohlc_columns = [str.lower(value) for value in out_ohlc__columns]
+        __ohlc_columns = [str.lower(value) for value in out_ohlc_columns]
         if 'open' in __ohlc_columns:
             self.columns.append(columns_dict['Open'])
         if 'high' in __ohlc_columns:

@@ -324,14 +324,14 @@ class FXNextMEANDiffDataset:
         return inputs
     
     def __getitem__(self, ndx):
-        ins = np.array(self.__getInputs__(ndx), dtype=np.dtype('float32'))
-        outputs = np.array(self.outputFunc(ndx), dtype=np.dtype('float32'))
+        ins = numpy.array(self.__getInputs__(ndx), dtype=numpy.dtype('float32'))
+        outputs = numpy.array(self.outputFunc(ndx), dtype=numpy.dtype('float32'))
         return torch.tensor(ins, device=device).to(dtype=dtype), torch.tensor(outputs, device=device).to(dtype=dtype)
         #return ins, outputs
     
     def minmaxNormalization(self, data):
-        if type(data) == np.ndarray:
-            temp_data = data[~np.isnan(data)]
+        if type(data) == numpy.ndarray:
+            temp_data = data[~numpy.isnan(data)]
         elif type(data) == pd.core.series.Series:
             temp_data = data.dropna()
         else:
