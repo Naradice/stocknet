@@ -7,9 +7,13 @@ from stocknet.envs.utils.process import ProcessBase
 class DiffPreProcess(ProcessBase):
     
     last_tick:pd.DataFrame = None
+    option = {
+        'floor':1
+    }
     
-    def __init__(self, key = "diff"):
+    def __init__(self, key = "diff", floor:int = 1):
         super().__init__(key)
+        self.option['floor'] = floor
         
     def run(self, data: pd.DataFrame) -> dict:
         columns = data.columns

@@ -12,13 +12,14 @@ class Dataset():
     Basic OHLC dataset
     """
 
-    def __init__(self, data_client: MarketClientBase,  observationDays=1, out_ohlc_columns = ["Open", "High", "Low", "Close"], isTraining = True):
+    def __init__(self, data_client: MarketClientBase, observationDays=1, data_length:int = None, out_ohlc_columns = ["Open", "High", "Low", "Close"], isTraining = True):
         
         self.__rowdata__ = data_client.get_rates(-1)
         #self.dtype = torch.float32
         
         self.__initialized =  False
         columns_dict = data_client.get_ohlc_columns()
+        self.params = data_client.get_params()
         self.columns = []
         __ohlc_columns = [str.lower(value) for value in out_ohlc_columns]
         if 'open' in __ohlc_columns:
@@ -28,7 +29,10 @@ class Dataset():
         if 'low' in __ohlc_columns:
             self.columns.append(columns_dict['Low'])
         if 'close' in __ohlc_columns:
-            self.columns.append(columns_dict['Close'])
+            self.columns.append(columns_dict['Close'])    
+        
+        self.out_columns = self.columns.copy()
+
                 
         self.budget_org = 100000
         self.leverage = 25
@@ -80,7 +84,10 @@ class Dataset():
         values_dict = process.run(self.__rowdata__)
         for column, values in values_dict.items():
             self.__rowdata__[column] = values
-            self.columns.append(column)
+            if process.is_input:
+                self.columns.append(column)
+            if process.is_output:
+                self.out_columns.append(column)
             
     def add_indicaters(self, processes: list):
         for process in processes:
@@ -111,7 +118,10 @@ class Dataset():
         ndx: slice type or int
         return ans value array from actual tick data. data format (rate, diff etc) is depends on data initialization. default is diff
         '''
-        return self.getInputs(ndx, shift=shift)
+        return self.getInputs(ndx, self.out_columns,shift=shift)
+    
+    def inputFunc(self, ndx):
+        return self.getInputs(ndx, self.columns)
     
     def getSymbolInfo(self, symbol='USDJPY'):
         if symbol == 'USDJPY':
@@ -123,13 +133,13 @@ class Dataset():
 
         return None
     
-    def getInputs(self, ndx, shift=0):
+    def getInputs(self, ndx, columns,shift=0,):
         inputs = []
         if type(ndx) == int:
             indicies = slice(ndx, ndx+1)
             for index in self.indices[indicies]:
                 temp = numpy.array([])
-                for column in self.columns:
+                for column in columns:
                     temp = numpy.append(temp, self.data[column][index+shift-self.dataLength:index+shift].values.tolist())
                 inputs.append(temp)
             return inputs[0]
@@ -137,7 +147,7 @@ class Dataset():
             indicies = ndx
             for index in self.indices[indicies]:
                 temp = numpy.array([])
-                for column in self.columns:
+                for column in columns:
                     temp = numpy.append(temp, self.data[column][index+shift-self.dataLength:index+shift].values.tolist())
                 inputs.append(temp)
             return inputs
@@ -166,7 +176,7 @@ class Dataset():
         return inputs
     
     def __getitem__(self, ndx):
-        inputs = numpy.array(self.getInputs(ndx), dtype=numpy.dtype('float32'))
+        inputs = numpy.array(self.inputFunc(ndx), dtype=numpy.dtype('float32'))
         outputs = numpy.array(self.outputFunc(ndx), dtype=numpy.dtype('float32'))
         return torch.tensor(inputs), torch.tensor(outputs)
         
@@ -183,10 +193,13 @@ class Dataset():
         else:
             random.seed(seed)
             
+    def get_params(self):
+        pass
+            
 class ShiftDataset(Dataset):
     
-    def __init__(self, data_client: MarketClientBase, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"] ,floor = 1,isTraining=True):
-        super().__init__(data_client, observationDays, out_ohlc__columns, isTraining)
+    def __init__(self, data_client: MarketClientBase, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"], floor = 1,isTraining=True):
+        super().__init__(data_client, observationDays, out_ohlc_columns=out_ohlc__columns, isTraining=isTraining)
         self.shift = floor
     
     def __init_indicies(self):
@@ -201,20 +214,22 @@ class ShiftDataset(Dataset):
         ##select random indices.
         k=length - self.dataLength*2 -1
         self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
-
+        
+    def inputFunc(self, ndx):
+        return self.getInputs(ndx, self.columns)
     
-    def getInputs(self, ndx, shift=0):
+    def getInputs(self, ndx, columns, shift=0):
         inputs = []
         if type(ndx) == int:
             indicies = slice(ndx, ndx+1)
             for index in self.indices[indicies]:
-                temp = (self.data[self.columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
+                temp = (self.data[columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
                 inputs.append(temp)
             return inputs[0]
         elif type(ndx) == slice:
             indicies = ndx
             for index in self.indices[indicies]:
-                temp = (self.data[self.columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
+                temp = (self.data[columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
                 inputs.append(temp)
             return inputs
     
@@ -223,13 +238,13 @@ class ShiftDataset(Dataset):
         if type(ndx) == int:
             indicies = slice(ndx, ndx+1)
             for index in self.indices[indicies]:
-                temp = self.data[self.columns].iloc[index+shift-1]
+                temp = self.data[self.out_columns].iloc[index+shift-1]
                 inputs.append(temp)
             return inputs[0]
         elif type(ndx) == slice:
             indicies = ndx
             for index in self.indices[indicies]:
-                temp = self.data[self.columns].iloc[index+shift-1]
+                temp = self.data[self.out_columns].iloc[index+shift-1]
                 inputs.append(temp)
             return inputs
      

@@ -14,13 +14,15 @@ class MACDpreProcess(ProcessBase):
     
     last_data = None
     
-    def __init__(self, key='macd', option=None):
+    def __init__(self, key='macd', option=None, is_input=True, is_output=True):
         super().__init__(key)
         if option != None:
             self.option.update(option)
         self.columns = {
             'S_EMA': f'{key}_S_EMA', 'L_EMA':f'{key}_L_EMA', 'MACD':f'{key}_MACD', 'Signal':f'{key}_Signal'
         }
+        self.is_input = is_input
+        self.is_output = is_output
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -28,7 +30,6 @@ class MACDpreProcess(ProcessBase):
         short_window = option['short_window']
         long_window = option['long_window']
         signal_window = option['signal_window']
-        self.option = option
         
         short_ema, long_ema, MACD, Signal = indicaters.MACD_from_ohlc(data, target_column, short_window, long_window, signal_window)
         
@@ -88,13 +89,15 @@ class EMApreProcess(ProcessBase):
     
     last_data = None
     
-    def __init__(self, key='ema', window = 12, column = 'Close'):
+    def __init__(self, key='ema', window = 12, column = 'Close', is_input=True, is_output=True):
         super().__init__(key)
         self.option['window'] = window
         self.option['column'] = column
         self.columns = {
             "EMA":f'{key}_EMA'
         }
+        self.is_input = is_input
+        self.is_output = is_output
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -142,7 +145,7 @@ class BBANDpreProcess(ProcessBase):
     
     last_data = None
     
-    def __init__(self, key='bolinger', window = 14, alpha=2, target_column = 'Close'):
+    def __init__(self, key='bolinger', window = 14, alpha=2, target_column = 'Close', is_input=True, is_output=True):
         super().__init__(key)
         self.option['column'] = target_column
         self.option['window'] = window
@@ -154,6 +157,8 @@ class BBANDpreProcess(ProcessBase):
             "LB": f"{key}_LB",
             "Width": f"{key}_Width"
         }
+        self.is_input = is_input
+        self.is_output = is_output
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -216,11 +221,13 @@ class ATRpreProcess(ProcessBase):
     available_columns = ["ATR"]
     columns = available_columns
     
-    def __init__(self, key='atr', window = 14, alpha=2, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+    def __init__(self, key='atr', window = 14, ohlc_column_name = ('Open', 'High', 'Low', 'Close'), is_input=True, is_output=True):
         super().__init__(key)
         self.option['column'] = ohlc_column_name
         self.option['window'] = window
         self.columns = {'ATR': f'{key}_ATR'}
+        self.is_input = is_input
+        self.is_output = is_output
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -267,7 +274,7 @@ class RSIpreProcess(ProcessBase):
     available_columns = ["RSI"]
     columns = available_columns
     
-    def __init__(self, key='rsi', window = 14, ohlc_column_name = ('Open', 'High', 'Low', 'Close')):
+    def __init__(self, key='rsi', window = 14, ohlc_column_name = ('Open', 'High', 'Low', 'Close'), is_input=True, is_output=True):
         super().__init__(key)
         self.option['column'] = ohlc_column_name
         self.option['window'] = window
@@ -276,6 +283,8 @@ class RSIpreProcess(ProcessBase):
             "GAIN": f'{key}_AVG_GAIN',
             "LOSS": f'{key}_AVG_LOSS'
         }
+        self.is_input = is_input
+        self.is_output = is_output
 
     def run(self, data: pd.DataFrame):
         option = self.option
@@ -315,18 +324,20 @@ class RSIpreProcess(ProcessBase):
         #pass
         return True, None
 
-
 ####
 # Not implemented as I can't caliculate required length
 ####
 class RollingProcess(ProcessBase):
     last_tick:pd.DataFrame = None
     
-    def __init__(self, key = "roll", frame_from:int = 5, frame_to: int = 30):
+    def __init__(self, key = "roll", frame_from:int = 5, frame_to: int = 30, is_input=True, is_output=True):
         super().__init__(key)
         self.frame_from = frame_from
         self.frame_to = frame_to
+        self.is_input = is_input
+        self.is_output = is_output
         raise NotImplemented
+    
         
     def run(self, data: pd.DataFrame) -> dict:
         columns = data.columns

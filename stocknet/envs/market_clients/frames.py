@@ -2,7 +2,7 @@ class Frame:
     
     MIN1 = 1
     MIN5 = 5
-    ##MIN10 is difficult to rolling up on client.get_rates
+    MIN10 = 10
     MIN30 = 30
     H1 = 60
     H2 = 120

@@ -6,24 +6,26 @@ import torch.nn as nn
 import stocknet.envs.datasets.bc as bc
 from stocknet.nets.lstm import Predictor
 from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as process
+import stocknet.envs.utils.preprocess as indicater
+import stocknet.envs.utils.postprocess as process
 import stocknet.trainer as trainer
 dtype = torch.float32
 #torch.set_default_tensor_type('torch.cuda.FloatTensor')
 torch.set_default_dtype(dtype)
 torch.manual_seed(1017)
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
 def training_auto_encoder(data_client, batch_size, observationDays, processes,epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
+    is_multi_output = False
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
-    ema_ps_1 = process.EMApreProcess(key='e12', window=12)
-    ema_ps_2 = process.EMApreProcess(key='e26', window=12)
-    ids = [[ema_ps_1, ema_ps_2]]
+    ema_ps_1 = indicater.EMApreProcess(key='e12', window=12)
+    #ema_ps_2 = indicater.EMApreProcess(key='e26', window=12, is_output=is_multi_output)
+    ids = [ema_ps_1]#, ema_ps_2]
     shift = 2
-    ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays,out_ohlc__columns=[] ,isTraining=True,floor=shift)
+    ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays,out_ohlc__columns=[], isTraining=True, floor=shift)
     ds.add_indicaters(ids)
     ds.register_preprocesses(processes)
     ds.run_preprocess()
@@ -42,7 +44,10 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
 
     #model_name = 'bc_5min_ohlc_AE_v2'
     if len(ids) > 1:
-        model_name = f'{kinds}_{frame}min/{len(ids)}emas/shift{shift}_{int(observationDays*24)}h_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
+        if is_multi_output:
+            model_name = f'{kinds}_{frame}min/{len(ids)}emas/shift{shift}_{int(observationDays*24)}h_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
+        else:
+            model_name = f'{kinds}_{frame}min/{len(ids)}emas2ema/shift{shift}_{int(observationDays*24)}h_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
     else:
         model_name = f'{kinds}_{frame}min/ema/shift{shift}_{int(observationDays*24)}h_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
     model = Predictor(input_size,hiddenDim=8,outputDim=o.shape[0],device=device)
@@ -59,11 +64,13 @@ if __name__ == "__main__":
     data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
     ##hyper parameters##
     observationDays = 1
-    processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
+    #processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
+    processes = [process.MinMaxPreProcess(scale=(-1,1))]
     batch_size = 32
     hidden_layer_size = 5
     middle_layer_size = 96
     ####################
     #epoc_num = 50
+    version = 2
     
-    training_auto_encoder(data_client, batch_size, observationDays, processes, hidden_layer_num=hidden_layer_size, middle_layer_size=middle_layer_size)
+    training_auto_encoder(data_client, batch_size, observationDays, processes, hidden_layer_num=hidden_layer_size, middle_layer_size=middle_layer_size, version=version)

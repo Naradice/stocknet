@@ -3,6 +3,7 @@ import pandas as pd
 class ProcessBase:
    
     columns = []
+    option = {}
    
     def __init__(self, key:str):
         self.key = key

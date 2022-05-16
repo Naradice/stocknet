@@ -1,3 +1,4 @@
+from pickle import FRAME
 import pandas as pd
 import random
 import math
@@ -62,11 +63,13 @@ class CSVClient():
             if provider == "bitflayer":
                 self.files = {
                     1:'',
-                    5:'/home/cow/python/torch/Stock/Data/bitcoin_5_2017T0710-2021T103022.csv'
+                    5:'/home/cow/python/torch/Stock/Data/bitcoin_5_2017T0710-2021T103022.csv',
+                    'provider': provider
                 }
         elif type(file) == str:
             self.files = {
-                self.frame: file
+                self.frame: file,
+                'provider': provider
             }
         else:
             raise Exception(f"unexpected file type is specified. {type(file)}")
@@ -84,7 +87,9 @@ class CSVClient():
                 print("file_frame and frame are same value. row file_frame is used.")
             else:
                 raise Exception("frame should be greater than file_frame as we can't decrease the frame.")
-            
+            self.out_frames = to_frame
+        else:
+            self.out_frames = self.frame
         self.__step_index = random.randint(0, len(self.data))
         ## TODO: change static string to var
         self.__high_max = self.get_min_max('High')[1]
@@ -277,5 +282,38 @@ class CSVClient():
             
     def get_positions(self, position=None):
         if position == None:
-            #self.ask_positions
             pass
+        elif position == 'ask':
+            return self.ask_positions
+    
+    def get_params(self) -> dict:
+        param = {
+            'type':self.kinds,
+            'provider': self.files,
+            'source_frame': self.frame,
+            'out_frame': self.out_frames
+        }
+        
+        return param
+
+class MultiFrameClient(CSVClient):
+    
+    def __init__(self, file=None, frame: int = Frame.MIN5, provider="bitflayer", columns=['High', 'Low', 'Open', 'Close'], out_frames = [Frame.MIN30, Frame.H1], date_column="Timestamp", normalization=None):
+        out_frame =None
+        super().__init__(file, frame, provider, out_frame, columns, date_column, normalization)
+        
+        self.out_frames = out_frames
+        
+    def get_ohlc_columns(self):
+        columns = {}
+        for column in self.data.columns.values:
+            column_ = str(column).lower()
+            if column_ == 'open':
+                columns['Open'] = [f'{str(frame)}_column' for frame in self.out_frames]
+            elif column_ == 'high':
+                columns['High'] = column
+            elif column_ == 'low':
+                columns['Low'] = column
+            elif column_ == 'close':
+                columns['Close'] = column
+        return columns

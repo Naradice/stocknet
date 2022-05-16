@@ -1,3 +1,4 @@
+from posixpath import dirname
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -12,9 +13,10 @@ import json
 import threading
 import copy
 import torch.multiprocessing as mp
-from torch import nn
+from torch import nn, result_type
 from pfrl.experiments.evaluator import AsyncEvaluator
 from pfrl.utils import async_, random_seed
+import json
 ##DEBUG
 #from envs.render.graph import Rendere
 
@@ -32,6 +34,71 @@ def check_directory(model_name:str) -> None:
             os.makedirs(path_)
     elif os.path.exists('models') is False:
         os.makedirs('models')
+
+def save_processes_params(model_name, processes:list):
+    dir_name, version = __remove_version_str(model_name)
+    check_directory(dir_name)
+    params = postprocess_to_params_dict(processes)
+    txt_file_name = f'models/{dir_name}/params_{version}.txt'
+    with open(txt_file_name, 'w', encoding='utf-8') as f:
+        json.dump(params, f)
+
+def save_params(model_name:str, source_params:dict, indicaters:list ,processes:list):
+    pass
+
+def save_result_as_txt(model_name:str, result:str, use_date_to_filename=True):
+    dir_name, version = __remove_version_str(model_name)
+    check_directory(dir_name)
+    if use_date_to_filename:
+        now = datetime.datetime.now()
+        current_datetime_txt = str(now.date()) + 'T' + str(now.hour)#YYYY-MM-DDThh
+        txt_file_name = f'models/{dir_name}/result_{version}_{current_datetime_txt}.txt'
+        mode = 'w'
+    else:
+        txt_file_name = f'models/{dir_name}/result_{version}.txt'
+        mode = 'a+'
+    with open(txt_file_name, mode, encoding='utf-8') as f:
+        if use_date_to_filename:
+            #move read cursor to top, then read to know if there are content already
+            f.seek(0)
+            data = f.read(100)
+            if len(data) > 0:
+                f.write('\n')
+        f.write(result)
+    
+def indicaters_to_param_dict(processes:list) -> dict:
+    """ convert procese list to dict for saving params as file
+
+    Args:
+        processes (list: ProcessBase): indicaters defined in preprocess.py
+        
+    Returns:
+        dict: {'input':{key:params}, 'output':{key: params}}
+    """
+    params = {
+        'input':{}, 'output': {}
+    }
+    
+    for process in processes:
+        if process.is_input:
+            params['input'][process.key] = process.option
+        if process.is_output:
+            params['output'][process.key] = process.option
+    return params
+
+def postprocess_to_params_dict(processes:list) -> dict:
+    """convert procese list to dict for saving params as file
+
+    Args:
+        processes (list: ProcessBase): postprocess defiend in postprocess.py
+
+    Returns:
+        dict: {key: params}
+    """
+    params = {}
+    for process in processes:
+        params[process.key] = process.option
+    return params
 
 def load_model(model, model_name):
     dir_name, version = __remove_version_str(model_name)
@@ -86,6 +153,9 @@ class Trainer():
         self.device = device
         self.name = model_name
         
+    def __save_result(self, txt:str):
+        save_result_as_txt(self.name,  txt)
+    
     def __save_model(self, model):
         save_model(model, self.name)
     
@@ -119,7 +189,6 @@ class Trainer():
         
     def training_loop(self,model, optimizer, n_epochs=-1,mode="human", validate=False):
         self.model_cp = copy.deepcopy(model)
-        losses = []
         mean_loss = 0
         start_time = datetime.datetime.now()
         ep_consumed_total_time = datetime.timedelta(0)
@@ -159,7 +228,6 @@ class Trainer():
             mean_loss = loss_train.mean()
             diff_loss = mean_loss - temp_loss
             
-            losses.append(mean_loss)
             if epoch == 1 or epoch % 10 == 0:
                 print(f'{datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}')
                 print(f"consumed time: {ep_consumed_time}, may end on :{ep_end_time + (n_epochs - epoch) *  ep_consumed_total_time/epoch}")
@@ -185,7 +253,9 @@ class Trainer():
                 n_epochs+=1
             epoch+=1
         #self.plot_validation_results()
-        print(f'training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}')
+        result_txt = f'training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}'
+        print(result_txt)
+        self.__save_result(result_txt)
                     
 class RlTrainer():
     
