@@ -1,4 +1,5 @@
 import numpy
+import datetime
 from stocknet.envs.utils import standalization, indicaters
 import pandas as pd
 from stocknet.envs.utils.process import ProcessBase
@@ -6,6 +7,7 @@ from stocknet.envs.utils.process import ProcessBase
 
 class DiffPreProcess(ProcessBase):
     
+    kinds = 'Diff'
     last_tick:pd.DataFrame = None
     option = {
         'floor':1
@@ -61,8 +63,8 @@ class DiffPreProcess(ProcessBase):
 
 class MinMaxPreProcess(ProcessBase):
     
+    kinds = 'MiniMax'
     opiton = {}
-    params = {}
     
     def __init__(self, key: str = 'minmax', scale = (-1, 1)):
         self.opiton['scale'] = scale
@@ -79,8 +81,9 @@ class MinMaxPreProcess(ProcessBase):
             
         for column in columns:
             result[column], _max, _min =  standalization.mini_max_from_series(data[column], scale)
-            if column not in self.params:
-                self.params[column] = (_min, _max)
+            if column not in self.option:
+                if type(_max) != pd.Timestamp:
+                    self.option[column] = (_min, _max)
         self.columns = columns
         return result
     
@@ -89,14 +92,14 @@ class MinMaxPreProcess(ProcessBase):
         scale = self.opiton['scale']
         result = {}
         for column in columns:
-            _min, _max = self.params[column]
+            _min, _max = self.option[column]
             new_value = tick[column]
             if new_value < _min:
                 _min = new_value
-                self.params[column] = (_min, _max)
+                self.option[column] = (_min, _max)
             if new_value > _max:
                 _max = new_value
-                self.params[column] = (_min, _max)
+                self.option[column] = (_min, _max)
             
             scaled_new_value = standalization.mini_max(new_value, _min, _max, scale)
             result[column] = scaled_new_value
@@ -110,11 +113,11 @@ class MinMaxPreProcess(ProcessBase):
     def revert(self, data_set:tuple):
         columns = self.columns
         if type(data_set) == pd.DataFrame:
-            return standalization.revert_mini_max_from_data(data_set, self.params, self.opiton['scale'])
+            return standalization.revert_mini_max_from_data(data_set, self.option, self.opiton['scale'])
         elif len(data_set) == len(columns):
             result = []
             for i in range(0, len(columns)):
-                _min, _max = self.params[columns[i]]
+                _min, _max = self.option[columns[i]]
                 data = data_set[i]
                 row_data = standalization.revert_mini_max_from_data(data, (_min, _max), self.opiton['scale'])
                 result.append(row_data)
@@ -122,3 +125,5 @@ class MinMaxPreProcess(ProcessBase):
         else:
             raise Exception("number of data is different")
             
+class STD(ProcessBase):
+    pass

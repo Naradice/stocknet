@@ -1,147 +1,19 @@
 from posixpath import dirname
 import numpy as np
-import matplotlib.pyplot as plt
-import random
 import datetime
 import torch
 import os
-from torchinfo import summary
 from stocknet import logger as lg
-from stocknet.envs.render.graph import Rendere
-import stocknet.envs.render.graph as graph
-import json
+from stocknet.envs.render.graph import *
 import threading
 import copy
 import torch.multiprocessing as mp
-from torch import nn, result_type
+from torch import nn
 from pfrl.experiments.evaluator import AsyncEvaluator
 from pfrl.utils import async_, random_seed
-import json
+from stocknet.utils import *
 ##DEBUG
 #from envs.render.graph import Rendere
-
-def __remove_version_str(name:str):
-    contents = name.split('_')
-    removed = '_'.join(contents[:-1])
-    version = contents[-1]
-    return removed, version
-
-def check_directory(model_name:str) -> None:
-    if '/' in model_name:
-        names = model_name.split('/')
-        path_ = os.path.join('models', *names)
-        if os.path.exists(path_) is False:
-            os.makedirs(path_)
-    elif os.path.exists('models') is False:
-        os.makedirs('models')
-
-def save_processes_params(model_name, processes:list):
-    dir_name, version = __remove_version_str(model_name)
-    check_directory(dir_name)
-    params = postprocess_to_params_dict(processes)
-    txt_file_name = f'models/{dir_name}/params_{version}.txt'
-    with open(txt_file_name, 'w', encoding='utf-8') as f:
-        json.dump(params, f)
-
-def save_params(model_name:str, source_params:dict, indicaters:list ,processes:list):
-    pass
-
-def save_result_as_txt(model_name:str, result:str, use_date_to_filename=True):
-    dir_name, version = __remove_version_str(model_name)
-    check_directory(dir_name)
-    if use_date_to_filename:
-        now = datetime.datetime.now()
-        current_datetime_txt = str(now.date()) + 'T' + str(now.hour)#YYYY-MM-DDThh
-        txt_file_name = f'models/{dir_name}/result_{version}_{current_datetime_txt}.txt'
-        mode = 'w'
-    else:
-        txt_file_name = f'models/{dir_name}/result_{version}.txt'
-        mode = 'a+'
-    with open(txt_file_name, mode, encoding='utf-8') as f:
-        if use_date_to_filename:
-            #move read cursor to top, then read to know if there are content already
-            f.seek(0)
-            data = f.read(100)
-            if len(data) > 0:
-                f.write('\n')
-        f.write(result)
-    
-def indicaters_to_param_dict(processes:list) -> dict:
-    """ convert procese list to dict for saving params as file
-
-    Args:
-        processes (list: ProcessBase): indicaters defined in preprocess.py
-        
-    Returns:
-        dict: {'input':{key:params}, 'output':{key: params}}
-    """
-    params = {
-        'input':{}, 'output': {}
-    }
-    
-    for process in processes:
-        if process.is_input:
-            params['input'][process.key] = process.option
-        if process.is_output:
-            params['output'][process.key] = process.option
-    return params
-
-def postprocess_to_params_dict(processes:list) -> dict:
-    """convert procese list to dict for saving params as file
-
-    Args:
-        processes (list: ProcessBase): postprocess defiend in postprocess.py
-
-    Returns:
-        dict: {key: params}
-    """
-    params = {}
-    for process in processes:
-        params[process.key] = process.option
-    return params
-
-def load_model(model, model_name):
-    dir_name, version = __remove_version_str(model_name)
-    model_path = f'models/{dir_name}/model_{version}.torch'
-    if os.path.exists(model_path):
-        model.load_state_dict(torch.load(model_path))
-    else:
-        print("model name doesn't exist. new model will be created.")
-
-def save_model(model, model_name):
-    dir_name, version = __remove_version_str(model_name)
-    check_directory(dir_name)
-    torch.save(model.state_dict(), f'models/{dir_name}/model_{version}.torch')
-    
-def save_model_architecture(model, input, batch_size, model_name):
-    dir_name, version = __remove_version_str(model_name)
-    check_directory(dir_name)
-    sum = summary(
-        model,
-        input_size = (batch_size, *input.shape),
-        col_names=["input_size", "output_size", "num_params"]
-    )
-    sum_str = str(sum)
-    with open(f'models/{dir_name}/architecture_{version}.txt', 'w', encoding='utf-8') as f:
-        f.write(sum_str)
-        
-#def copy_model(model):
-#    copied_model = copy.deepcopy(model)
-#    return copied_model
-
-def save_tarining_params(params:dict, model_name):
-    check_directory(model_name)
-    params_str = json.dumps(params)
-    with open(f'models/{model_name}.param', 'w', encoding='utf-8') as f:
-        f.write(params_str)
-
-class Validater():
-    def __init__(self) -> None:
-        pass
-    
-    def val_plot(self, val_loader):
-        for input, out_ex in val_loader:
-            pass
 
 class Trainer():
     
@@ -181,11 +53,17 @@ class Trainer():
         threading.Thread(target=self.__check())
         
     def plot_validation_results(self):
-        graph.line_plot(self.validation_losses, 10, True, f'{self.name}.png')
+        line_plot(self.validation_losses, 10, True, f'{self.name}.png')
         
     def model_copy(self, model):
         self.model_cp.load_state_dict(model.state_dict())
         self.model_cp = self.model_cp.to(self.device)
+        
+    def save_params(self, indicaters:list, preprocesses: list):
+        save_processes(self.name, indicaters, preprocesses)
+        
+    def save_architecture(self, model, input, batch_size):
+        save_model_architecture(model, input, batch_size, self.name)
         
     def training_loop(self,model, optimizer, n_epochs=-1,mode="human", validate=False):
         self.model_cp = copy.deepcopy(model)
@@ -256,6 +134,45 @@ class Trainer():
         result_txt = f'training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}'
         print(result_txt)
         self.__save_result(result_txt)
+        
+    def validate(self, model, val_loader):
+        mean_loss = 0
+        out_ = {}
+        ans_ = {}
+        output_shape = val_loader.dataset[0][1].shape#tuple(batch, input, output]
+        output_size = output_shape.numel()
+        for index in range(0, output_size):
+            out_[index] = np.array([])
+            ans_[index] = np.array([])
+            
+        viewer = Rendere()
+        viewer.add_subplots(output_size)
+
+        with torch.no_grad():
+            count = 0
+            for values, ans in val_loader:
+                outputs = model(values).to(self.device)
+                ans = ans.to(self.device)
+                loss = self.loss_fn(outputs, ans)
+                mean_loss += loss.item()
+                #output: [batchDim, outputDim]
+                for index in range(0, output_size):
+                    out_[index] = np.append(out_[index], outputs.to('cpu').detach().numpy().copy())
+                    ans_[index] = np.append(ans_[index], ans.to('cpu').detach().numpy().copy())
+                count += 1
+        
+        for index in range(0, output_size):
+            viewer.register_xy(ans_[index], out_[index], index+1)
+        file_name = get_validate_filename(self.name, 'png')
+        viewer.plot()
+        viewer.write_image(file_name)
+        print('--------------------------------------------------')
+        print(f'man loss: {mean_loss/count}')
+        print(f'mean dif ({index}): {[(out_[index] - ans_[index]).mean() for index in range(0, output_size)]}, var: {[(out_[index] - ans_[index]).var() for index in range(0, output_size)]}')
+        print('--------------------------------------------------')
+        
+    def validate_with_actual_value(self, model, val_loader):
+        pass
                     
 class RlTrainer():
     

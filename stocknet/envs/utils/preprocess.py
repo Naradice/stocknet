@@ -5,6 +5,7 @@ from stocknet.envs.utils.process import ProcessBase
 
 class MACDpreProcess(ProcessBase):
     
+    kinds = 'MACD'
     option = {
         "column": "Close",
         "short_window": 12,
@@ -82,6 +83,7 @@ class MACDpreProcess(ProcessBase):
 
 class EMApreProcess(ProcessBase):
     
+    kinds = 'EMA'
     option = {
         "column": "Close",
         "window": 12
@@ -137,6 +139,7 @@ class EMApreProcess(ProcessBase):
 
 class BBANDpreProcess(ProcessBase):
     
+    kinds = 'BBAND'
     option = {
         "column": "Close",
         "window": 14,
@@ -211,6 +214,7 @@ class BBANDpreProcess(ProcessBase):
 
 class ATRpreProcess(ProcessBase):
     
+    kinds = 'ATR'
     option = {
         "ohlc_column": ('Open', 'High', 'Low', 'Close'),
         "window": 14
@@ -264,6 +268,7 @@ class ATRpreProcess(ProcessBase):
 
 class RSIpreProcess(ProcessBase):
     
+    kinds = 'RSI'
     option = {
         "ohlc_column": ('Open', 'High', 'Low', 'Close'),
         "window": 14
@@ -328,6 +333,7 @@ class RSIpreProcess(ProcessBase):
 # Not implemented as I can't caliculate required length
 ####
 class RollingProcess(ProcessBase):
+    kinds = 'Roll'
     last_tick:pd.DataFrame = None
     
     def __init__(self, key = "roll", frame_from:int = 5, frame_to: int = 30, is_input=True, is_output=True):

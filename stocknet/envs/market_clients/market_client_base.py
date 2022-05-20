@@ -59,7 +59,7 @@ class MarketClientBase:
         raise Exception("Need to implement columns")
         
     def get_ohlc_columns(self):
-        raise Exception("Need to implement")    
+        raise Exception("Need to implement")
     
     def __getitem__(self, ndx):
         return None
@@ -74,4 +74,4 @@ class MarketClientBase:
         pass
     
     def get_params(self):
-        raise NotImplemented
+        raise Exception("Need to implement")
