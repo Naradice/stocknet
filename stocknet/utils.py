@@ -39,9 +39,7 @@ def indicaters_to_param_dict(processes:list) -> dict:
     Returns:
         dict: {'input':{key:params}, 'output':{key: params}}
     """
-    params = {
-        'input':{}, 'output': {}
-    }
+    params = {}
     
     for process in processes:
         option = process.option
