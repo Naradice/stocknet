@@ -9,6 +9,10 @@ class ProcessBase:
     def __init__(self, key:str):
         self.key = key
     
+    @classmethod
+    def load(self, key:str, params:dict):
+        raise Exception("Need to implement")
+    
     def run(self, data: pd.DataFrame) -> dict:
         """ process to apply additionally. if an existing key is specified, overwrite existing values
 

@@ -6,7 +6,8 @@ import torch.nn as nn
 import stocknet.envs.datasets.bc as bc
 from stocknet.nets.lstm import Predictor
 from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as process
+import stocknet.envs.utils.idcprocess as ips
+import stocknet.envs.utils.preprocess as pps
 import stocknet.trainer as trainer
 dtype = torch.float32
 #torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -19,7 +20,7 @@ print("device:", device)
 def training_auto_encoder(data_client, batch_size, observationDays, processes,epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
-    macd_ps = process.MACDpreProcess()
+    macd_ps = ips.MACDpreProcess()
     shift = 3
     ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=shift)
     ds.add_indicater(macd_ps)
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
     ##hyper parameters##
     observationDays = 1
-    processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
+    processes = [pps.DiffPreProcess(), pps.MinMaxPreProcess(scale=(-1,1))]
     batch_size = 32
     hidden_layer_size = 5
     middle_layer_size = 96

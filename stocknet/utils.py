@@ -3,6 +3,8 @@ import torch
 from torchinfo import summary
 import datetime
 import json
+import stocknet.envs.utils.idcprocess as ips
+import stocknet.envs.utils.preprocess as pps
 
 def get_validate_filename(model_name, extension='png'):
     dir_name, version = __remove_version_str(model_name)
@@ -29,25 +31,6 @@ def save_result_as_txt(model_name:str, result:str, use_date_to_filename=True):
             if len(data) > 0:
                 f.write('\n')
         f.write(result)
-    
-def indicaters_to_param_dict(processes:list) -> dict:
-    """ convert procese list to dict for saving params as file
-
-    Args:
-        processes (list: ProcessBase): indicaters defined in preprocess.py
-        
-    Returns:
-        dict: {'input':{key:params}, 'output':{key: params}}
-    """
-    params = {}
-    
-    for process in processes:
-        option = process.option
-        option['kinds'] = process.kinds
-        option['input'] = process.is_input
-        option['output'] = process.is_output
-        params[process.key]  = option
-    return params
 
 ### Todo create model from architecture
 def load_model(model, model_name):
@@ -100,22 +83,6 @@ def check_directory(model_name:str) -> None:
     elif os.path.exists('models') is False:
         os.makedirs('models')
 
-def preprocess_to_params_dict(processes:list) -> dict:
-    """convert procese list to dict for saving params as file
-
-    Args:
-        processes (list: ProcessBase): postprocess defiend in postprocess.py
-
-    Returns:
-        dict: {key: params}
-    """
-    params = {}
-    for process in processes:
-        option = process.option
-        option['kinds'] = process.kinds
-        params[process.key] = option
-    return params
-
 def __save_params(model_name, params:dict):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
@@ -124,8 +91,8 @@ def __save_params(model_name, params:dict):
         json.dump(params, f)
 
 def save_processes(model_name, indicaters:list, preprocesses:list):
-    ind_params = indicaters_to_param_dict(indicaters)
-    pre_params = preprocess_to_params_dict(preprocesses)
+    ind_params = ips.to_param_dict(indicaters)
+    pre_params = pps.to_params_dict(preprocesses)
     params = {
         'indicaters': ind_params,
         'preprocesses': pre_params
@@ -137,7 +104,8 @@ def load_params(model_name):
     check_directory(dir_name)
     txt_file_name = f'models/{dir_name}/params_{version}.json'
     with open(txt_file_name, 'r', encoding='utf-8') as f:
-        json.load(f)
+        params = json.load(f)
+    return params
 
 def load_model(model, model_name):
     dir_name, version = __remove_version_str(model_name)
@@ -146,3 +114,4 @@ def load_model(model, model_name):
         model.load_state_dict(torch.load(model_path))
     else:
         print("model name doesn't exist. new model will be created.")
+        

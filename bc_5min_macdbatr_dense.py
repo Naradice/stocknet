@@ -12,8 +12,8 @@ from stocknet.nets.dense import SimpleDense
 from stocknet.trainer import RlTrainer
 from stocknet.envs.bc_env import BC5Env
 from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as idc
-import stocknet.envs.utils.postprocess as prc
+import stocknet.envs.utils.idcprocess as idc
+import stocknet.envs.utils.preprocess as prc
 
 dtype = torch.float32
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

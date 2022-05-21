@@ -33,8 +33,8 @@ def mini_max_from_series(series: pd.Series, scale = (0,1), opt = None):
         _max = series.max()
         _min = series.min()
     else:
-        _max = opt[0]
-        _min = opt[1]
+        _min = opt[0]
+        _max = opt[1]
     std = (series - _min)/(_max - _min)
     scaled = std * (scale[1] - scale[0]) + scale[0]
     return scaled, _max, _min

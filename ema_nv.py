@@ -6,8 +6,8 @@ import torch.nn as nn
 import stocknet.envs.datasets.bc as bc
 from stocknet.nets.lstm import Predictor
 from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as indicater
-import stocknet.envs.utils.postprocess as process
+import stocknet.envs.utils.idcprocess as indicater
+import stocknet.envs.utils.preprocess as process
 import stocknet.trainer as trainer
 dtype = torch.float32
 #torch.set_default_tensor_type('torch.cuda.FloatTensor')
