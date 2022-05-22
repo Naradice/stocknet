@@ -10,20 +10,21 @@ import numpy
 
 from stocknet.nets.dense import SimpleDense
 from stocknet.trainer import RlTrainer
-from stocknet.envs.bc_env import BC5Env
+from stocknet.envs.bc_env import BCEnv, BCMultiActsEnv
 from stocknet.envs.market_clients.csv.client import CSVClient
 import stocknet.envs.utils.idcprocess as idc
 import stocknet.envs.utils.preprocess as prc
 
 dtype = torch.float32
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu"
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#device = "cpu"
 print("Lerning with device:", device)
 
-model_name = 'rl/bc_5min/multi/Conv_1h_v2'
+model_name = 'rl/bc_5min/multi/Conv_30m_v2'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=1/24,useBudgetColumns=True)
+#env = BCEnv(data_client, columns=[],max_step=max_step, observationDays=1/24,useBudgetColumns=True)
+env = BCMultiActsEnv(data_client, bugets=10,columns=[],max_step=max_step, observationDays=1/48,useBudgetColumns=True)
 env.add_indicaters([idc.MACDpreProcess(), idc.BBANDpreProcess(), idc.ATRpreProcess()])
 processes = [prc.MinMaxPreProcess(scale=(-1,1))]
 env.register_preprocesses(processes)
@@ -43,7 +44,7 @@ gamma = 0.99
 explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.2, random_action_func=env.action_space.sample)
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
-gpu = -1
+gpu = 0
 agent = pfrl.agents.DoubleDQN(
     model,
     optimizer,

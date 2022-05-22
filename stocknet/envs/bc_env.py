@@ -1,3 +1,4 @@
+from math import remainder
 from stocknet.envs.utils import indicaters, standalization
 import gym
 import random
@@ -8,7 +9,7 @@ from stocknet.envs.market_clients.market_client_base import MarketClientBase
 from stocknet.envs.utils.preprocess import ProcessBase
 #from render.graph import Rendere
 
-class BC5Env(gym.Env):
+class BCEnv(gym.Env):
 
     def __init__(self, data_client:MarketClientBase, max_step:int, frames:list = None, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
         """ Bitcoin Environment of OpenGym
@@ -79,9 +80,6 @@ class BC5Env(gym.Env):
             shape=ob_shape
         )
         self.reward_range = [-1., 1.]
-        
-        ## initialize
-        self.reset()
         
 
     @classmethod
@@ -156,7 +154,11 @@ class BC5Env(gym.Env):
         to initialize a parameter of mini max, just run preprocesses to entire data
         """
         if len(self.preprocess) > 0:
-            data = self.dataSet.copy()
+            data = self.data_client.get_rates(-1)
+            for indicater in self.indicaters:
+                values_dict = indicater.run(data)
+                for key, values in values_dict.items():
+                    data[key] = values
             data = data.dropna()
             data = data[self.columns]
             for process in self.preprocess:
@@ -164,12 +166,19 @@ class BC5Env(gym.Env):
                 data = pd.DataFrame(result_dict)
             self.preprocess_initialized = True
     
+    def initialize_additional_obs(self):
+        self.pls = [0 for i in range(0, len(self.obs))]
+        if self.__ubc__:
+            self.obs['pl'] = self.pls
+            #self.obs['coins'] = self.coins
+    
     def initialize_observation(self):
         obs = self.dataSet[self.columns].copy()
         for process in self.preprocess:
             result_dict = process.run(obs)
             obs = pd.DataFrame(result_dict)
         self.obs = obs
+        self.initialize_additional_obs()
     
     def get_next_observation(self):
         tick, done = self.data_client.get_next_tick()
@@ -203,12 +212,6 @@ class BC5Env(gym.Env):
             self.initialize_preprocess_params()
             
         self.initialize_observation()
-        
-        self.budgets = [0 for i in range(0, len(self.obs))]
-        #self.coins = [self.coin for i in range(0, self.obs)]
-        if self.__ubc__:
-            self.obs['budgets'] = self.budgets
-            #self.obs['coins'] = self.coins
         if self.__ff__:
             return self.obs.iloc[-self.dataLength:].T.to_numpy()
         else:
@@ -246,10 +249,10 @@ class BC5Env(gym.Env):
         reward = self.evaluate(action, False)
         self.obs, done = self.get_next_observation()
         
-        if self.pl < -500000:
+        if self.pl < -100000:
             done = True
         if self.__ubc__:
-            self.obs["budgets"] = self.budgets
+            self.obs["pl"] = self.pls
             #self.observation["coins"] = self.coins
         
         if self.__ff__:
@@ -279,7 +282,7 @@ class BC5Env(gym.Env):
         
     def __set__simple_bugets(self, value):
         self.budget = value
-        self.budgets = [value for i in range(0, len(self.obs))]
+        self.pls = [value for i in range(0, len(self.obs))]
         
     def __set__simple_coins(self, value):
         self.coin = value
@@ -288,8 +291,8 @@ class BC5Env(gym.Env):
     
     def __set_history_bugets(self, new_buget):
         self.budget = new_buget
-        self.budgets[:-1] = self.budgets[1:len(self.budgets)]
-        self.budgets[-1] = self.budget
+        self.pls[:-1] = self.pls[1:len(self.pls)]
+        self.pls[-1] = self.budget
         
     def __set_hisoty_coins(self, new_coin):
         self.coin = new_coin
@@ -298,20 +301,17 @@ class BC5Env(gym.Env):
         
     def get_current_pl(self):
         diffs = self.data_client.get_diffs_with_minmax()
-        amount = 0
-        if len(diffs) > 1:
-            print(f"Warning: diffs have two or more positions. {len(diffs)}")
-        for diff in diffs:
-            amount += diff
+        amount = sum(diffs)
         return amount
         
     def __set_diff_as_bugets(self, mono=False):
         amount = self.get_current_pl()
+        amount = np.clip(amount, *self.reward_range)
         if mono:
-            self.budgets = [amount for i in range(0, len(self.obs))]
+            self.pls = [amount for i in range(0, len(self.obs))]
         else:
-            self.budgets[:-1] = self.budgets[1:len(self.budgets)]
-            self.budgets[-1] = amount
+            self.pls[:-1] = self.pls[1:len(self.pls)]
+            self.pls[-1] = amount
         return amount
         
     def __buyCoin__(self, amount=1, debug=False):
@@ -320,14 +320,6 @@ class BC5Env(gym.Env):
         '''
         if self.budget > 0:
             self.budget = 0
-            ### Multiple order version
-            #self.budget = self.budgets[len(self.budgets)-1] - budget
-            #use all buget for simplify
-            #self.coin = budget/self.current_buy_rate
-            
-            ## Simple Version
-            #self.__set__simple_bugets(0)
-            #self.__set__simple_coins(1)
             result = self.data_client.market_buy(amount=amount)
             #result is {"price":boughtCoinRate, "step":self.index, "amount":amount}
             current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
@@ -359,7 +351,7 @@ class BC5Env(gym.Env):
             for result in results:
                 count += 1
                 reward += result[2]/self.max_reward
-                self.pl += result[2]
+                self.pl += result[3]
             reward = np.clip(reward, *self.reward_range)
             if debug:
                 print(f"Sold {count} position","reward", reward)
@@ -395,3 +387,163 @@ class BC5Env(gym.Env):
     def get_params(self) -> dict:
         params = {}
         return params
+    
+class BCMultiActsEnv(BCEnv):
+    
+    def __init__(self, data_client: MarketClientBase, max_step: int, bugets: int,frames: list = None, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
+        """ Bitcoin Environment of OpenGym
+        Assuming the data_client provide ohlc without regular market close
+
+        Args:
+            data_client (MarketClientBase): Client to provide ohlc data
+            max_step (int): max step to caliculate min max of reward
+            bugets (int): bugets represents how how many points agent can buy bc as maximum. number of action become 2N + 1
+            frames (list, Optional): minutes of frames like 5m 30m 60m, 120m, 1440 and so on. If specified, frames ticks are also provided as observation output in addition to data client frame.
+            columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
+            observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
+            useBudgetColumns (bool, optional): If True, difference from bought rate and current rate is provided as observation. Defaults to True.
+            featureFirst (bool, optional): If true (FeatreNum, ObservationLength), otherwie (ObservationLength, FeatureNum). Defaults to True.
+            mono (bool, optional): Tentative Param for testing purpose. Return budget result with simple format. Defaults to False.
+        """
+        assert(type(bugets)==int, "bugets should be int")
+        self.num_actions = bugets
+        super().__init__(data_client, max_step, frames, columns, observationDays, useBudgetColumns, featureFirst, mono)
+        self.budget = bugets
+        self.action_space = gym.spaces.Discrete(self.num_actions*2 + 1)
+        
+    def initialize_additional_obs(self):
+        self.pls = [0 for i in range(0, len(self.obs))]
+        if self.__ubc__:
+            self.obs['pl'] = self.pls
+            #self.obs['coins'] = self.coins
+        self.obs['budget'] = [1 for i in range(0, len(self.obs))]
+    
+    def __set_diff_as_bugets(self, mono=False):
+        amount = self.get_current_pl()
+        amount = np.clip(amount, *self.reward_range)
+        if mono:
+            self.pls = [amount for i in range(0, len(self.obs))]
+        else:
+            self.pls[:-1] = self.pls[1:len(self.pls)]
+            self.pls[-1] = amount
+        return amount
+    
+    def __buyCoin__(self, amount:int=1, debug=False):
+        '''
+        buy coin using all budget
+        '''
+        if self.budget > 0:
+            remaining_budget = self.budget - amount
+            if remaining_budget < 0:
+                amount = self.budget
+                self.budget = 0
+            else:
+                self.budget = remaining_budget
+            self.coin += amount
+            self.data_client.market_buy(amount=amount)
+            current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
+            if debug:
+                print("bought", result["price"], "slip", current_amount)
+            
+            return self.VALID_REWARD
+        else:
+            return self.INVALID_REWARD
+    
+    def __sellCoin__(self, point, debug):
+        if self.coin > 0:
+            #add base reward for valid action
+            reward = self.VALID_REWARD
+            positions_dict = self.data_client.get_positions("ask")
+            
+            ## sort and caliculate total amount
+            amounts = 0
+            positions = [0 for i in range(0, len(positions_dict))]
+            
+            for key, position in positions_dict.items():
+                amounts += position["amount"]
+                bought_rate = position["price"]
+                for index in range(0, len(positions)):
+                    if positions[index]["price"] < bought_rate:
+                        positions[index+1:] = positions[index:-1]
+                        positions[index] = position
+                        break
+            ##
+            results = []
+            if amounts <= point:
+                results = self.data_client.sell_all_settlement()
+                if self.coin != amounts:
+                    print("sell coin: something went wrong")
+                self.coin = 0
+                self.budget = self.num_actions
+            else:
+                sold_amount = 0
+                for position in positions:
+                    sold_amount += position["amount"]
+                    if sold_amount < point:
+                        point = position["amount"]
+                        result = self.data_client.sell_settlement(position=position, point=point)
+                        results.append(result)
+                    else:
+                        over_point = sold_amount - point
+                        point = position["amount"] - over_point
+                        result = self.data_client.sell_settlement(position=position, point=point)
+                        results.append(result)
+                        break
+                self.coin = self.coin - point
+                self.budget += point
+                    
+            #caliculate reward
+            for result in results:
+                reward += result[2]/self.max_reward
+            reward = np.clip(reward, *self.reward_range)
+            ##
+            
+            return reward
+        else:
+            return self.INVALID_REWARD
+        
+    def evaluate(self, action, debug=False):
+        reward = 0
+        if action == 0:
+            '''
+            hold.
+            '''
+            reward = self.__stay__(debug)
+
+        elif action > 0 and action <= self.num_actions:
+            '''
+            buy coin with 10 point if possible.
+            if you don't have much budget, return negative reward 
+            '''
+            amount = action
+            reward = self.__buyCoin__(amount,debug=debug)
+
+        elif action > self.num_actions and action <= self.num_actions*2:
+            '''
+            sell coin with 100% if possible. (R_sell - R_buy)/R_buy
+            if you don't have coin, return negative reward
+            '''
+            amount = action - self.num_actions
+            reward = self.__sellCoin__(amount, debug)
+        else:
+            raise Exception(f"The action number {action} exeeds the lengths in evaluate function.")
+        return reward
+
+    def step(self, action): # actionを実行し、結果を返す
+        done = False
+        reward = 0
+
+        reward = self.evaluate(action, False)
+        self.obs, done = self.get_next_observation()
+        
+        if self.pl < -100000:
+            done = True
+        if self.__ubc__:
+            self.obs["pl"] = self.pls
+            #self.observation["coins"] = self.coins
+        self.obs["budget"] = [self.budget/self.num_actions for i in range(0, len(self.obs))]
+        
+        if self.__ff__:
+            return self.obs.iloc[-self.dataLength:].T.to_numpy(), reward, done, {}
+        else:
+            return self.obs.iloc[-self.dataLength:].to_numpy(), reward, done, {}

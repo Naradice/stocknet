@@ -386,7 +386,7 @@ class RSIpreProcess(ProcessBase):
         atr_series.columns = [c_gain, c_loss, c_rsi]
         self.last_data = data.iloc[-self.get_minimum_required_length():]
         self.last_data[c_rsi] = atr_series.iloc[-self.get_minimum_required_length():]
-        return atr_series[c_rsi].values
+        return {"atr":atr_series[c_rsi].values}
         
     def update(self, tick:pd.Series):
         option = self.option

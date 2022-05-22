@@ -1,4 +1,3 @@
-import random
 import pandas as pd
 
 class MarketClientBase:
@@ -8,27 +7,24 @@ class MarketClientBase:
 
     def get_rates(self, frame, interval) -> pd.DataFrame:
         raise Exception("Need to implement get_rates")
-        pass
 
     def get_current_ask(self):
         raise Exception("Need to implement get_current_ask")
-        pass
     
     def get_current_bid(self):
         raise Exception("Need to implement get_current_bid")
-        pass
     
     def market_buy(self, amount):
         raise Exception("Need to implement market_buy")
-        pass
 
     def market_sell(self, order):
         raise Exception("Need to implement market_sell")
-        pass
     
-    def buy_settlement(self, position):
+    def buy_settlement(self, position, point: int=None):
         print("Need to implement buy_settlement.")
-        pass
+    
+    def sell_settlement(self, position:dict, point: int=None):
+        print("Need to implement buy_settlement.")
     
     def sell_all_settlement(self):
         raise Exception("Need to implement sell_all_setlement")

@@ -1,7 +1,6 @@
-from pickle import FRAME
 import pandas as pd
 import random
-import math
+import uuid
 from stocknet.envs.utils import standalization
 from stocknet.envs.market_clients.frames import Frame
 
@@ -58,7 +57,7 @@ class CSVClient():
             self.frame = frame
         except Exception as e:
             print(e)
-        self.ask_positions = []
+        self.ask_positions = {}
         if file == None:
             if provider == "bitflayer":
                 self.files = {
@@ -66,11 +65,14 @@ class CSVClient():
                     5:'/home/cow/python/torch/Stock/Data/bitcoin_5_2017T0710-2021T103022.csv',
                     'provider': provider
                 }
+                self.base_point = 0.01
         elif type(file) == str:
             self.files = {
                 self.frame: file,
                 'provider': provider
             }
+            if provider == "bitflayer":
+                self.base_point = 0.01
         else:
             raise Exception(f"unexpected file type is specified. {type(file)}")
         self.__read_csv__(columns, date_column)
@@ -148,49 +150,64 @@ class CSVClient():
 
     def market_buy(self, amount) -> dict:
         boughtCoinRate = self.get_current_ask()
-        result = {"price":boughtCoinRate, "step":self.__step_index, "amount":amount}
-        self.ask_positions.append(result)
-        return result
+        id = str(uuid.uuid4())
+        position = {"price":boughtCoinRate, "step":self.__step_index, "amount":amount, "id":id}
+        self.ask_positions[id] = position
+        return position
 
     def market_sell(self, order) -> dict:
         print("market_sell is not implemented.")
         return None
 
-    def sell_settlement(self, position):
-        bid = self.get_current_bid()
-        bought_rate = position["price"]
-        rate_diff = (bid - position["price"])
-        remainings = []
-        for item in self.ask_positions:
-            if item["step"] != position["step"]:
-                remainings.append(item)
-        self.ask_positions = remainings
-        return bid, bought_rate, rate_diff
-
+    def sell_settlement(self, position:dict, point: int=None):
+        if position["id"] in self.ask_positions:
+            bid = self.get_current_bid()
+            bought_rate = position["price"]
+            amount = position["amount"]
+            if point == None or point >= amount:##sell all amounts
+                rate_diff = (bid - position["price"])
+                self.ask_positions.pop(position["id"])
+            elif point < amount:
+                rate_diff = (bid - position["price"])
+                id = position["id"]
+                remaining_amount = amount - point
+                position["amount"] = remaining_amount
+                self.ask_positions[id] = position
+            else:
+                raise Exception("amount should be int")
+            
+            pl = rate_diff * point * self.base_point
+            
+            return bid, bought_rate, rate_diff, pl
+        else:
+            return None, None, None
+        
     def buy_settlement(self, position):
         print("buy_settlement is not implemented.")
         pass
 
     def sell_all_settlement(self):
         results = []
-        for position in self.ask_positions:
-            bid = self.get_current_bid()
+        bid = self.get_current_bid()
+        for key, position in self.ask_positions.items():
+            rate_diff = (bid - position["price"])
+            pl = rate_diff * position["amount"] * self.base_point
             results.append(
-                (bid, position["price"], (bid - position["price"]))
+                (bid, position["price"], rate_diff, pl)
                 )
-        self.ask_positions = []
+        self.ask_positions = {}
         return results
         
     def close(self):
         pass
 
     def reset(self):
-        self.ask_positions = []#ignore if there is position
+        self.ask_positions = {}#ignore if there is position
         self.__step_index = random.randint(0, len(self.data))
 
     def get_holding_steps(self, position="ask"):
         steps_diff = []
-        for ask_position in self.ask_positions:
+        for key, ask_position in self.ask_positions.items():
             steps_diff.append(self.__step_index - ask_position["step"])
         return steps_diff
 
@@ -256,7 +273,7 @@ class CSVClient():
             if len(self.ask_positions) > 0:
                 amounts = []
                 current_bid = self.get_current_bid()
-                for position in self.ask_positions:
+                for key, position in self.ask_positions.items():
                     amounts.append(current_bid - position['price'])
                 return amounts
             else:
@@ -271,20 +288,23 @@ class CSVClient():
                 amounts = []
                 current_bid = self.get_current_bid()
                 current_normalized_bid = standalization.mini_max(current_bid, self.__low_min, self.__high_max, (0, 1))
-                for position in self.ask_positions:
+                for key, position in self.ask_positions.items():
                     normalized_price = standalization.mini_max(position['price'], self.__low_min, self.__high_max, (0, 1))
-                    amounts.append(current_normalized_bid - normalized_price)
+                    amounts.append((current_normalized_bid - normalized_price) * position["amount"])
                 return amounts
             else:
                 return [0.0]
         else:
             print(f'this is not implemented in get_diff_amount with position: {position}')
             
-    def get_positions(self, position=None):
-        if position == None:
+    def get_positions(self, kinds=None):
+        positions = []
+        if kinds == None:
             pass
-        elif position == 'ask':
-            return self.ask_positions
+        elif kinds == 'ask':
+            for key, position in self.ask_positions.items():
+                positions.append(position)            
+            return positions
     
     def get_params(self) -> dict:
         param = {
