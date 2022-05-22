@@ -47,7 +47,7 @@ class SimpleDense(nn.Module):
             return out
         
 class ConvDense16(nn.Module):
-    def __init__(self, size, channel=5, lr=True):
+    def __init__(self, size, channel=5, out_size=3,lr=True):
         super().__init__()
         self.__lr = lr
         self.size = size
@@ -95,7 +95,7 @@ class ConvDense16(nn.Module):
             nn.Linear(int(size) * 512, 512),
             nn.Tanh(),
             nn.Dropout(p=0.5),
-            nn.Linear(512, 3)# 3 is action space
+            nn.Linear(512, out_size)# 3 is action space
         )
 
     def forward(self, inputs):

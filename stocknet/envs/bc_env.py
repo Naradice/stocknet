@@ -352,6 +352,7 @@ class BCEnv(gym.Env):
                 count += 1
                 reward += result[2]/self.max_reward
                 self.pl += result[3]
+            self.pls = [0 for i in range(0, len(self.obs))]
             reward = np.clip(reward, *self.reward_range)
             if debug:
                 print(f"Sold {count} position","reward", reward)
@@ -435,11 +436,11 @@ class BCMultiActsEnv(BCEnv):
         if self.budget > 0:
             remaining_budget = self.budget - amount
             if remaining_budget < 0:
-                amount = self.budget
                 self.budget = 0
+                self.coin = self.num_actions
             else:
                 self.budget = remaining_budget
-            self.coin += amount
+                self.coin += amount
             self.data_client.market_buy(amount=amount)
             current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
             if debug:
@@ -457,7 +458,7 @@ class BCMultiActsEnv(BCEnv):
             
             ## sort and caliculate total amount
             amounts = 0
-            positions = [0 for i in range(0, len(positions_dict))]
+            positions = [{"price":0} for i in range(0, len(positions_dict))]
             
             for key, position in positions_dict.items():
                 amounts += position["amount"]
@@ -472,7 +473,7 @@ class BCMultiActsEnv(BCEnv):
             if amounts <= point:
                 results = self.data_client.sell_all_settlement()
                 if self.coin != amounts:
-                    print("sell coin: something went wrong")
+                    print(f"sell coin: something went wrong: {self.coin}, {amounts}, {point}")
                 self.coin = 0
                 self.budget = self.num_actions
             else:
@@ -480,14 +481,15 @@ class BCMultiActsEnv(BCEnv):
                 for position in positions:
                     sold_amount += position["amount"]
                     if sold_amount < point:
-                        point = position["amount"]
-                        result = self.data_client.sell_settlement(position=position, point=point)
+                        __point = position["amount"]
+                        result = self.data_client.sell_settlement(position=position, point=__point)
                         results.append(result)
                     else:
                         over_point = sold_amount - point
-                        point = position["amount"] - over_point
-                        result = self.data_client.sell_settlement(position=position, point=point)
+                        __point = position["amount"] - over_point
+                        result = self.data_client.sell_settlement(position=position, point=__point)
                         results.append(result)
+                        point = sold_amount -over_point
                         break
                 self.coin = self.coin - point
                 self.budget += point

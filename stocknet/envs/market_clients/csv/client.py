@@ -302,9 +302,9 @@ class CSVClient():
         if kinds == None:
             pass
         elif kinds == 'ask':
-            for key, position in self.ask_positions.items():
-                positions.append(position)            
-            return positions
+            #for key, position in self.ask_positions.items():
+            #    positions.append(position)
+            return self.ask_positions
     
     def get_params(self) -> dict:
         param = {

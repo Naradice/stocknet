@@ -34,7 +34,7 @@ inputDim, size = obs.shape
 print(inputDim, size, env.columns)
 
 #model = SimpleDense(8,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
-model = ConvDense16(size, channel=inputDim)#.to(device=device)
+model = ConvDense16(size, channel=inputDim, out_size=21)#.to(device=device)
 criterion = nn.MSELoss() #評価関数の宣言
 batch_size = 1
 
