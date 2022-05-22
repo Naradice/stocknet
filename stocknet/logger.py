@@ -41,7 +41,9 @@ class pt_logs:
         if max_value > 1:
             if self.invalid_max != max_value:
                 self.invalid_max = max_value
-                print(f"invalid value in observations at {self.env.get_data_index()-1}: {self.invalid_max}")
+                for column in obs.columns:
+                    if obs[column].max() > 1:
+                        print(f"invalid value in observations at {self.env.get_data_index()-1}: {self.invalid_max}")
         else:
             if max_value > self.valid_max:
                 self.valid_max = max_value
