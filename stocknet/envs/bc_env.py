@@ -281,7 +281,6 @@ class BCEnv(gym.Env):
         self.data_client.set_seed(seed)
         
     def __set__simple_bugets(self, value):
-        self.budget = value
         self.pls = [value for i in range(0, len(self.obs))]
         
     def __set__simple_coins(self, value):
@@ -290,9 +289,8 @@ class BCEnv(gym.Env):
         
     
     def __set_history_bugets(self, new_buget):
-        self.budget = new_buget
         self.pls[:-1] = self.pls[1:len(self.pls)]
-        self.pls[-1] = self.budget
+        self.pls[-1] = new_buget
         
     def __set_hisoty_coins(self, new_coin):
         self.coin = new_coin
@@ -411,6 +409,11 @@ class BCMultiActsEnv(BCEnv):
         super().__init__(data_client, max_step, frames, columns, observationDays, useBudgetColumns, featureFirst, mono)
         self.budget = bugets
         self.action_space = gym.spaces.Discrete(self.num_actions*2 + 1)
+    
+    def reset(self):
+        obs = super().reset()
+        self.budget = self.num_actions
+        return obs
         
     def initialize_additional_obs(self):
         self.pls = [0 for i in range(0, len(self.obs))]
@@ -438,6 +441,7 @@ class BCMultiActsEnv(BCEnv):
             if remaining_budget < 0:
                 self.budget = 0
                 self.coin = self.num_actions
+                amount = amount + remaining_budget
             else:
                 self.budget = remaining_budget
                 self.coin += amount
@@ -469,6 +473,8 @@ class BCMultiActsEnv(BCEnv):
                         positions[index] = position
                         break
             ##
+            if self.budget + amounts > 10:
+                print("went wrong.")
             results = []
             if amounts <= point:
                 results = self.data_client.sell_all_settlement()
@@ -492,6 +498,7 @@ class BCMultiActsEnv(BCEnv):
                         point = sold_amount -over_point
                         break
                 self.coin = self.coin - point
+                print(self.budget, point)
                 self.budget += point
                     
             #caliculate reward

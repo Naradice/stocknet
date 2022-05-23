@@ -41,9 +41,11 @@ class pt_logs:
         if max_value > 1:
             if self.invalid_max != max_value:
                 self.invalid_max = max_value
-                for column in obs.columns:
-                    if obs[column].max() > 1:
-                        print(f"invalid value in observations at {self.env.get_data_index()-1}: {self.invalid_max}")
+                index = 0
+                for values in obs:
+                    index +=1
+                    if values.max() > 1:
+                        print(f"invalid value in observations at {self.env.get_data_index()-1}: {self.invalid_max} in {index}")
         else:
             if max_value > self.valid_max:
                 self.valid_max = max_value
@@ -52,9 +54,11 @@ class pt_logs:
         if min_value < -1:
             if self.invalid_min != min_value:
                 self.invalid_min = min_value
-                for column in obs.columns:
-                    if obs[column].min() < -1:
-                        print(f"invalid value in observations at {self.env.get_data_index()-1}: {self.invalid_min} in {column}")
+                index = 0
+                for values in obs:
+                    index +=1
+                    if values.min() < -1:
+                        print(f"invalid value in observations at {self.env.get_data_index()-1}: {self.invalid_min} in {index}")
             else:
                 if min_value < self.valid_min:
                     self.value_min = min_value
