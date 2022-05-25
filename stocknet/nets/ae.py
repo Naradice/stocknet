@@ -85,10 +85,6 @@ class AELinearModel(nn.Module):
                     raise Exception("middle_layer_size should be greater than 2.")
             else:
                 raise Exception("hidden_layer_num should be grater than 2.")
-                
-            
-            
-        
         
     def forward(self, x):
         out = x.to(self.device)

@@ -460,7 +460,7 @@ class BCMultiActsEnv(BCEnv):
             reward = self.VALID_REWARD
             positions_dict = self.data_client.get_positions("ask")
             
-            ## sort and caliculate total amount
+            # sort and caliculate total amount
             amounts = 0
             positions = [{"price":0} for i in range(0, len(positions_dict))]
             
@@ -498,9 +498,15 @@ class BCMultiActsEnv(BCEnv):
                         point = sold_amount -over_point
                         break
                 self.coin = self.coin - point
-                print(self.budget, point)
                 self.budget += point
-                    
+                
+            #caliculate pl
+            pl = 0
+            for result in results:
+                pl += result[3]
+            self.pl += pl
+            ##
+            
             #caliculate reward
             for result in results:
                 reward += result[2]/self.max_reward
@@ -545,6 +551,10 @@ class BCMultiActsEnv(BCEnv):
         reward = self.evaluate(action, False)
         self.obs, done = self.get_next_observation()
         
+        amount = self.get_current_pl()
+        amount = np.clip(amount, *self.reward_range)
+        self.pls = [amount for i in range(0, len(self.obs))]
+        
         if self.pl < -100000:
             done = True
         if self.__ubc__:
@@ -556,3 +566,31 @@ class BCMultiActsEnv(BCEnv):
             return self.obs.iloc[-self.dataLength:].T.to_numpy(), reward, done, {}
         else:
             return self.obs.iloc[-self.dataLength:].to_numpy(), reward, done, {}
+
+    def __stay__(self, debug):
+        reward = 0.0
+        """
+        amount = self.get_current_pl()
+        amount = np.clip(amount, *self.reward_range)
+        self.pls = [amount for i in range(0, len(self.obs))]
+        diff = amount - self.current_pl
+        self.current_pl = amount
+        if diff >= 0:
+            reward += self.STAY_GOOD_REWARD
+            reward += amount
+            if amount > 0:
+                reward += diff*5
+            else:
+                reward += diff
+        elif diff < 0:
+            reward += self.STAY_BAD_REWARD
+            if amount > 0:
+                reward += amount + diff
+                reward = diff
+            else:
+                reward += diff*3
+        reward = np.clip(reward, *self.reward_range)
+        if debug and diff != 0:
+            print(f"Stay","reward", reward)
+        """
+        return reward

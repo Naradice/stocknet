@@ -20,7 +20,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #device = "cpu"
 print("Lerning with device:", device)
 
-model_name = 'rl/bc_5min/multi/Conv_30m_v2'
+model_name = 'rl/bc_5min/multi/Conv_30m_v3'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
 #env = BCEnv(data_client, columns=[],max_step=max_step, observationDays=1/24,useBudgetColumns=True)
@@ -38,10 +38,10 @@ model = ConvDense16(size, channel=inputDim, out_size=21)#.to(device=device)
 criterion = nn.MSELoss() #評価関数の宣言
 batch_size = 1
 
-optimizer = torch.optim.Adam(model.parameters(), eps=1e-6)
-#optimizer = torch.optim.SGD(model.parameters(), lr=1e-6)
+#optimizer = torch.optim.Adam(model.parameters(), eps=1e-6)
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 gamma = 0.99
-explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.2, random_action_func=env.action_space.sample)
+explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.1, random_action_func=env.action_space.sample)
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
 gpu = 0
@@ -60,5 +60,5 @@ agent = pfrl.agents.DoubleDQN(
 )
 
 trainer = RlTrainer()
-trainer.add_end_time(0,5)
+trainer.add_end_time(0,4)
 trainer.training_loop(env, agent, model_name, 20000, max_step_len=max_step, render=False)
