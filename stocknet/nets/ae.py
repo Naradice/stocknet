@@ -3,7 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
+def initialize_activation_func(func_type: str):
+    if func_type == "Tanh()":
+        return nn.Tanh()
+    else:
+        print("please create...")
+
 class AELinearModel(nn.Module):
+    
+    key = "ae"
     
     def default_setup(self, input_size):
         i_size = input_size
@@ -58,6 +66,9 @@ class AELinearModel(nn.Module):
     
     def __init__(self, input_size, hidden_layer_num = -1, middle_layer_size = -1, activation_func = nn.Tanh(), out_middle_layer=False, device=None):
         super().__init__()
+        if type(activation_func) == str:
+            activation_func = initialize_activation_func(activation_func)
+        self.args = (input_size, hidden_layer_num, middle_layer_size, str(activation_func), out_middle_layer, device)
         if device == None:
             self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
         else:

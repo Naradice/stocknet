@@ -11,15 +11,15 @@ class Dataset():
     """
     Basic OHLC dataset
     """
+    
+    key = "ohlc"
 
-    def __init__(self, data_client: MarketClientBase, observationDays=1, data_length:int = None, out_ohlc_columns = ["Open", "High", "Low", "Close"], isTraining = True):
-        
+    def __init__(self, data_client: MarketClientBase, observationDays=1, data_length:int = None, out_ohlc_columns = ["Open", "High", "Low", "Close"], seed = None, isTraining = True):
+        self.seed(seed)
         self.__rowdata__ = data_client.get_rates(-1)
         #self.dtype = torch.float32
-        
-        self.__initialized =  False
+        self.args = (observationDays, data_length, out_ohlc_columns, seed)
         columns_dict = data_client.get_ohlc_columns()
-        self.params = data_client.get_params()
         self.columns = []
         __ohlc_columns = [str.lower(value) for value in out_ohlc_columns]
         if 'open' in __ohlc_columns:
@@ -32,7 +32,6 @@ class Dataset():
             self.columns.append(columns_dict['Close'])    
         
         self.out_columns = self.columns.copy()
-
                 
         self.budget_org = 100000
         self.leverage = 25
@@ -193,13 +192,13 @@ class Dataset():
         else:
             random.seed(seed)
             
-    def get_params(self):
-        pass
-            
 class ShiftDataset(Dataset):
     
-    def __init__(self, data_client: MarketClientBase, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"], floor = 1,isTraining=True):
-        super().__init__(data_client, observationDays, out_ohlc_columns=out_ohlc__columns, isTraining=isTraining)
+    key = "shit_ohlc"
+    
+    def __init__(self, data_client: MarketClientBase, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
+        super().__init__(data_client, observationDays, out_ohlc_columns=out_ohlc__columns, seed=seed, isTraining=isTraining)
+        self.args = (observationDays,out_ohlc__columns, floor, seed)
         self.shift = floor
     
     def __init_indicies(self):

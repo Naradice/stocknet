@@ -5,8 +5,12 @@ import numpy as np
 import pfrl
 
 class SimpleDense(nn.Module):
+    
+    key = "dense"
+    
     def __init__(self, layer_num, size, inputDim, n_actions, removeHistoryData = True, lr=True):
         super().__init__()
+        self.args = (layer_num, size, inputDim, n_actions, removeHistoryData, lr)
         self.__lr = lr
         self.size = size
         self.rhd = removeHistoryData
@@ -47,8 +51,12 @@ class SimpleDense(nn.Module):
             return out
         
 class ConvDense16(nn.Module):
+    
+    key = "conv16"
+    
     def __init__(self, size, channel=5, out_size=3,lr=True):
         super().__init__()
+        self.args = (size, channel, out_size, lr)
         self.__lr = lr
         self.size = size
         dtype = torch.float32
@@ -107,5 +115,3 @@ class ConvDense16(nn.Module):
         else:
             return out
         
-class LSTM:
-    pass

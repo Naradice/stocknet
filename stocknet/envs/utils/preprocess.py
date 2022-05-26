@@ -29,8 +29,16 @@ def to_params_dict(processes:list) -> dict:
         params[process.key] = option
     return params
 
-def load_preprocess() -> list:
-    pass
+def load_preprocess(params:dict) -> list:
+    ips_dict = get_available_processes()
+    pss = []
+    for key, param in params.items():
+        kinds = param['kinds']
+        ps = ips_dict[kinds]
+        ps = ps.load(key, param)
+        pss.append(ps)
+    return pss
+
 
 class DiffPreProcess(ProcessBase):
     

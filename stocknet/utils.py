@@ -83,22 +83,26 @@ def check_directory(model_name:str) -> None:
     elif os.path.exists('models') is False:
         os.makedirs('models')
 
-def __save_params(model_name, params:dict):
+def save_params(model_name, params:dict):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
     txt_file_name = f'models/{dir_name}/params_{version}.json'
     with open(txt_file_name, 'w', encoding='utf-8') as f:
         json.dump(params, f)
-
-def save_processes(model_name, indicaters:list, preprocesses:list):
+    
+def processes_to_params(indicaters: list, preprocesses: list):
     ind_params = ips.to_param_dict(indicaters)
     pre_params = pps.to_params_dict(preprocesses)
     params = {
         'indicaters': ind_params,
         'preprocesses': pre_params
     }
-    __save_params(model_name, params)
-        
+    return params
+
+def save_processes(model_name, indicaters:list, preprocesses:list):
+    params = processes_to_params(indicaters, preprocesses)
+    save_params(model_name, params)
+
 def load_params(model_name):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
@@ -106,6 +110,9 @@ def load_params(model_name):
     with open(txt_file_name, 'r', encoding='utf-8') as f:
         params = json.load(f)
     return params
+
+def dataset_to_params(ds):
+    pass
 
 def load_model(model, model_name):
     dir_name, version = __remove_version_str(model_name)

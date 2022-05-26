@@ -1,10 +1,12 @@
 import pandas as pd
 import random
+import os
 import uuid
 from stocknet.envs.utils import standalization
 from stocknet.envs.market_clients.frames import Frame
 
 class CSVClient():
+    kinds = 'csv'
 
     def __read_csv__(self, columns, date_col=None):
         #super().__init__()
@@ -39,7 +41,7 @@ class CSVClient():
     def __get_rolling_start_index(self):
         pass
 
-    def __init__(self, file = None, frame: int= Frame.MIN5, provider="bitflayer", out_frame:int=None, columns = ['High', 'Low','Open','Close'], date_column = "Timestamp", normalization = None):
+    def __init__(self, file = None, frame: int= Frame.MIN5, provider="bitflayer", out_frame:int=None, columns = ['High', 'Low','Open','Close'], date_column = "Timestamp", seed=1017):
         """CSV Client for bitcoin, etc. currently bitcoin in available only.
         Need to change codes to use settings file
         
@@ -50,9 +52,11 @@ class CSVClient():
             out_frame (int, optional): output frame. Ex F_5MIN can convert to F_30MIN. Defaults to None.
             columns (list, optional): ohlc columns name. Defaults to ['High', 'Low','Open','Close'].
             date_column (str, optional): If specified, time is parsed. Otherwise ignored. Defaults to Timestamp
-            normalization (_type_, optional): Need to implement.... Defaults to None. Nomalize the output based on this option.
         """
-        self.kinds = 'bc'
+        random.seed(seed)
+        self.args = (file, frame, provider, out_frame, columns, date_column, seed)
+        if type(file) == str:
+            file = os.path.abspath(file)
         try:
             self.frame = frame
         except Exception as e:
@@ -318,10 +322,12 @@ class CSVClient():
 
 class MultiFrameClient(CSVClient):
     
-    def __init__(self, file=None, frame: int = Frame.MIN5, provider="bitflayer", columns=['High', 'Low', 'Open', 'Close'], out_frames = [Frame.MIN30, Frame.H1], date_column="Timestamp", normalization=None):
+    kinds = "multi_csv"
+    
+    def __init__(self, file=None, frame: int = Frame.MIN5, provider="bitflayer", columns=['High', 'Low', 'Open', 'Close'], out_frames = [Frame.MIN30, Frame.H1], date_column="Timestamp", seed=1017):
         out_frame =None
-        super().__init__(file, frame, provider, out_frame, columns, date_column, normalization)
-        
+        super().__init__(file, frame, provider, out_frame, columns, date_column, seed)
+        self.args = (file, frame, provider, out_frame, columns, out_frames, date_column, seed)
         self.out_frames = out_frames
         
     def get_ohlc_columns(self):

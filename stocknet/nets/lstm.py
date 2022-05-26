@@ -4,7 +4,11 @@ from torch.optim import SGD
 
 ##Added from FX NEXT MACD
 class Predictor(nn.Module):
+    
+    key = "lstm"
+    
     def __init__(self, inputDim, hiddenDim, outputDim, device):
+        self.args = (inputDim, hiddenDim, outputDim, device)
         super(Predictor, self).__init__()
 
         self.rnn = nn.LSTM(input_size = inputDim,

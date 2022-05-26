@@ -594,3 +594,10 @@ class BCMultiActsEnv(BCEnv):
             print(f"Stay","reward", reward)
         """
         return reward
+
+class BCStopEnv(BCEnv):
+    """
+    Buy coins with stop loss and profit
+    reward is decided by refering a future data
+    """
+    pass

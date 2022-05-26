@@ -35,9 +35,13 @@ def to_param_dict(processes:list) -> dict:
 
 def load_indicaters(params:dict) -> list:
     ips_dict = get_available_processes()
-    for param in params:
+    ids = []
+    for key, param in params.items():
         kinds = param['kinds']
-        ips_dict[kinds]
+        idc = ips_dict[kinds]
+        idc = idc.load(key, param)
+        ids.append(idc)
+    return ids
 
 class MACDpreProcess(ProcessBase):
     

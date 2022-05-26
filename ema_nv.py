@@ -24,7 +24,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     ema_ps_1 = indicater.EMApreProcess(key='e12', window=12)
     #ema_ps_2 = indicater.EMApreProcess(key='e26', window=12, is_output=is_multi_output)
     ids = [ema_ps_1]#, ema_ps_2]
-    shift = 3
+    shift = 2
     ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays,out_ohlc__columns=[], isTraining=True, floor=shift)
     ds.add_indicaters(ids)
     ds.register_preprocesses(processes)
@@ -72,6 +72,6 @@ if __name__ == "__main__":
     middle_layer_size = 96
     ####################
     #epoc_num = 50
-    version = 2
+    version = 3
     
     training_auto_encoder(data_client, batch_size, observationDays, processes, hidden_layer_num=hidden_layer_size, middle_layer_size=middle_layer_size, version=version)

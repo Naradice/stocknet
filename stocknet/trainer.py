@@ -1,4 +1,3 @@
-from posixpath import dirname
 import numpy as np
 import datetime
 import torch
@@ -157,7 +156,7 @@ class Trainer():
                 mean_loss += loss.item()
                 #output: [batchDim, outputDim]
                 for index in range(0, output_size):
-                    out_[index] = np.append(out_[index], outputs.to('cpu').detach().numpy().copy())
+                    out_[index] = np.append(out_[index], outputs.to(' ').detach().numpy().copy())
                     ans_[index] = np.append(ans_[index], ans.to('cpu').detach().numpy().copy())
                 count += 1
         
@@ -171,9 +170,9 @@ class Trainer():
         print(f'mean dif ({index}): {[(out_[index] - ans_[index]).mean() for index in range(0, output_size)]}, var: {[(out_[index] - ans_[index]).var() for index in range(0, output_size)]}')
         print('--------------------------------------------------')
         
-    def validate_with_actual_value(self, model, val_loader):
+    def validate_with_actual_value(self, model, val_loader, mode="console"):
         pass
-                    
+
 class RlTrainer():
     
     def __init__(self) -> None:
