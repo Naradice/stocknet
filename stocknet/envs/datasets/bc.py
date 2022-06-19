@@ -4,7 +4,6 @@ import numpy
 import pandas as pd
 import torch
 from stocknet.envs.market_clients.market_client_base import MarketClientBase
-from stocknet.envs.utils import standalization, indicaters
 from stocknet.envs.utils.preprocess import ProcessBase
 
 class Dataset():
@@ -249,6 +248,100 @@ class ShiftDataset(Dataset):
      
     def outputFunc(self, ndx):
         return self.getNextInputs(ndx, self.shift)
+    
+    def __getitem__(self, ndx):
+        return super().__getitem__(ndx)
+    
+class RewardDataset(Dataset):
+    
+    key = "shit_ohlc"
+    
+    def __init__(self, data_client: MarketClientBase, observationDays=1, column = "Close" , seed = None, isTraining=True):
+        super().__init__(data_client, observationDays, out_ohlc_columns=[], seed=seed, isTraining=isTraining)
+        self.args = (observationDays,column, seed)
+        self.column = column
+    
+    def __init_indicies(self):
+        length = len(self.data) - self.shift
+        if self.isTraining:
+            self.fromIndex = self.dataLength
+            self.toIndex = int(length*0.7)- self.shift
+        else:
+            self.fromIndex = int(length*0.7)+1
+            self.toIndex = length - self.shift
+        
+        ##select random indices.
+        k=length - self.dataLength*2 -1
+        self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        
+    def inputFunc(self, ndx):
+        return self.getInputs(ndx, self.columns)
+    
+    def getInputs(self, ndx, columns):
+        inputs = []
+        if type(ndx) == int:
+            indicies = slice(ndx, ndx+1)
+            for index in self.indices[indicies]:
+                temp = (self.data[columns].iloc[index-self.dataLength:index].values.tolist())
+                inputs.append(temp)
+            return inputs[0]
+        elif type(ndx) == slice:
+            indicies = ndx
+            for index in self.indices[indicies]:
+                temp = (self.data[columns].iloc[index-self.dataLength:index].values.tolist())
+                inputs.append(temp)
+            return inputs
+    
+    def caliculate_reward(self, index):
+        window = 10
+        values = self.data[self.column].iloc[index-window: index + 100]
+        ewa = values.ewm(span=window, adjust=True).mean()
+        sign = numpy.sign(ewa.diff())
+        count = 0
+        direction = sign.iloc[1]##change 1
+        cp = [numpy.NaN]
+        trend_count = 3
+        for index in range(1, len(sign)):
+            s = sign.iloc[index]
+            if s != direction:
+                count += 1
+                if count == trend_count:
+                    direction = s
+                    count = 0
+                    print(f"direction changed on {index}")
+                    cp.append(numpy.NaN)
+                    cp[-trend_count] = ewa.iloc[index - trend_count]
+                else:
+                    cp.append(numpy.NaN)
+            else:
+                count = 0
+                cp.append(numpy.NaN)
+        
+    
+    def getReward(self, ndx):
+        """
+        each index have 
+        [
+            reward if you bought coin
+            reward if you sell coin
+        ]
+        """
+        inputs = []
+        if type(ndx) == int:
+            indicies = slice(ndx, ndx+1)
+            for index in self.indices[indicies]:
+                temp = self.data[self.out_columns].iloc[index-1]
+                inputs.append(temp)
+            return inputs[0]
+        elif type(ndx) == slice:
+            indicies = ndx
+            for index in self.indices[indicies]:
+                temp = self.data[self.out_columns].iloc[index-1]
+                inputs.append(temp)
+            return inputs
+     
+    def outputFunc(self, ndx):
+        return self.getReward(ndx)
     
     def __getitem__(self, ndx):
         return super().__getitem__(ndx)

@@ -6,19 +6,18 @@ import pandas as pd
 import numpy as np
 from stocknet.envs.render.graph import Rendere
 from stocknet.envs.market_clients.market_client_base import MarketClientBase
-from stocknet.envs.utils.preprocess import ProcessBase
+import stocknet.envs.utils as utils
 #from render.graph import Rendere
 
 class BCEnv(gym.Env):
 
-    def __init__(self, data_client:MarketClientBase, max_step:int, frames:list = None, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
+    def __init__(self, data_client:MarketClientBase, max_step:int, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
         """ Bitcoin Environment of OpenGym
         Assuming the data_client provide ohlc without regular market close
 
         Args:
             data_client (MarketClientBase): Client to provide ohlc data
             max_step (int): max step to caliculate min max of reward
-            frames (list, Optional): minutes of frames like 5m 30m 60m, 120m, 1440 and so on. If specified, frames ticks are also provided as observation output in addition to data client frame.
             columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
             observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
             useBudgetColumns (bool, optional): If True, difference from bought rate and current rate is provided as observation. Defaults to True.
@@ -94,7 +93,7 @@ class BCEnv(gym.Env):
     def bid(self):
         return self.data_client.get_current_bid()
     
-    def add_indicater(self, process:ProcessBase):
+    def add_indicater(self, process:utils.ProcessBase):
         self.indicaters.append(process)
         req_length = process.get_minimum_required_length() - 1
         if self.indicaters_length < req_length:
@@ -106,7 +105,7 @@ class BCEnv(gym.Env):
         for process in processes:
             self.add_indicater(process)
         
-    def register_preprocess(self, process:ProcessBase):
+    def register_preprocess(self, process:utils.ProcessBase):
         self.preprocess_initialized = False
         self.preprocess.append(process)
         self.preprocess_length += process.get_minimum_required_length()-1
@@ -137,13 +136,13 @@ class BCEnv(gym.Env):
             new_data = indicater.update(tick)
             for key,column in indicater.columns.items():
                 df[column] = new_data[column]
-        self.dataSet = ProcessBase.concat(None, self.dataSet.iloc[1:], df)
+        self.dataSet = utils.ProcessBase.concat(None, self.dataSet.iloc[1:], df)
         
         # update preprocess
         new_target_tick = df[self.columns]
         for process in self.preprocess:
             new_target_tick = process.update(new_target_tick)
-        self.obs = ProcessBase.concat(None, self.obs.iloc[1:], new_target_tick)
+        self.obs = utils.ProcessBase.concat(None, self.obs.iloc[1:], new_target_tick)
         
         #ohlc = self.dataSet[self.__ohlc_columns].iloc[-self.dataLength:]
         #self.viewer.register_ohlc(ohlc, 0, 'ROW OHLC Candle', *self.__ohlc_columns)
@@ -389,7 +388,7 @@ class BCEnv(gym.Env):
     
 class BCMultiActsEnv(BCEnv):
     
-    def __init__(self, data_client: MarketClientBase, max_step: int, bugets: int,frames: list = None, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
+    def __init__(self, data_client: MarketClientBase, max_step: int, bugets: int, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
         """ Bitcoin Environment of OpenGym
         Assuming the data_client provide ohlc without regular market close
 
@@ -397,7 +396,6 @@ class BCMultiActsEnv(BCEnv):
             data_client (MarketClientBase): Client to provide ohlc data
             max_step (int): max step to caliculate min max of reward
             bugets (int): bugets represents how how many points agent can buy bc as maximum. number of action become 2N + 1
-            frames (list, Optional): minutes of frames like 5m 30m 60m, 120m, 1440 and so on. If specified, frames ticks are also provided as observation output in addition to data client frame.
             columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
             observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
             useBudgetColumns (bool, optional): If True, difference from bought rate and current rate is provided as observation. Defaults to True.
@@ -406,7 +404,7 @@ class BCMultiActsEnv(BCEnv):
         """
         assert(type(bugets)==int, "bugets should be int")
         self.num_actions = bugets
-        super().__init__(data_client, max_step, frames, columns, observationDays, useBudgetColumns, featureFirst, mono)
+        super().__init__(data_client, max_step, columns, observationDays, useBudgetColumns, featureFirst, mono)
         self.budget = bugets
         self.action_space = gym.spaces.Discrete(self.num_actions*2 + 1)
     
@@ -600,4 +598,224 @@ class BCStopEnv(BCEnv):
     Buy coins with stop loss and profit
     reward is decided by refering a future data
     """
-    pass
+    
+    key = "stop"
+    
+    def __init__(self, data_client: MarketClientBase, max_step: int, stop_loss_point: int = 0.05, stop_profit_point:int = 0.1, usebb = False, frames: list = None, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, featureFirst=True):
+        """ Bitcoin Environment of OpenGym
+        Assuming the data_client provide ohlc without regular market close
+
+        Args:
+            data_client (MarketClientBase): Client to provide ohlc data
+            max_step (int): max step to caliculate min max of reward
+            stop_loss_point (int): specify max_loss_piint
+            stop_profit_point (int): specify max_profit_point which should be bigger than max_loss_point
+            usebb (bool): use Bolinger band instead of max loss/profit point
+            columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
+            observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
+            featureFirst (bool, optional): If true (FeatreNum, ObservationLength), otherwie (ObservationLength, FeatureNum). Defaults to True.
+        """
+        if type(data_client.base_point) == type(None):
+            raise Exception("data client has no base point definition.")
+        super().__init__(data_client, max_step, columns, observationDays, False, featureFirst, False)
+        self.__use_bb = usebb
+        if usebb:
+            self.add_bolinger()
+            self.stop_loss = -1
+            self.stop_profit = -1
+        else:
+            self.stop_loss = stop_loss_point
+            self.stop_profit = stop_profit_point
+        self.action_space = gym.spaces.Discrete(2)
+    
+    def add_bolinger(self):
+        process = utils.BBANDpreProcess(key="bstop")
+        self.indicaters.append(process)
+        self.b_column = process.columns["Width"]
+        req_length = process.get_minimum_required_length() - 1
+        
+        if self.indicaters_length < req_length:
+            self.indicaters_length = req_length
+    
+    def reset(self):
+        obs = super().reset()
+        self.ask_value = self.data_client.get_current_ask()
+        self.update_stop_value()
+        self.count = 0
+        return obs
+        
+    def initialize_additional_obs(self):
+        pass
+
+    
+    def __buyCoin__(self, amount:int=1, debug=False):
+        '''
+        buy coin using all budget
+        '''
+        stop_loss = self.ask_value - self.ask_value * self.stop_loss
+        stop_profit = self.ask_value + self.ask_value * self.stop_profit
+        #position = self.data_client.buy(amount=amount)
+        data = self.data_client.get_future_rates(self.max_step)
+        low_column = self.ohlc_columns_dict['Low']
+        high_column = self.ohlc_columns_dict['High']
+        
+        ## caliculate reward with direction change
+        #close_column = self.ohlc_columns_dict['Close']
+        #ewa = data[close_column].ewm(span=10, adjust=True).mean()
+        
+        reward = -0.1
+        if self.stop_loss != -1:
+            for index, row in data.iterrows():
+                low = row[low_column]
+                high = row[high_column]
+                if low <= stop_loss:
+                    reward = -0.5
+                    self.pl = self.pl - self.ask_value * self.stop_loss
+                    break
+                elif high >= stop_profit:
+                    reward = 1
+                    self.pl += self.ask_value * self.stop_profit
+                    break
+                
+        return reward 
+    
+    def update_stop_value(self):
+        width = self.dataSet[self.b_column].iloc[-1]
+        self.stop_profit = width/self.ask_value
+        self.stop_loss = self.stop_profit/2
+        if self.data_client.base_point > self.stop_loss:
+            self.stop_loss = -1
+            self.stop_profit = -1
+        
+        
+    def evaluate(self, action, debug=False):
+        reward = 0
+        if action == 0:
+            '''
+            hold.
+            '''
+            reward = self.__stay__(debug)
+
+        elif action == 1:
+            '''
+            buy coin with 10 point if possible.
+            if you don't have much budget, return negative reward 
+            '''
+            amount = action
+            reward = self.__buyCoin__(amount,debug=debug)
+        else:
+            raise Exception(f"The action number {action} exeeds the lengths in evaluate function.")
+        return reward
+
+    def step(self, action): # actionを実行し、結果を返す
+        done = False
+        self.count += 1
+        reward = 0
+        self.ask_value = self.data_client.get_current_ask()
+
+        if self.__use_bb:
+            self.update_stop_value()
+            
+        reward = self.evaluate(action, False)
+        self.obs, done = self.get_next_observation()
+        
+        if self.pl < -100000 or self.count == self.max_step:
+            done = True
+        
+        if self.__ff__:
+            return self.obs.iloc[-self.dataLength:].T.to_numpy(), reward, done, {}
+        else:
+            return self.obs.iloc[-self.dataLength:].to_numpy(), reward, done, {}
+
+    def __stay__(self, debug):
+        reward = 0.0
+        return reward
+
+#TODO: make this env class to observation class
+class BCDateEnv(BCEnv):
+
+    def __init__(self, data_client:MarketClientBase, columns = ['High', 'Low','Open','Close'],maxStepDays=1 ,observationLength=1, useBudgetColumns=True, featureFirst=True, mono=False):
+        """ Bitcoin Environment of OpenGym
+        Assuming the data_client provide ohlc without regular market close
+
+        Args:
+            data_client (MarketClientBase): Client to provide ohlc data
+            max_step (int): max step to caliculate min max of reward
+            columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
+            observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
+            useBudgetColumns (bool, optional): If True, difference from bought rate and current rate is provided as observation. Defaults to True.
+            featureFirst (bool, optional): If true (FeatreNum, ObservationLength), otherwie (ObservationLength, FeatureNum). Defaults to True.
+            mono (bool, optional): Tentative Param for testing purpose. Return budget result with simple format. Defaults to False.
+        """
+        assert observationLength > 0
+        max_step = int(maxStepDays * (60*24)/self.frame)
+        super().__init__(data_client, max_step, columns, 1, useBudgetColumns, featureFirst, mono)
+        self.dataLength = observationLength
+        self.max_step_days = maxStepDays
+                    
+    def reset(self, retry=0):
+        '''
+        '''
+        if retry <= 10:
+            self.pl = 0
+            self.boughtCoinRate = 0
+            self.soldCoinRate = 0
+            self.budget = 1
+            self.coin = 0
+            self.current_pl = 0
+            self.current_index = 0
+            
+            ## reset index
+            self.__req_length = self.dataLength + self.indicaters_length + self.preprocess_length
+            suc = self.data_client.reset(mode="day")
+            if suc:
+                entire_data = self.data_client.get_future_rates(self.max_step)
+                #check if last data have expected date
+                ohlc_obs = self.data_client.get_rates(self.dataLength)
+                #check if obs data have expected date
+                if suc:
+                    column = self.__ohlc_columns
+                    _min, _max = self.data_client.get_min_max(column, data_length = self.max_step)
+                    self.max_reward = _max - _min
+                    self.dataSet = self.data_client.get_rates(self.__req_length)
+                    
+                    ## add inidicaters to dataSet and columns
+                    for indicater in self.indicaters:
+                        values_dict = indicater.run(self.dataSet)
+                        for key, values in values_dict.items():
+                            self.dataSet[key] = values
+                    if self.preprocess_initialized == False:
+                        self.initialize_preprocess_params()
+                        
+                    self.initialize_observation()
+                    if self.__ff__:
+                        return self.obs.iloc[-self.dataLength:].T.to_numpy()
+                    else:
+                        return self.obs.iloc[-self.dataLength:].to_numpy()
+                else:
+                    self.reset(retry=retry+1)
+            else:
+                self.reset(retry=retry+1)
+        else:
+            raise Exception("")
+    
+    def step(self, action): # actionを実行し、結果を返す
+        done = False
+        reward = 0
+
+        reward = self.evaluate(action, False)
+        self.obs, done = self.get_next_observation()
+        self.current_index += 1
+        
+        if self.pl < -100000:
+            done = True
+        if self.current_index == self.max_step:
+            done = True
+        if self.__ubc__:
+            self.obs["pl"] = self.pls
+            #self.observation["coins"] = self.coins
+        
+        if self.__ff__:
+            return self.obs.iloc[-self.dataLength:].T.to_numpy(), reward, done, {}
+        else:
+            return self.obs.iloc[-self.dataLength:].to_numpy(), reward, done, {}

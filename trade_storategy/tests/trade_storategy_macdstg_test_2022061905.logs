@@ -1,0 +1,437 @@
+2022-06-19 14:52:31,632 trade_storategy.test:72 __init__ [INFO]: MarketManager is initialized with budget:1000000, provider:Default
+2022-06-19 14:52:32,280 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 100.77589637931669, signal:94.09761404081817
+2022-06-19 14:52:32,281 trade_storategy.test:59 __init__ [INFO]: initialized macd storategy: trend is 1
+2022-06-19 14:52:32,286 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 90.71490338793956, signal:132.57013530327498
+2022-06-19 14:52:32,286 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 14:52:32,287 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:52:32,288 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 14:52:32,288 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:308759.0, amount:1, symbol:USDJPY), remaining budget is 691241.0
+2022-06-19 14:52:38,293 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 70.09099999885075, signal:94.88849608228904
+2022-06-19 14:52:44,299 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 54.51447948697023, signal:98.50822798210558
+2022-06-19 14:52:50,311 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 60.90152563794982, signal:67.57568920049945
+2022-06-19 14:52:56,314 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 82.6914509551716, signal:96.69687215557659
+2022-06-19 14:53:02,325 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 83.89053202763898, signal:77.62952258939104
+2022-06-19 14:53:02,326 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 14:53:02,327 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (309587.0105193953, 308759.0, -828.0105193952913, -828.0105193952913), remaining budget is 999171.9894806047
+2022-06-19 14:53:02,328 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:53:02,328 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 14:53:02,329 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:309375.0, amount:1, symbol:USDJPY), remaining budget is 689796.9894806047
+2022-06-19 14:53:08,331 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 128.95735795173096, signal:94.18557083445032
+2022-06-19 14:53:14,343 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 170.49519293825142, signal:89.82391302431158
+2022-06-19 14:53:20,354 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 281.0197562131798, signal:170.03665855707368
+2022-06-19 14:53:26,359 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 293.500211154751, signal:145.90460257814266
+2022-06-19 14:53:32,371 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 362.5173534048372, signal:173.0791596902612
+2022-06-19 14:53:38,379 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 511.13495167542715, signal:210.10578504061172
+2022-06-19 14:53:44,391 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 582.487147691485, signal:273.727081495266
+2022-06-19 14:53:50,399 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 673.225228483032, signal:367.02297765577936
+2022-06-19 14:53:56,408 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 730.9388967555133, signal:433.4245263019952
+2022-06-19 14:54:02,412 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 792.0958805744303, signal:534.3559901777448
+2022-06-19 14:54:08,419 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 784.873874900979, signal:562.2000672715884
+2022-06-19 14:54:14,422 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 788.5313131032744, signal:585.4497948643467
+2022-06-19 14:54:20,427 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 834.9547572090523, signal:659.0909168931539
+2022-06-19 14:54:26,439 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 881.06458046037, signal:698.9539933816478
+2022-06-19 14:54:32,450 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1011.278486862313, signal:734.167854930604
+2022-06-19 14:54:38,458 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1116.1699525805889, signal:806.6511580078773
+2022-06-19 14:54:44,461 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1197.4197303738329, signal:898.8041431557956
+2022-06-19 14:54:50,474 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1186.866395734949, signal:928.7884392804311
+2022-06-19 14:54:56,482 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1169.5696137255873, signal:989.714045994928
+2022-06-19 14:55:02,493 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1188.0139549935702, signal:1035.30614042978
+2022-06-19 14:55:08,501 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1196.4361968362355, signal:1063.1817982462428
+2022-06-19 14:55:14,518 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1197.2810948886327, signal:1087.7773284632906
+2022-06-19 14:55:20,519 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1271.1401489624986, signal:1211.023411348352
+2022-06-19 14:55:26,524 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1228.1955272614723, signal:1177.4289540666698
+2022-06-19 14:55:32,525 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1217.7865661556716, signal:1195.6232646385517
+2022-06-19 14:55:38,534 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1153.815724975546, signal:1220.1857873572671
+2022-06-19 14:55:38,535 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 14:55:38,536 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (314378.88818775286, 309375.0, 5003.888187752862, 5003.888187752862), remaining budget is 1004175.8776683575
+2022-06-19 14:55:38,537 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:55:38,537 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 14:55:38,538 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:314280.0, amount:1, symbol:USDJPY), remaining budget is 689895.8776683575
+2022-06-19 14:55:44,551 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1121.5084190987982, signal:1186.1549260752508
+2022-06-19 14:55:50,556 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1196.6130410722108, signal:1236.1409824630246
+2022-06-19 14:55:56,569 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1118.9382903872174, signal:1181.642887894336
+2022-06-19 14:56:02,572 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1080.8435595325427, signal:1197.6018218344607
+2022-06-19 14:56:08,580 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 986.1808723503491, signal:1121.528108251779
+2022-06-19 14:56:14,586 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 921.0376131658559, signal:1111.4221629559115
+2022-06-19 14:56:20,600 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 771.6426094800117, signal:1042.807311282629
+2022-06-19 14:56:26,614 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 644.6947636040859, signal:955.6518498631259
+2022-06-19 14:56:32,618 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 532.2096312748617, signal:866.2630311308635
+2022-06-19 14:56:38,621 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 436.47912498220103, signal:774.1957682777235
+2022-06-19 14:56:44,634 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 419.0033369643497, signal:702.502861204292
+2022-06-19 14:56:50,640 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 378.47244754829444, signal:592.6766185183208
+2022-06-19 14:56:56,656 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 289.51667266601, signal:410.21882350755754
+2022-06-19 14:57:02,668 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 356.6406745874556, signal:431.63881565179
+2022-06-19 14:57:08,681 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 392.5758272065432, signal:371.2641216242854
+2022-06-19 14:57:08,681 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 14:57:08,683 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (315776.98551778577, 314280.0, -1496.985517785768, -1496.985517785768), remaining budget is 1002678.8921505717
+2022-06-19 14:57:08,684 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:57:08,684 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 14:57:08,685 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:315646.0, amount:1, symbol:USDJPY), remaining budget is 687032.8921505717
+2022-06-19 14:57:14,700 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 440.0291036157869, signal:345.6056668998984
+2022-06-19 14:57:20,708 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 501.1951264622621, signal:353.99572186626676
+2022-06-19 14:57:26,721 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 508.27782466838835, signal:370.52052887245213
+2022-06-19 14:57:32,734 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 540.1064780645538, signal:370.3940511655011
+2022-06-19 14:57:38,738 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 595.7137285869103, signal:386.1028964874891
+2022-06-19 14:57:44,746 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 641.7653501228779, signal:387.6244679553654
+2022-06-19 14:57:50,749 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 511.6038337588543, signal:305.87002258923735
+2022-06-19 14:57:56,755 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 489.5797118304763, signal:363.308091443239
+2022-06-19 14:58:02,769 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 457.44618346058996, signal:405.7490026802148
+2022-06-19 14:58:08,779 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 404.8529646936804, signal:453.1728857261413
+2022-06-19 14:58:08,779 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 14:58:08,781 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (315024.4635924088, 315646.0, -621.536407591193, -621.536407591193), remaining budget is 1002057.3557429805
+2022-06-19 14:58:08,781 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:58:08,782 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 14:58:08,782 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:315399.0, amount:1, symbol:USDJPY), remaining budget is 686658.3557429805
+2022-06-19 14:58:14,788 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 361.8544727428234, signal:478.76949172062126
+2022-06-19 14:58:20,794 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 169.40820342605002, signal:397.2463544608003
+2022-06-19 14:58:26,799 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 43.7808891601162, signal:341.24915399337056
+2022-06-19 14:58:32,806 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 3.499275695416145, signal:283.76773781524065
+2022-06-19 14:58:38,808 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 47.4137517674244, signal:220.97974718708105
+2022-06-19 14:58:44,818 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 11.844934973982163, signal:169.29910898764825
+2022-06-19 14:58:50,824 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -47.79102906759363, signal:119.91284506226657
+2022-06-19 14:58:56,838 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 11.080014779174235, signal:143.4959751457144
+2022-06-19 14:59:02,851 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -32.29766136180842, signal:21.89927433432442
+2022-06-19 14:59:08,865 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -69.46389644267038, signal:-77.92105057197881
+2022-06-19 14:59:08,866 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 14:59:08,867 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (315215.2495951175, 315399.0, 183.7504048824776, 183.7504048824776), remaining budget is 1002241.106147863
+2022-06-19 14:59:08,868 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:59:08,869 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 14:59:08,869 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:315443.0, amount:1, symbol:USDJPY), remaining budget is 686798.106147863
+2022-06-19 14:59:14,874 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -36.234124614915345, signal:-19.127966795815155
+2022-06-19 14:59:14,875 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 14:59:14,877 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (315068.79837988823, 315443.0, -374.2016201117658, -374.2016201117658), remaining budget is 1001866.9045277513
+2022-06-19 14:59:14,877 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:59:14,878 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 14:59:14,878 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:315010.0, amount:1, symbol:USDJPY), remaining budget is 686856.9045277513
+2022-06-19 14:59:20,885 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -0.030960403906647116, signal:-2.010177869647224
+2022-06-19 14:59:20,886 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 14:59:20,887 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (315524.53308770736, 315010.0, -514.5330877073575, -514.5330877073575), remaining budget is 1001352.3714400439
+2022-06-19 14:59:20,888 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:59:20,888 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 14:59:20,889 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:315500.0, amount:1, symbol:USDJPY), remaining budget is 685852.3714400439
+2022-06-19 14:59:26,895 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -11.134946281032171, signal:-7.888275539437826
+2022-06-19 14:59:26,896 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 14:59:26,897 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (315143.94213186926, 315500.0, -356.0578681307379, -356.0578681307379), remaining budget is 1000996.3135719132
+2022-06-19 14:59:26,898 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:59:26,899 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 14:59:26,899 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:315200.0, amount:1, symbol:USDJPY), remaining budget is 685796.3135719132
+2022-06-19 14:59:32,914 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -7.974102708976716, signal:16.120870094519987
+2022-06-19 14:59:38,916 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 26.044818306574598, signal:76.86326773852731
+2022-06-19 14:59:44,926 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 22.182881826767698, signal:60.7289062691335
+2022-06-19 14:59:50,931 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 47.562676348898094, signal:57.73287253334032
+2022-06-19 14:59:56,944 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 102.8025418422767, signal:59.567134354399364
+2022-06-19 14:59:56,945 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 14:59:56,946 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (315752.3877428184, 315200.0, -552.3877428183914, -552.3877428183914), remaining budget is 1000443.9258290948
+2022-06-19 14:59:56,946 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 14:59:56,947 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 14:59:56,947 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:315995.0, amount:1, symbol:USDJPY), remaining budget is 684448.9258290948
+2022-06-19 15:00:02,959 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 80.93310630414635, signal:7.182404664138125
+2022-06-19 15:00:08,970 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 116.38263892463874, signal:11.46199304188162
+2022-06-19 15:00:14,981 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 152.0307815973647, signal:14.578173144636416
+2022-06-19 15:00:20,994 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 149.30148320714943, signal:18.00111512532587
+2022-06-19 15:00:26,996 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 124.93740783666726, signal:-11.570726544253477
+2022-06-19 15:00:33,003 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 169.91812585259322, signal:6.043687906918219
+2022-06-19 15:00:39,014 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 159.9767648516572, signal:22.419439416624503
+2022-06-19 15:00:45,016 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 186.31984627479687, signal:98.3177271535258
+2022-06-19 15:00:51,021 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 87.46960813197074, signal:53.84233294058746
+2022-06-19 15:00:57,035 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 45.78565370396245, signal:29.70051840540125
+2022-06-19 15:01:03,044 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 42.293024698097724, signal:12.021812165466448
+2022-06-19 15:01:09,053 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 105.51657123642508, signal:133.4453032000068
+2022-06-19 15:01:09,054 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:01:09,055 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (315592.6550824218, 315995.0, -402.34491757821525, -402.34491757821525), remaining budget is 1000041.5809115167
+2022-06-19 15:01:09,056 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:01:09,057 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:01:09,057 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:315700.0, amount:1, symbol:USDJPY), remaining budget is 684341.5809115167
+2022-06-19 15:01:15,062 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 110.10937834699871, signal:136.3928231576186
+2022-06-19 15:01:21,077 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 128.90773076022742, signal:147.72767465430985
+2022-06-19 15:01:27,078 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 169.8459232908208, signal:188.09924138342546
+2022-06-19 15:01:33,091 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 212.92679279024014, signal:180.07158994815674
+2022-06-19 15:01:33,092 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:01:33,093 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (316843.79146353994, 315700.0, -1143.7914635399356, -1143.7914635399356), remaining budget is 998897.7894479767
+2022-06-19 15:01:33,094 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:01:33,094 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:01:33,095 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:316679.0, amount:1, symbol:USDJPY), remaining budget is 682218.7894479767
+2022-06-19 15:01:39,101 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 329.1049981044489, signal:290.2762135939233
+2022-06-19 15:01:45,110 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 323.6479741265066, signal:285.10352425627775
+2022-06-19 15:01:51,118 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 353.16351788153406, signal:233.32884399580587
+2022-06-19 15:01:57,131 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 378.7679657601984, signal:166.49817796343189
+2022-06-19 15:02:03,134 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 550.1189255362842, signal:302.3751157567927
+2022-06-19 15:02:09,137 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 709.350655237562, signal:398.9309559892928
+2022-06-19 15:02:15,150 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 797.0089851910016, signal:401.58583657532773
+2022-06-19 15:02:21,155 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 814.1328706584172, signal:459.1431469395563
+2022-06-19 15:02:27,165 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 821.0804727526847, signal:529.8409497909015
+2022-06-19 15:02:33,169 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 768.8682726682746, signal:627.4214603515575
+2022-06-19 15:02:39,172 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 736.267284663918, signal:635.2108825028538
+2022-06-19 15:02:45,187 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 763.04908208095, signal:711.9839889034823
+2022-06-19 15:02:51,201 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 674.4264234981383, signal:755.3898374461374
+2022-06-19 15:02:51,202 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:02:51,203 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (317559.0780468884, 316679.0, 880.0780468884041, 880.0780468884041), remaining budget is 999777.8674948651
+2022-06-19 15:02:51,204 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:02:51,205 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:02:51,205 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:317480.0, amount:1, symbol:USDJPY), remaining budget is 682297.8674948651
+2022-06-19 15:02:57,219 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 612.0620048770797, signal:760.6630082461893
+2022-06-19 15:03:03,234 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 537.1645512129762, signal:721.0355743217062
+2022-06-19 15:03:09,250 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 483.72025364573346, signal:661.7238165258766
+2022-06-19 15:03:15,259 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 445.6472554303473, signal:584.5897997783873
+2022-06-19 15:03:21,264 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 489.023227570171, signal:581.1120781182157
+2022-06-19 15:03:27,266 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 480.60652750346344, signal:527.8759087488288
+2022-06-19 15:03:33,272 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 472.5285986899398, signal:491.222387596538
+2022-06-19 15:03:39,286 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 493.24091055075405, signal:500.46254420223545
+2022-06-19 15:03:45,300 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 429.5357103962451, signal:470.94654776983793
+2022-06-19 15:03:51,312 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 352.1641296732123, signal:402.0219898705319
+2022-06-19 15:03:57,326 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 337.0452368638362, signal:437.3985899749419
+2022-06-19 15:04:03,331 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 299.11621401133016, signal:430.1930775027075
+2022-06-19 15:04:09,334 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 227.54400916973827, signal:453.97596403009567
+2022-06-19 15:04:15,341 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 110.47076440753881, signal:374.7896432401871
+2022-06-19 15:04:21,348 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 23.772803797968663, signal:289.1837849948206
+2022-06-19 15:04:27,350 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -100.2290361712221, signal:266.5271082377294
+2022-06-19 15:04:33,360 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -192.22519502101932, signal:160.86782361482943
+2022-06-19 15:04:39,367 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -249.40851714689052, signal:75.54114587667088
+2022-06-19 15:04:45,371 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -327.0835442682728, signal:-2.675119359033286
+2022-06-19 15:04:51,373 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -439.72903126868187, signal:-135.92142595670236
+2022-06-19 15:04:57,385 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -436.52932089718524, signal:-209.87605314887412
+2022-06-19 15:05:03,396 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -405.7930745582562, signal:-244.29076374815648
+2022-06-19 15:05:09,410 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -514.6043631177163, signal:-395.3378174290604
+2022-06-19 15:05:15,412 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -520.813556744426, signal:-477.0768300005067
+2022-06-19 15:05:21,423 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -549.2953237981419, signal:-535.908371445904
+2022-06-19 15:05:27,428 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -567.7765528015443, signal:-611.2907925888171
+2022-06-19 15:05:27,429 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:05:27,430 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (316769.7859663735, 317480.0, 710.2140336264856, 710.2140336264856), remaining budget is 1000488.0815284916
+2022-06-19 15:05:27,431 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:05:27,431 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:05:27,431 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:316400.0, amount:1, symbol:USDJPY), remaining budget is 684088.0815284916
+2022-06-19 15:05:33,440 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -553.1165179242962, signal:-659.3615294027518
+2022-06-19 15:05:39,442 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -464.727048543049, signal:-559.7440758249658
+2022-06-19 15:05:45,458 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -488.3606852699886, signal:-536.9846234645229
+2022-06-19 15:05:51,460 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -414.86231279413914, signal:-432.93611231264526
+2022-06-19 15:05:57,468 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -493.88229868060444, signal:-520.9337830768847
+2022-06-19 15:06:03,483 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -496.8416365525336, signal:-521.5362018362955
+2022-06-19 15:06:09,488 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -424.3177717325161, signal:-398.355694088658
+2022-06-19 15:06:09,488 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:06:09,490 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (315156.2495329692, 316400.0, -1243.7504670307972, -1243.7504670307972), remaining budget is 999244.3310614608
+2022-06-19 15:06:09,490 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:06:09,491 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:06:09,491 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:315566.0, amount:1, symbol:USDJPY), remaining budget is 683678.3310614608
+2022-06-19 15:06:15,505 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -502.3402393753058, signal:-434.68392106588647
+2022-06-19 15:06:21,520 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -512.7885413159383, signal:-440.4965015330559
+2022-06-19 15:06:27,533 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -500.7237475553993, signal:-468.4757274683798
+2022-06-19 15:06:33,546 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -508.52567833679495, signal:-505.10533090482284
+2022-06-19 15:06:39,550 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -501.950713098282, signal:-541.7912567862918
+2022-06-19 15:06:39,550 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:06:39,552 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (315660.9719157344, 315566.0, -94.97191573440796, -94.97191573440796), remaining budget is 999149.3591457263
+2022-06-19 15:06:39,552 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:06:39,553 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:06:39,553 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:315716.0, amount:1, symbol:USDJPY), remaining budget is 683433.3591457263
+2022-06-19 15:06:45,554 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -501.9956004439737, signal:-542.503777498444
+2022-06-19 15:06:51,564 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -523.2675767300534, signal:-537.4362752407388
+2022-06-19 15:06:57,576 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -536.572901061154, signal:-539.2590966589697
+2022-06-19 15:07:03,588 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -499.6131790607469, signal:-484.55924284813227
+2022-06-19 15:07:03,589 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:07:03,590 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (314342.1495652709, 315716.0, -1373.8504347290727, -1373.8504347290727), remaining budget is 997775.5087109972
+2022-06-19 15:07:03,591 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:07:03,591 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:07:03,592 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:314916.0, amount:1, symbol:USDJPY), remaining budget is 682859.5087109972
+2022-06-19 15:07:09,603 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -494.5055784613942, signal:-494.0185344600856
+2022-06-19 15:07:15,609 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -540.0415871816222, signal:-474.2947337719314
+2022-06-19 15:07:21,615 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -541.7631413831841, signal:-481.4054986714036
+2022-06-19 15:07:27,625 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -504.8124862803961, signal:-408.1129379270262
+2022-06-19 15:07:33,630 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -494.0654691081727, signal:-426.68927675343974
+2022-06-19 15:07:39,637 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -493.7596463507507, signal:-456.00514354218546
+2022-06-19 15:07:45,641 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -400.1654426518944, signal:-338.82713590831395
+2022-06-19 15:07:51,657 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -445.249835249444, signal:-418.58935339114396
+2022-06-19 15:07:57,660 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -391.5634512692923, signal:-427.07261338841636
+2022-06-19 15:07:57,661 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:07:57,662 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (315156.92769456335, 314916.0, -240.92769456334645, -240.92769456334645), remaining budget is 997534.5810164339
+2022-06-19 15:07:57,663 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:07:57,663 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:07:57,664 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:314990.0, amount:1, symbol:USDJPY), remaining budget is 682544.5810164339
+2022-06-19 15:08:03,664 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -327.3740981061128, signal:-379.0955183835144
+2022-06-19 15:08:09,678 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -226.7089501635055, signal:-347.1982342166787
+2022-06-19 15:08:15,692 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -193.0460496408632, signal:-390.3766544370511
+2022-06-19 15:08:21,703 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -85.30929764959728, signal:-352.505724655225
+2022-06-19 15:08:27,708 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 61.08899852796458, signal:-238.63482727168594
+2022-06-19 15:08:33,722 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 93.56322601099964, signal:-234.1190549078682
+2022-06-19 15:08:39,733 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 178.7298628395074, signal:-133.62594048781708
+2022-06-19 15:08:45,747 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 179.26402859797236, signal:-93.20050326695329
+2022-06-19 15:08:51,758 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 218.96312382695032, signal:-47.49236363321284
+2022-06-19 15:08:57,769 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 290.69701712438837, signal:53.780675370957596
+2022-06-19 15:09:03,772 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 370.3627063019085, signal:182.15312315221593
+2022-06-19 15:09:09,788 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 378.3324079537997, signal:209.6664255160075
+2022-06-19 15:09:15,803 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 444.5303920796141, signal:281.1887553196801
+2022-06-19 15:09:21,818 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 403.5279861379531, signal:308.637234265819
+2022-06-19 15:09:27,829 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 405.31453917745966, signal:362.8017008064974
+2022-06-19 15:09:33,843 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 411.2178968990338, signal:430.1794623542034
+2022-06-19 15:09:33,844 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:09:33,845 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (315940.4502280232, 314990.0, 950.4502280232264, 950.4502280232264), remaining budget is 998485.0312444571
+2022-06-19 15:09:33,846 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:09:33,846 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:09:33,847 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:316301.0, amount:1, symbol:USDJPY), remaining budget is 682184.0312444571
+2022-06-19 15:09:39,853 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 356.02692766825203, signal:406.50325947249075
+2022-06-19 15:09:45,865 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 274.06322524754796, signal:367.9040885171206
+2022-06-19 15:09:51,881 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 275.4559234433109, signal:375.95417436866813
+2022-06-19 15:09:57,892 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 244.7814714689739, signal:341.42881487849326
+2022-06-19 15:10:03,902 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 265.56097277539084, signal:361.8116712636806
+2022-06-19 15:10:09,912 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 268.4056808553869, signal:372.22531525664573
+2022-06-19 15:10:15,925 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 280.41817160340725, signal:347.85063933688474
+2022-06-19 15:10:21,933 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 261.9844458748703, signal:324.2577473085322
+2022-06-19 15:10:27,941 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 280.23427871451713, signal:291.81422836980914
+2022-06-19 15:10:33,953 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 410.4926966523053, signal:380.78344322772074
+2022-06-19 15:10:33,954 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:10:33,955 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (317670.387811358, 316301.0, -1369.3878113580286, -1369.3878113580286), remaining budget is 997115.6434330991
+2022-06-19 15:10:33,956 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:10:33,956 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:10:33,957 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:317500.0, amount:1, symbol:USDJPY), remaining budget is 679615.6434330991
+2022-06-19 15:10:39,960 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 439.24916397832567, signal:335.36350604937695
+2022-06-19 15:10:45,975 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 488.8577810244751, signal:383.0068417411013
+2022-06-19 15:10:51,991 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 467.4042224494624, signal:361.56794454312575
+2022-06-19 15:10:58,004 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 500.6572934403084, signal:386.0401604785778
+2022-06-19 15:11:04,009 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 587.6045652543544, signal:435.29307204113707
+2022-06-19 15:11:10,013 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 612.5585311780451, signal:462.27551949915426
+2022-06-19 15:11:16,028 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 543.7684466586797, signal:436.87185855974934
+2022-06-19 15:11:22,035 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 566.4521062468993, signal:494.2753439714304
+2022-06-19 15:11:28,038 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 523.4306261060992, signal:444.27702227546575
+2022-06-19 15:11:34,047 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 513.3883931220043, signal:451.3789624329139
+2022-06-19 15:11:40,062 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 527.8728559594019, signal:426.8269630270661
+2022-06-19 15:11:46,065 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 590.9823038312024, signal:446.19964902685024
+2022-06-19 15:11:52,084 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 689.7540794800152, signal:494.13411694971404
+2022-06-19 15:11:58,085 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 688.8957812574808, signal:521.5333420457836
+2022-06-19 15:12:04,092 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 700.8532078292337, signal:576.465101158324
+2022-06-19 15:12:10,103 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 666.3989693561452, signal:553.9909961957278
+2022-06-19 15:12:16,115 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 631.9507806489128, signal:570.8032801309018
+2022-06-19 15:12:22,121 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 645.6103368870099, signal:599.0917499895246
+2022-06-19 15:12:28,128 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 616.3752913965727, signal:609.6745199396651
+2022-06-19 15:12:34,143 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 598.6255793662858, signal:589.5821643312164
+2022-06-19 15:12:40,156 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 629.0101066806237, signal:679.08746634599
+2022-06-19 15:12:40,157 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:12:40,158 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (319528.8507425807, 317500.0, 2028.8507425807184, 2028.8507425807184), remaining budget is 999144.4941756799
+2022-06-19 15:12:40,159 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:12:40,159 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:12:40,159 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:319220.0, amount:1, symbol:USDJPY), remaining budget is 679924.4941756799
+2022-06-19 15:12:46,171 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 617.5467991388869, signal:655.4509139323231
+2022-06-19 15:12:52,184 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 620.3873405728373, signal:661.6400943315756
+2022-06-19 15:12:58,190 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 608.3111251871451, signal:652.0752475727285
+2022-06-19 15:13:04,201 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 604.3505450470839, signal:670.8745418937114
+2022-06-19 15:13:10,204 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 542.7011973595363, signal:613.547205569242
+2022-06-19 15:13:16,219 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 495.96076007862575, signal:598.4103457772936
+2022-06-19 15:13:22,233 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 473.1112763584824, signal:570.787900429316
+2022-06-19 15:13:28,240 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 451.96861400362104, signal:565.8224773919986
+2022-06-19 15:13:34,252 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 376.49233526102034, signal:497.48713440346506
+2022-06-19 15:13:40,254 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 359.5295285093016, signal:499.7750083605513
+2022-06-19 15:13:46,258 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 274.2647272979375, signal:410.5696685224991
+2022-06-19 15:13:52,261 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 193.2213311974192, signal:330.45396829842747
+2022-06-19 15:13:58,270 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 198.02440173190553, signal:275.3489620284979
+2022-06-19 15:14:04,286 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 221.40052210050635, signal:284.6158532011711
+2022-06-19 15:14:10,300 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 219.610117370612, signal:274.5947917396617
+2022-06-19 15:14:16,303 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 201.8597866500495, signal:221.12532188834544
+2022-06-19 15:14:22,309 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 176.1829347424209, signal:145.9011690659746
+2022-06-19 15:14:22,310 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:14:22,311 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (320379.6217067171, 319220.0, -1159.6217067171237, -1159.6217067171237), remaining budget is 997984.8724689628
+2022-06-19 15:14:22,312 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:14:22,312 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:14:22,313 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:319910.0, amount:1, symbol:USDJPY), remaining budget is 678074.8724689628
+2022-06-19 15:14:28,315 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 260.97635937744053, signal:177.09536613267846
+2022-06-19 15:14:34,323 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 349.4944874527282, signal:239.78822418642488
+2022-06-19 15:14:40,326 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 315.0783270233078, signal:218.2344865864272
+2022-06-19 15:14:46,344 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 330.28174392605433, signal:220.8079741778072
+2022-06-19 15:14:52,347 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 316.5874051231076, signal:246.17215707046367
+2022-06-19 15:14:58,351 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 272.9729103403515, signal:198.22742298189164
+2022-06-19 15:15:04,367 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 259.14681961853057, signal:177.51682359686433
+2022-06-19 15:15:10,372 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 222.7243471594993, signal:153.4786984133987
+2022-06-19 15:15:16,386 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 269.41218106570886, signal:251.3437845731387
+2022-06-19 15:15:22,398 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 321.5975935853785, signal:270.93671571086935
+2022-06-19 15:15:28,414 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 414.7254473105422, signal:270.6477907605327
+2022-06-19 15:15:34,430 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 482.9589041399304, signal:326.99253991422785
+2022-06-19 15:15:40,431 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 478.50485465227393, signal:305.5734278241936
+2022-06-19 15:15:46,437 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 566.2453287396929, signal:369.7505135209067
+2022-06-19 15:15:52,452 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 656.0982590045896, signal:378.97633603719686
+2022-06-19 15:15:58,458 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 930.5359691181802, signal:493.07084830155753
+2022-06-19 15:16:04,471 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1104.1859539791476, signal:548.1841176963192
+2022-06-19 15:16:10,475 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1254.885534604371, signal:665.7587787869658
+2022-06-19 15:16:16,481 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1343.2556017341558, signal:783.4286660806522
+2022-06-19 15:16:22,488 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1476.68781082012, signal:917.5757910291431
+2022-06-19 15:16:28,490 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1656.8608842279064, signal:1052.9132053257588
+2022-06-19 15:16:34,503 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1864.7500569720287, signal:1229.9277016854935
+2022-06-19 15:16:40,520 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2114.2346305605024, signal:1369.5948024332367
+2022-06-19 15:16:46,531 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2643.3747817473486, signal:1608.6753975918593
+2022-06-19 15:16:52,534 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 3689.244860609935, signal:1927.2512295495835
+2022-06-19 15:16:58,538 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4269.512888119905, signal:2276.441625980751
+2022-06-19 15:17:04,541 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4686.224210495304, signal:2661.8852361515683
+2022-06-19 15:17:10,543 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4846.6791079266695, signal:3057.9159728484356
+2022-06-19 15:17:16,555 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 5246.913179843861, signal:3401.704921557665
+2022-06-19 15:17:22,564 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 5406.723209051881, signal:3844.152382019616
+2022-06-19 15:17:28,573 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 5472.740074107132, signal:4254.741653592694
+2022-06-19 15:17:34,577 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 5204.732695369108, signal:4577.980408492847
+2022-06-19 15:17:40,589 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 5115.311170411122, signal:4838.982837961236
+2022-06-19 15:17:46,602 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 5042.82893131132, signal:4946.5092886308685
+2022-06-19 15:17:52,606 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4791.931822173006, signal:5015.954877105703
+2022-06-19 15:17:52,607 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:17:52,609 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (339119.10963795584, 319910.0, 19209.109637955844, 19209.109637955844), remaining budget is 1017193.9821069187
+2022-06-19 15:17:52,609 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:17:52,610 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:17:52,610 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:339897.0, amount:1, symbol:USDJPY), remaining budget is 677296.9821069187
+2022-06-19 15:17:58,617 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4550.501030955347, signal:5064.212098296395
+2022-06-19 15:18:04,633 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4399.364199500065, signal:4980.593238701979
+2022-06-19 15:18:10,649 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4326.3936970491195, signal:4929.763889944873
+2022-06-19 15:18:16,663 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4344.153573491203, signal:4789.064478233315
+2022-06-19 15:18:22,675 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4731.7721432369435, signal:4697.012565133958
+2022-06-19 15:18:22,676 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:18:22,677 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (347906.85434193816, 339897.0, -8009.85434193816, -8009.85434193816), remaining budget is 1009184.1277649805
+2022-06-19 15:18:22,677 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:18:22,678 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:18:22,678 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:349310.0, amount:1, symbol:USDJPY), remaining budget is 659874.1277649805
+2022-06-19 15:18:28,681 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4822.804312197666, signal:4678.070345883632
+2022-06-19 15:18:34,695 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4977.087524544157, signal:4674.691105978596
+2022-06-19 15:18:40,696 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4997.820906151261, signal:4599.5533644783945
+2022-06-19 15:18:46,712 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4738.597097143298, signal:4520.851662677978
+2022-06-19 15:18:52,718 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4469.587000066647, signal:4573.034999683441
+2022-06-19 15:18:52,718 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:18:52,720 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (346404.21747916634, 349310.0, -2905.782520833658, -2905.782520833658), remaining budget is 1006278.3452441469
+2022-06-19 15:18:52,720 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:18:52,721 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:18:52,721 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:345290.0, amount:1, symbol:USDJPY), remaining budget is 660988.3452441469
+2022-06-19 15:18:58,737 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 4282.247387672949, signal:4572.728864383237
+2022-06-19 15:19:04,740 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 3801.8265524026356, signal:4478.349050717247
+2022-06-19 15:19:10,745 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 3474.152891721111, signal:4323.507878178608
+2022-06-19 15:19:16,748 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2998.636351075198, signal:3989.159362361488
+2022-06-19 15:19:22,750 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2833.5479010787676, signal:3799.4080486294633
+2022-06-19 15:19:28,755 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2725.638190634141, signal:3605.651230197691
+2022-06-19 15:19:34,761 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2575.3322465620586, signal:3397.8129100918045
+2022-06-19 15:19:40,763 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 2314.912087936187, signal:3089.296611690842
+2022-06-19 15:19:46,779 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1888.1836583343102, signal:2741.699498395183
+2022-06-19 15:19:52,788 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1580.7712773974636, signal:2429.8763172726485
+2022-06-19 15:19:58,804 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 1210.098590859212, signal:2045.413970921622
+2022-06-19 15:20:04,808 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 632.1175446370617, signal:1458.8427706592095
+2022-06-19 15:20:10,817 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -94.36600079218624, signal:508.403738126301
+2022-06-19 15:20:16,822 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 176.32503711915342, signal:635.3671019217581
+2022-06-19 15:20:22,828 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 107.45301189570455, signal:507.53677840358836
+2022-06-19 15:20:28,832 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 173.25746587803587, signal:526.4646305662851
+2022-06-19 15:20:34,843 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -120.63442252733512, signal:-48.20117923067624
+2022-06-19 15:20:40,846 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 74.52062375994865, signal:91.68738319247495
+2022-06-19 15:20:46,848 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 118.01675125426846, signal:42.708390415646136
+2022-06-19 15:20:46,849 trade_storategy.test:70 run [INFO]: Buy signal raised.
+2022-06-19 15:20:46,850 trade_storategy.test:58 __start_storategy [INFO]: short positions are closed: (344806.25942896126, 345290.0, 483.7405710387393, 483.7405710387393), remaining budget is 1006762.0858151857
+2022-06-19 15:20:46,851 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:20:46,851 trade_storategy.test:309 __open_long_position [DEBUG]: open long position is created.
+2022-06-19 15:20:46,852 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:ask, price:344760.0, amount:1, symbol:USDJPY), remaining budget is 662002.0858151857
+2022-06-19 15:20:52,861 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 340.33119882276515, signal:307.73000545086364
+2022-06-19 15:20:58,871 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 239.1691878879792, signal:94.26599414969354
+2022-06-19 15:21:04,876 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 208.55784266022965, signal:26.800014749809634
+2022-06-19 15:21:10,882 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 581.5113295115298, signal:277.42110174912443
+2022-06-19 15:21:16,898 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 787.7987264216063, signal:380.262921778925
+2022-06-19 15:21:22,914 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 677.2719207939226, signal:266.89325611462766
+2022-06-19 15:21:28,926 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 729.74282111309, signal:314.8430274983726
+2022-06-19 15:21:34,931 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 502.4833420656505, signal:183.7439811658179
+2022-06-19 15:21:40,950 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -175.91783284995472, signal:-265.2537984962239
+2022-06-19 15:21:46,959 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -34.030680603696965, signal:20.837311041075736
+2022-06-19 15:21:46,959 trade_storategy.test:66 run [INFO]: Sell signal raised.
+2022-06-19 15:21:46,961 trade_storategy.test:64 __start_storategy [INFO]: long positions are closed: (344557.7830039676, 344760.0, -202.2169960323954, -202.2169960323954), remaining budget is 1006559.8688191533
+2022-06-19 15:21:46,961 trade_storategy.test:68 open_trade [DEBUG]: market order is requested.
+2022-06-19 15:21:46,962 trade_storategy.test:314 __open_short_position [DEBUG]: open short position is created.
+2022-06-19 15:21:46,962 trade_storategy.test:66 __start_storategy [INFO]: position is opened: (order_type:bid, price:344833.0, amount:1, symbol:USDJPY), remaining budget is 661726.8688191533
+2022-06-19 15:21:52,973 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -167.21626480278792, signal:-105.09213534328026
+2022-06-19 15:21:58,986 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: -133.09696458786493, signal:-77.8068662239756
+2022-06-19 15:22:04,993 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 80.50814702542266, signal:179.23540607285557
+2022-06-19 15:22:11,009 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 178.3607464688248, signal:275.3795810456504
+2022-06-19 15:22:17,015 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 50.150150897097774, signal:121.53469434704554
+2022-06-19 15:22:23,017 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 200.48162109253462, signal:361.47215626269787
+2022-06-19 15:22:29,025 trade_storategy.test:22 __get_macd_trend [DEBUG]: macd: 39.2188774101669, signal:154.78156819604595

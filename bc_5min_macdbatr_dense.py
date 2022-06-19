@@ -10,7 +10,7 @@ import numpy
 
 from stocknet.nets.dense import SimpleDense
 from stocknet.trainer import RlTrainer
-from stocknet.envs.bc_env import BCEnv, BCMultiActsEnv
+from stocknet.envs.bc_env import BCEnv, BCMultiActsEnv, BCStopEnv
 from stocknet.envs.market_clients.csv.client import CSVClient
 import stocknet.envs.utils.idcprocess as idc
 import stocknet.envs.utils.preprocess as prc
@@ -20,11 +20,12 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #device = "cpu"
 print("Lerning with device:", device)
 
-model_name = 'rl/bc_5min/multi/Conv_30m_v3'
+model_name = 'rl/bc_5min/stop/Conv_2h_v3'
 max_step = 1000
 data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
 #env = BCEnv(data_client, columns=[],max_step=max_step, observationDays=1/24,useBudgetColumns=True)
-env = BCMultiActsEnv(data_client, bugets=10,columns=[],max_step=max_step, observationDays=1/48,useBudgetColumns=True)
+#env = BCMultiActsEnv(data_client, bugets=10,columns=[],max_step=max_step, observationDays=1/48,useBudgetColumns=True)
+env = BCStopEnv(data_client, usebb=True, columns=[],max_step=max_step, observationDays=1/12)
 env.add_indicaters([idc.MACDpreProcess(), idc.BBANDpreProcess(), idc.ATRpreProcess()])
 processes = [prc.MinMaxPreProcess(scale=(-1,1))]
 env.register_preprocesses(processes)
@@ -34,14 +35,14 @@ inputDim, size = obs.shape
 print(inputDim, size, env.columns)
 
 #model = SimpleDense(8,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
-model = ConvDense16(size, channel=inputDim, out_size=21)#.to(device=device)
+model = ConvDense16(size, channel=inputDim, out_size=2)#.to(device=device)
 criterion = nn.MSELoss() #評価関数の宣言
 batch_size = 1
 
 #optimizer = torch.optim.Adam(model.parameters(), eps=1e-6)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 gamma = 0.99
-explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.1, random_action_func=env.action_space.sample)
+explorer = pfrl.explorers.ConstantEpsilonGreedy(epsilon=0.3, random_action_func=env.action_space.sample)
 replay_buffer = pfrl.replay_buffers.ReplayBuffer(capacity=batch_size)
 phi = lambda x: x.astype(numpy.float32, copy=False)
 gpu = 0

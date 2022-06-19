@@ -5,9 +5,12 @@ class MarketClientBase:
     def __init__(self):
         pass
 
-    def get_rates(self, frame, interval) -> pd.DataFrame:
+    def get_rates(self, interval) -> pd.DataFrame:
         raise Exception("Need to implement get_rates")
-
+    
+    def get_future_rates(self, interval) -> pd.DataFrame:
+        pass
+    
     def get_current_ask(self):
         raise Exception("Need to implement get_current_ask")
     
@@ -35,9 +38,13 @@ class MarketClientBase:
     def get_next_tick(self, frame=5):
         raise Exception("Need to implement get_next_tick")
 
-    def reset(self):
+    def reset(self, mode=None):
         raise Exception("Need to implement reset")
-            
+    
+    
+    def get_min_max(column, data_length = 0):
+        pass
+    
     @property
     def max(self):
         raise Exception("Need to implement max")
