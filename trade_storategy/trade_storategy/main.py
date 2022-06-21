@@ -79,5 +79,5 @@ class ParallelStorategyManager:
         self.__end_time = self.__start_time + self.__duration
         
         for storategy in self.storategies:
-            t = threading.Thread(target=self.__start_storategy, args=(storategy,))
+            t = threading.Thread(target=self.__start_storategy, args=(storategy,), daemon=True)
             t.start()

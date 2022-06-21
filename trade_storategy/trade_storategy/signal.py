@@ -36,7 +36,7 @@ class Signal:
         return False
     
     def __str__(self) -> str:
-        return f"(key={self.key}, order_type={self.order_type}, possibility:{self.possibility}, is_buy:{self.is_buy}, order_price:{self.order_price}, dev:{self.dev})"
+        return f"(key={self.key}, order_type={self.order_type}, possibility:{self.possibility}, is_close:{self.is_close}, is_buy:{self.is_buy}, order_price:{self.order_price}, dev:{self.dev})"
     
 class BuySignal(Signal):
     key = "buy"
@@ -88,7 +88,7 @@ class CloseSignal(Signal):
     id = 10
     order_type = "Market"
     is_buy = None
-    close = True
+    is_close = True
     
     def __init__(self, std_name, price:float=None, possibility:float=1.0) -> None:
         super().__init__(std_name)
@@ -101,7 +101,7 @@ class CloseBuySignal(Signal):
     id = 11
     order_type = "Market"
     is_buy = True
-    close = True
+    is_close = True
     
     def __init__(self, std_name, price:float=None, possibility:float=1.0) -> None:
         super().__init__(std_name)
@@ -114,7 +114,7 @@ class CloseSellSignal(Signal):
     id = -11
     order_type = "Market"
     is_buy = False
-    close = True
+    is_close = True
     
     def __init__(self, std_name, price:float=None, possibility:float=1.0) -> None:
         super().__init__(std_name)
