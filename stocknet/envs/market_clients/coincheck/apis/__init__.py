@@ -1,1 +1,0 @@
-from coincheck.apis.servicebase import ServiceBase
