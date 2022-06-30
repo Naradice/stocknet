@@ -12,25 +12,23 @@ dtype = torch.float32
 torch.set_default_dtype(dtype)
 torch.manual_seed(1017)
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
-def training_auto_encoder(data_client, batch_size, observationDays, processes,epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
+def training_auto_encoder(data_client, batch_size, observationDays, processes, columns, epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
-    macd_ps = fc.utils.MACDpreProcess()
-    ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=1)
-    ds.add_indicater(macd_ps)
-    ds.columns = macd_ps.columns
+    shift = 3
+    ds = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=True,floor=shift)
+    ds.columns = columns
     ds.register_preprocesses(processes)
     ds.run_preprocess()
     
     
     batch_size=batch_size
     train_dl = DataLoader(ds, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
-    ds_val = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=False, floor=2)
-    ds_val.add_indicater(macd_ps)
-    ds_val.columns = macd_ps.columns
+    ds_val = bc.ShiftDataset(data_client=data_client, observationDays=observationDays, isTraining=False, floor=shift)
+    ds_val.columns = columns
     ds_val.register_preprocesses(processes)
     ds_val.run_preprocess()
     val_loader = DataLoader(ds_val, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
@@ -39,8 +37,8 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     print("input:", i.shape, "output:", o.shape)
 
     #model_name = 'bc_5min_ohlc_AE_v2'
-    model_name = f'{kinds}_{frame}min/macd/LSTM16-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
-    model = Predictor(input_size,hiddenDim=16,outputDim=o.shape[0],device=device)
+    model_name = f'{kinds}_{frame}min/macd/shift{shift}_LSTM8-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
+    model = Predictor(input_size,hiddenDim=8,outputDim=o.shape[0],device=device)
     model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=1e-5)
     #optimizer = optim.SGD(model.parameters(), lr=1e-6)
@@ -51,7 +49,9 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     tr.training_loop(model,optimizer, epoc_num)
 
 if __name__ == "__main__":
-    data_client = fc.CSVClient(file='data_source/bitcoin_5_2017T0710-2021T103022.csv')
+    macd_ps = fc.utils.MACDpreProcess()
+    idc_process = [macd_ps]
+    data_client = fc.CSVClient(file='data_source/bitcoin_5_2017T0710-2021T103022.csv', idc_processes=idc_process)
     ##hyper parameters##
     observationDays = 1
     processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
