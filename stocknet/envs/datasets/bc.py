@@ -3,7 +3,7 @@ import datetime
 import numpy
 import pandas as pd
 import torch
-from stocknet.envs.market_clients.market_client_base import MarketClientBase
+from finance_client.client_base import Client
 from stocknet.envs.utils.preprocess import ProcessBase
 
 class Dataset():
@@ -13,9 +13,9 @@ class Dataset():
     
     key = "ohlc"
 
-    def __init__(self, data_client: MarketClientBase, observationDays=1, data_length:int = None, out_ohlc_columns = ["Open", "High", "Low", "Close"], seed = None, isTraining = True):
+    def __init__(self, data_client: Client, observationDays=1, data_length:int = None, out_ohlc_columns = ["Open", "High", "Low", "Close"], seed = None, isTraining = True):
         self.seed(seed)
-        self.__rowdata__ = data_client.get_rates(-1)
+        self.__rowdata__ = data_client.get_rate_with_indicaters(-1)
         #self.dtype = torch.float32
         self.args = (observationDays, data_length, out_ohlc_columns, seed)
         columns_dict = data_client.get_ohlc_columns()
@@ -195,7 +195,7 @@ class ShiftDataset(Dataset):
     
     key = "shit_ohlc"
     
-    def __init__(self, data_client: MarketClientBase, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
+    def __init__(self, data_client: Client, observationDays=1,out_ohlc__columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
         super().__init__(data_client, observationDays, out_ohlc_columns=out_ohlc__columns, seed=seed, isTraining=isTraining)
         self.args = (observationDays,out_ohlc__columns, floor, seed)
         self.shift = floor
@@ -256,7 +256,7 @@ class RewardDataset(Dataset):
     
     key = "shit_ohlc"
     
-    def __init__(self, data_client: MarketClientBase, observationDays=1, column = "Close" , seed = None, isTraining=True):
+    def __init__(self, data_client: Client, observationDays=1, column = "Close" , seed = None, isTraining=True):
         super().__init__(data_client, observationDays, out_ohlc_columns=[], seed=seed, isTraining=isTraining)
         self.args = (observationDays,column, seed)
         self.column = column

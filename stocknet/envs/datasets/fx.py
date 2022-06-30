@@ -11,6 +11,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 ## Need to add preprocess like minmax
 class FXDataset:
+    
+    key = "ds"
 
     def __init__(self, interval_days=1, isTraining = True, data = None):
         if data == None:
@@ -179,6 +181,9 @@ class FXDataset:
             random.seed(seed)
             
 class FXMACDDataset(FXDataset):
+    
+    key = "macd_ds"
+    
     def __init__(self):
         super().__init__()
 
@@ -212,6 +217,9 @@ class FXMACDDataset(FXDataset):
         return torch.tensor(inputs, device=device).to(dtype=dtype), torch.tensor(outputs, device=device).to(dtype=dtype)
     
 class FXNextMEANDiffDataset:
+    
+    key = "next_mean_ds"
+    
     def __init__(self,next_index=1, short_window=12, long_window=26, isTraining = True, seed=0, mode="default"):
         self.next = next_index
         random.seed(seed)

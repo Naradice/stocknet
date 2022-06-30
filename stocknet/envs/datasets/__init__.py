@@ -1,5 +1,4 @@
 from matplotlib.style import available
-from numpy import c_
 from stocknet.envs.datasets.bc import Dataset, ShiftDataset
 from stocknet.envs.datasets.fx import FXNextMEANDiffDataset, FXDataset
 

@@ -6,8 +6,8 @@ import random
 import numpy
 import datetime
 import sys
-from stocknet.envs.bc_env import BC5Env
-from stocknet.envs.market_clients.csv.client import CSVClient
+from stocknet.envs.bc_env import BCEnv
+import finance_client.finance_client as fc
 import torch
 import torch.nn as nn
 from torch.optim import SGD
@@ -55,9 +55,11 @@ dtype = torch.float32
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Lerning with device:", device)
 
-
-data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=["macd"], useBudgetColumns=True, use_diff=True)
+macd = fc.utils.MACDpreProcess()
+idc_process = [macd]
+data_client = fc.CSVClient(file='data_source/bitcoin_5_2017T0710-2021T103022.csv', frame=fc.Frame.MIN5, idc_processes=idc_process)
+macd_column = macd.columns["MACD"]
+env = BCEnv(data_client, columns=[macd_column], useBudgetColumns=True, use_diff=True)
 
 obs = env.reset()
 inputDim, size = obs.shape

@@ -9,9 +9,8 @@ import numpy
 
 from stocknet.nets.dense import SimpleDense, ConvDense16
 from stocknet.trainer import RlTrainer
-from stocknet.envs.bc_env import BC5Env
-from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as process
+from stocknet.envs.bc_env import BCEnv
+import finance_client.finance_client as fc
 
 dtype = torch.float32
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -19,10 +18,9 @@ print("Lerning with device:", device)
 
 model_name = 'rl/bc_5min/macd/ConvDense16_mono_v1'
 max_step = 1000
-data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
-env = BC5Env(data_client, columns=[],max_step=max_step, observationDays=3,useBudgetColumns=True)
-env.add_indicater(process.MACDpreProcess())
-processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
+data_client = fc.CSVClient(file='data_source/bitcoin_5_2017T0710-2021T103022.csv', frame=fc.Frame.MIN5, idc_processes=[fc.utils.MACDpreProcess()])
+env = BCEnv(data_client, columns=[],max_step=max_step, observationDays=3,useBudgetColumns=True)
+processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
 env.register_preprocesses(processes)
 
 obs = env.reset()

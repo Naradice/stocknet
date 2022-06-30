@@ -1,0 +1,3 @@
+[submodule "finance_client"]
+	path = finance_client
+	url = https://github.com/Naradice/finance_client.git

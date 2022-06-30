@@ -1,22 +1,20 @@
-from math import remainder
-from stocknet.envs.utils import indicaters, standalization
 import gym
 import random
 import pandas as pd
 import numpy as np
 from stocknet.envs.render.graph import Rendere
-from stocknet.envs.market_clients.market_client_base import MarketClientBase
+from finance_client.client_base import Client
 import stocknet.envs.utils as utils
 #from render.graph import Rendere
 
 class BCEnv(gym.Env):
 
-    def __init__(self, data_client:MarketClientBase, max_step:int, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
+    def __init__(self, data_client:Client, max_step:int, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
         """ Bitcoin Environment of OpenGym
         Assuming the data_client provide ohlc without regular market close
 
         Args:
-            data_client (MarketClientBase): Client to provide ohlc data
+            data_client (Client): Client to provide ohlc data
             max_step (int): max step to caliculate min max of reward
             columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
             observationDays (int, optional): Decide observation length with observationDays * 24 * (60/data_client.frame) .Defaults to 1. data_client.frame > 1h is not supported yet.
@@ -298,7 +296,10 @@ class BCEnv(gym.Env):
         
     def get_current_pl(self):
         diffs = self.data_client.get_diffs_with_minmax()
-        amount = sum(diffs)
+        if type(diffs) == list:
+            amount = sum(diffs)
+        elif type(diffs) == float:
+            amount = diffs
         return amount
         
     def __set_diff_as_bugets(self, mono=False):
@@ -317,7 +318,7 @@ class BCEnv(gym.Env):
         '''
         if self.budget > 0:
             self.budget = 0
-            result = self.data_client.market_buy(amount=amount)
+            result = self.data_client.open_trade(is_buy=True, amount=amount, order_type="Market", symbol="USDJPY")
             #result is {"price":boughtCoinRate, "step":self.index, "amount":amount}
             current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
             if debug:
@@ -338,7 +339,7 @@ class BCEnv(gym.Env):
             #self.__set__simple_coins(0)
             self.__set__simple_bugets(0)
             #amount = self.get_current_pl()
-            results = self.data_client.sell_all_settlement()
+            results = self.data_client.close_all_positions()
             #results are list of (bid, position["price"], (bid - position["price"]))
             self.budget = 1
             self.coin = 0
@@ -388,12 +389,12 @@ class BCEnv(gym.Env):
     
 class BCMultiActsEnv(BCEnv):
     
-    def __init__(self, data_client: MarketClientBase, max_step: int, bugets: int, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
+    def __init__(self, data_client: Client, max_step: int, bugets: int, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, mono=False):
         """ Bitcoin Environment of OpenGym
         Assuming the data_client provide ohlc without regular market close
 
         Args:
-            data_client (MarketClientBase): Client to provide ohlc data
+            data_client (Client): Client to provide ohlc data
             max_step (int): max step to caliculate min max of reward
             bugets (int): bugets represents how how many points agent can buy bc as maximum. number of action become 2N + 1
             columns (list, optional): Column names of ohlc to include an obervation. Defaults to ['High', 'Low','Open','Close']. If [] is specified, no ohlc data is provided.
@@ -443,7 +444,7 @@ class BCMultiActsEnv(BCEnv):
             else:
                 self.budget = remaining_budget
                 self.coin += amount
-            self.data_client.market_buy(amount=amount)
+            result = self.data_client.open_trade(is_buy=True, amount=amount, order_type="Market", symbol="USDJPY")
             current_amount = self.__set_diff_as_bugets(mono=self.b_mono)
             if debug:
                 print("bought", result["price"], "slip", current_amount)
@@ -475,7 +476,7 @@ class BCMultiActsEnv(BCEnv):
                 print("went wrong.")
             results = []
             if amounts <= point:
-                results = self.data_client.sell_all_settlement()
+                results = self.data_client.close_all_positions()
                 if self.coin != amounts:
                     print(f"sell coin: something went wrong: {self.coin}, {amounts}, {point}")
                 self.coin = 0
@@ -486,12 +487,12 @@ class BCMultiActsEnv(BCEnv):
                     sold_amount += position["amount"]
                     if sold_amount < point:
                         __point = position["amount"]
-                        result = self.data_client.sell_settlement(position=position, point=__point)
+                        result = self.data_client.close_position(position=position, point=__point)
                         results.append(result)
                     else:
                         over_point = sold_amount - point
                         __point = position["amount"] - over_point
-                        result = self.data_client.sell_settlement(position=position, point=__point)
+                        result = self.data_client.close_position(position=position, point=__point)
                         results.append(result)
                         point = sold_amount -over_point
                         break
@@ -601,7 +602,7 @@ class BCStopEnv(BCEnv):
     
     key = "stop"
     
-    def __init__(self, data_client: MarketClientBase, max_step: int, stop_loss_point: int = 0.05, stop_profit_point:int = 0.1, usebb = False, frames: list = None, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, featureFirst=True):
+    def __init__(self, data_client: Client, max_step: int, stop_loss_point: int = 0.05, stop_profit_point:int = 0.1, usebb = False, frames: list = None, columns=['High', 'Low', 'Open', 'Close'], observationDays=1, featureFirst=True):
         """ Bitcoin Environment of OpenGym
         Assuming the data_client provide ohlc without regular market close
 
@@ -734,7 +735,7 @@ class BCStopEnv(BCEnv):
 #TODO: make this env class to observation class
 class BCDateEnv(BCEnv):
 
-    def __init__(self, data_client:MarketClientBase, columns = ['High', 'Low','Open','Close'],maxStepDays=1 ,observationLength=1, useBudgetColumns=True, featureFirst=True, mono=False):
+    def __init__(self, data_client:Client, columns = ['High', 'Low','Open','Close'],maxStepDays=1 ,observationLength=1, useBudgetColumns=True, featureFirst=True, mono=False):
         """ Bitcoin Environment of OpenGym
         Assuming the data_client provide ohlc without regular market close
 
