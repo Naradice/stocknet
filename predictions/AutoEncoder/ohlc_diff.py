@@ -5,8 +5,7 @@ import torch.nn as nn
 
 import stocknet.envs.datasets.bc as bc
 from stocknet.nets.ae import AELinearModel
-from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as process
+import finance_client.finance_client as fc
 import stocknet.trainer as trainer
 dtype = torch.float32
 #torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -16,11 +15,11 @@ torch.manual_seed(1017)
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
-data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
+data_client = fc.CSVClient(file='data_source/bitcoin_5_2017T0710-2021T103022.csv')
 #ds = bc.Dataset(data_client=data_client, observationDays=1, isTraining=True)
 ds = bc.ShiftDataset(data_client=data_client, observationDays=1, floor=1,isTraining=True)
-ds.register_preprocess(process.DiffPreProcess())
-ds.register_preprocess(process.MinMaxPreProcess(scale=(-1,1)))
+ds.register_preprocess(fc.utils.DiffPreProcess())
+ds.register_preprocess(fc.utils.MinMaxPreProcess(scale=(-1,1)))
 ds.run_preprocess()
 
 batch_size=32

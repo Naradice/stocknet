@@ -1,15 +1,14 @@
-from stocknet.envs.datasets.utils import indicaters, standalization
 import gym
 import random
 import pandas as pd
 import numpy as np
 from stocknet.envs.render.graph import Rendere
-from stocknet.envs.market_clients.market_client_base import MarketClientBase
+import finance_client.finance_client as fc
 from stocknet.envs.utils.preprocess import ProcessBase
 
 class TickEnv(gym.Env):
 
-    def __init__(self, data_client:MarketClientBase, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, use_diff= True):
+    def __init__(self, data_client:fc.Client, columns = ['High', 'Low','Open','Close'], observationDays=1, useBudgetColumns=True, featureFirst=True, use_diff= True):
         '''
         init 
         '''        

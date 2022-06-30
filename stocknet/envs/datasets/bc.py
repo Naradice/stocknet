@@ -3,7 +3,7 @@ import datetime
 import numpy
 import pandas as pd
 import torch
-from finance_client.client_base import Client
+from finance_client.finance_client.client_base import Client
 from stocknet.envs.utils.preprocess import ProcessBase
 
 class Dataset():

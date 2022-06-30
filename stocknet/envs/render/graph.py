@@ -1,5 +1,3 @@
-from multiprocessing.dummy import Array
-from time import time
 import os
 import matplotlib.pyplot as plt
 import math
@@ -99,13 +97,13 @@ class Rendere:
             for key, content in options.items():
                 self.__data[index][key] = content
         
-    def register_xy(self, x:Array, y:Array, title:str=None, index=-1):
+    def register_xy(self, x:list, y:list, title:str=None, index=-1):
         """
         register (x,y) data to plot later
 
         Args:
-            x (array): x-axis data
-            y (array): y-axis data
+            x (list): x-axis data
+            y (list): y-axis data
             index (int, optional): index of subplot to plot the data. use greater than 1 to specify subplot index. use -1 to plot on fisrt empty subplot. Defaults to -1.
         """
         self.__register_data('xy', (x,y, title), index)

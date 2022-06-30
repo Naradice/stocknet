@@ -5,8 +5,7 @@ import torch.nn as nn
 
 import stocknet.envs.datasets.bc as bc
 from stocknet.nets.ae import AELinearModel
-from stocknet.envs.market_clients.csv.client import CSVClient
-import stocknet.envs.utils.preprocess as process
+import finance_client.finance_client as fc
 import stocknet.trainer as trainer
 dtype = torch.float32
 #torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -16,13 +15,11 @@ torch.manual_seed(1017)
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
-def training_auto_encoder(data_client, batch_size, observationDays, processes,epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
+def training_auto_encoder(data_client, batch_size, observationDays, processes, columns, epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1):
     frame = str(data_client.frame)
     kinds = str(data_client.kinds)
-    ema_ps = process.EMApreProcess(window = 12)
     ds = bc.Dataset(data_client=data_client, observationDays=observationDays, isTraining=True)
-    ds.add_indicater(ema_ps)
-    ds.columns = ema_ps.columns
+    ds.columns = columns
     ds.register_preprocesses(processes)
     ds.run_preprocess()
     
@@ -30,8 +27,7 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     batch_size=batch_size
     train_dl = DataLoader(ds, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
     ds_val = bc.Dataset(data_client=data_client, observationDays=observationDays, isTraining=False)
-    ds_val.add_indicater(ema_ps)
-    ds_val.columns = ema_ps.columns
+    ds_val.columns = columns
     ds_val.register_preprocesses(processes)
     ds_val.run_preprocess()
     val_loader = DataLoader(ds_val, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
@@ -51,10 +47,11 @@ def training_auto_encoder(data_client, batch_size, observationDays, processes,ep
     tr.training_loop(model,optimizer, epoc_num)
 
 if __name__ == "__main__":
-    data_client = CSVClient('data_source/bitcoin_5_2017T0710-2021T103022.csv')
+    ema_ps = fc.utils.EMApreProcess(window = 12)
+    data_client = fc.CSVClient(file='data_source/bitcoin_5_2017T0710-2021T103022.csv', idc_processes=[ema_ps])
     ##hyper parameters##
     observationDays = 1
-    processes = [process.DiffPreProcess(), process.MinMaxPreProcess(scale=(-1,1))]
+    processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
     batch_size = 32
     hidden_layer_size = 5
     middle_layer_size = 96

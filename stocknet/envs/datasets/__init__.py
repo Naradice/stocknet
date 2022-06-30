@@ -10,7 +10,7 @@ available_dataset = {
 }
 
 def dataset_to_params(ds):
-    import stocknet.envs.market_clients as m_client
+    from finance_client.finance_client.client_base import Client as m_client
     params = {}
     c_params = m_client.client_to_params(ds.data_client)
     params["client"] = c_params
@@ -21,7 +21,7 @@ def dataset_to_params(ds):
 def load_dataset(params:dict):
     kinds = params["kinds"]
     if kinds != available_dataset:
-        import stocknet.envs.market_clients as m_client
+        from finance_client.finance_client.client_base import Client as m_client
         c_params = params["client"]
         c_kinds = c_params["kinds"]
         c_args = c_params["args"]
