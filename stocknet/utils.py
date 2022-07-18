@@ -3,8 +3,6 @@ import torch
 from torchinfo import summary
 import datetime
 import json
-import stocknet.envs.utils.idcprocess as ips
-import stocknet.envs.utils.preprocess as pps
 
 def get_validate_filename(model_name, extension='png'):
     dir_name, version = __remove_version_str(model_name)

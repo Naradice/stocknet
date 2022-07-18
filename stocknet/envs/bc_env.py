@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from stocknet.envs.render.graph import Rendere
 from finance_client.finance_client.client_base import Client
-import stocknet.envs.utils as utils
+import finance_client.finance_client.utils as utils
 #from render.graph import Rendere
 
 class BCEnv(gym.Env):

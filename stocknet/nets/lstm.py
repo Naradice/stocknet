@@ -20,7 +20,10 @@ class Predictor(nn.Module):
     
     def forward(self, inputs, hidden0=None):
         batch_size, seq_len = inputs.shape[0], inputs.shape[1]
+        #print(f"batch_size {batch_size}", f"seq_len: {seq_len}")
         output, (hidden, cell) = self.rnn(inputs, hidden0) #LSTM層
-        output = self.output_layer(output[:, -1, :]) #全結合層
+        #print(output.shape)
+        output = self.output_layer(output) #全結合層
+        #output = self.output_layer(output[:, -1, :]) #全結合層
 
         return output
