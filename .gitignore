@@ -18,7 +18,6 @@ data_org/
 notebooks/
 obj/
 models/
-predictions/
 resources/
 .env
 *.csv
