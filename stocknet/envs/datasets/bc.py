@@ -306,9 +306,59 @@ class ShiftDataset(Dataset):
     def __getitem__(self, ndx):
         return super().__getitem__(ndx)
     
+class HighLowDataset(Dataset):
+    
+    key = "hl_ohlc"
+    
+    def __init__(self, data_client: Client, observationLength=1000,in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
+        super().__init__(data_client, observationLength, in_columns=in_columns, out_columns=out_columns, seed=seed, isTraining=isTraining)
+        self.args = (observationLength,out_columns, floor, seed)
+        self.shift = floor
+    
+    def __init_indicies(self):
+        length = len(self.data) - self.shift
+        if self.isTraining:
+            self.fromIndex = self.dataLength
+            self.toIndex = int(length*0.7)- self.shift
+        else:
+            self.fromIndex = int(length*0.7)+1
+            self.toIndex = length - self.shift
+        
+        ##select random indices.
+        k=length - self.dataLength*2 -1
+        self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        
+    def inputFunc(self, ndx):
+        return self.getInputs(ndx, self.columns)
+    
+    def getInputs(self, ndx, columns, shift=0):
+        inputs = []
+        if type(ndx) == int:
+            indicies = slice(ndx, ndx+1)
+            for index in self.indices[indicies]:
+                temp = (self.data[columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
+                inputs.append(temp)
+            return inputs[0]
+        elif type(ndx) == slice:
+            indicies = ndx
+            for index in self.indices[indicies]:
+                temp = (self.data[columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
+                inputs.append(temp)
+            return inputs
+    
+    def getFutureHighLow(self, shift=1) -> numpy.array:
+        pass
+
+    def getFutureHighLowArray(self, shift=1) -> numpy.array:
+        pass
+     
+    def outputFunc(self, ndx):
+        return self.getNextInputs(ndx, self.shift)
+
+
 class RewardDataset(OHLCDataset):
     
-    key = "shit_ohlc"
+    key = "shift_ohlc"
     
     def __init__(self, data_client: Client, observationDays=1, column = "Close" , seed = None, isTraining=True):
         super().__init__(data_client, observationDays, out_columns=[], seed=seed, isTraining=isTraining)
@@ -399,3 +449,5 @@ class RewardDataset(OHLCDataset):
     
     def __getitem__(self, ndx):
         return super().__getitem__(ndx)
+
+    
