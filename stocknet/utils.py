@@ -1,6 +1,9 @@
 import os
 import torch
 from torchinfo import summary
+import finance_client.utils.idcprocess as ips
+import finance_client.utils.postprocess as pps
+from finance_client import client_to_params
 import datetime
 import json
 
@@ -22,7 +25,7 @@ def save_result_as_txt(model_name:str, result:str, use_date_to_filename=True):
         txt_file_name = f'models/{dir_name}/result_{version}.txt'
         mode = 'a+'
     with open(txt_file_name, mode, encoding='utf-8') as f:
-        if use_date_to_filename:
+        if use_date_to_filename is False:
             #move read cursor to top, then read to know if there are content already
             f.seek(0)
             data = f.read(100)
@@ -81,6 +84,14 @@ def check_directory(model_name:str) -> None:
     elif os.path.exists('models') is False:
         os.makedirs('models')
 
+def save_client_params(model_name, client):
+    dir_name, version = __remove_version_str(model_name)
+    check_directory(dir_name)
+    txt_file_name = f'models/{dir_name}/client_{version}.json'
+    client_params = client_to_params(client)
+    with open(txt_file_name, 'w', encoding='utf-8') as f:
+        json.dump(client_params, f)
+
 def save_params(model_name, params:dict):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
@@ -109,8 +120,9 @@ def load_params(model_name):
         params = json.load(f)
     return params
 
-def dataset_to_params(ds):
-    pass
+def dataset_to_params(model_name, ds):
+    client_params = client_to_params(ds.data_client)
+    
 
 def load_model(model, model_name):
     dir_name, version = __remove_version_str(model_name)

@@ -61,6 +61,9 @@ class Trainer():
     def save_params(self, indicaters:list, preprocesses: list):
         save_processes(self.name, indicaters, preprocesses)
         
+    def save_client(self, client):
+        save_client_params(self.name, client)
+        
     def save_architecture(self, model, input, batch_size):
         save_model_architecture(model, input, batch_size, self.name)
         
