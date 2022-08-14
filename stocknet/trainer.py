@@ -58,9 +58,6 @@ class Trainer():
         self.model_cp.load_state_dict(model.state_dict())
         self.model_cp = self.model_cp.to(self.device)
         
-    def save_params(self, indicaters:list, preprocesses: list):
-        save_processes(self.name, indicaters, preprocesses)
-        
     def save_client(self, client):
         save_client_params(self.name, client)
         
@@ -132,6 +129,7 @@ class Trainer():
                     min_loss = mean_loss
                 n_epochs+=1
             epoch+=1
+        self.__save_model(model)
         #self.plot_validation_results()
         result_txt = f'training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}'
         print(result_txt)
@@ -148,7 +146,6 @@ class Trainer():
             ans_[index] = np.array([])
             
         viewer = Rendere()
-        viewer.add_subplots(output_size)
 
         with torch.no_grad():
             count = 0
@@ -159,20 +156,22 @@ class Trainer():
                 mean_loss += loss.item()
                 #output: [batchDim, outputDim]
                 for index in range(0, output_size):
-                    out_[index] = np.append(out_[index], outputs.to(' ').detach().numpy().copy())
+                    out_[index] = np.append(out_[index], outputs.to('cpu').detach().numpy().copy())
                     ans_[index] = np.append(ans_[index], ans.to('cpu').detach().numpy().copy())
                 count += 1
         
+        print('--------------------------------------------------')
+        print(f'mean loss: {mean_loss/count}')
+        print(f'mean dif ({index}): {[(out_[index] - ans_[index]).mean() for index in range(0, output_size)]}, var: {[(out_[index] - ans_[index]).var() for index in range(0, output_size)]}')
+        print('--------------------------------------------------')
+
+        
         for index in range(0, output_size):
-            viewer.register_xy(ans_[index], out_[index], index+1)
+            viewer.register_xy(ans_[index], out_[index], index=-1)
         file_name = get_validate_filename(self.name, 'png')
         viewer.plot()
         viewer.write_image(file_name)
-        print('--------------------------------------------------')
-        print(f'man loss: {mean_loss/count}')
-        print(f'mean dif ({index}): {[(out_[index] - ans_[index]).mean() for index in range(0, output_size)]}, var: {[(out_[index] - ans_[index]).var() for index in range(0, output_size)]}')
-        print('--------------------------------------------------')
-        
+                
     def validate_with_actual_value(self, model, val_loader, mode="console"):
         pass
 

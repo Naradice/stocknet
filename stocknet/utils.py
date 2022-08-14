@@ -10,7 +10,7 @@ import json
 def get_validate_filename(model_name, extension='png'):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
-    file_name = f'models/{dir_name}/validation_result_{version}.txt'
+    file_name = f'models/{dir_name}/validation_result_{version}.{extension}'
     return file_name
 
 def save_result_as_txt(model_name:str, result:str, use_date_to_filename=True):
