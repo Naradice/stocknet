@@ -1,12 +1,10 @@
 import random
-import datetime
 import numpy
-import pandas as pd
 import torch
+from stocknet.envs.datasets.base import DatasetBase
 from finance_client.client_base import Client
-from finance_client.utils.process import ProcessBase
 
-class Dataset():
+class Dataset(DatasetBase):
     """
     common dataset
     """
@@ -14,23 +12,19 @@ class Dataset():
     key = "common"
 
     def __init__(self, data_client: Client, observationLength:int, in_columns=["Open", "High", "Low", "Close"] ,out_columns=["Open", "High", "Low", "Close"], seed = None, isTraining = True):
+        super().__init__(observationLength, in_columns, out_columns, seed, isTraining)
         self.seed(seed)
-        self.__rowdata__ = data_client.get_rate_with_indicaters(-1)
-        self.data = self.__rowdata__.copy()
-        #self.dtype = torch.float32
-        self.args = (observationLength, out_columns, seed)
+        self.data = data_client.get_rate_with_indicaters(-1)
         columns_dict = data_client.get_ohlc_columns()
-        print(columns_dict)
-        self.columns = list(in_columns)
-        self.out_columns = list(out_columns)
-
-        self.dims = 5
         self.dataLength = observationLength
         self.isTraining = isTraining
-        self.__init_indicies()
+        self.init_indicies()
         
-    def __init_indicies(self):
+    def init_indicies(self):
         length = len(self.data)
+        if length < self.observationLength:
+            raise Exception(f"date length {length} is less than observationLength {self.observationLength}")
+        
         if self.isTraining:
             self.fromIndex = self.dataLength
             self.toIndex = int(length*0.7)
@@ -38,33 +32,37 @@ class Dataset():
             self.fromIndex = int(length*0.7)+1
             self.toIndex = length
         
-        ##select random indices.
-        k=length - self.dataLength*2 -1
-        self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        training_data_length = self.__len__()
+        ## length to select random indices.
+        k = training_data_length
+        ## if allow duplication
+        #self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        ## if disallow duplication
+        self.indices = random.sample(range(self.fromIndex, self.toIndex), k=k)
     
     def outputFunc(self, ndx, shift=0):
         '''
         ndx: slice type or int
         return ans value array from actual tick data. data format (rate, diff etc) is depends on data initialization. default is diff
         '''
-        return self.getInputs(ndx, self.out_columns,shift=shift)
+        return self.getInputs(ndx, self.out_columns, shift=shift)
     
     def inputFunc(self, ndx):
         return self.getInputs(ndx, self.columns)
     
-    def getInputs(self, ndx, columns,shift=0,):
+    def getInputs(self, batch_size: slice, columns:list, shift=0,):
         inputs = []
-        if type(ndx) == int:
-            indicies = slice(ndx, ndx+1)
-            for index in self.indices[indicies]:
+        if type(batch_size) == int:
+            batch_indicies = slice(batch_size, batch_size+1)
+            for index in self.indices[batch_indicies]:
                 temp = numpy.array([])
                 for column in columns:
                     temp = numpy.append(temp, self.data[column][index+shift-self.dataLength:index+shift].values.tolist())
                 inputs.append(temp)
             return inputs[0]
-        elif type(ndx) == slice:
-            indicies = ndx
-            for index in self.indices[indicies]:
+        elif type(batch_size) == slice:
+            batch_indicies = batch_size
+            for index in self.indices[batch_indicies]:
                 temp = numpy.array([])
                 for column in columns:
                     temp = numpy.append(temp, self.data[column][index+shift-self.dataLength:index+shift].values.tolist())
@@ -73,16 +71,6 @@ class Dataset():
     
     def __len__(self):
         return self.toIndex - self.fromIndex
-    
-    def getRowData(self, ndx):
-        inputs = []
-        if type(ndx) == slice:
-            for index in self.indices[ndx]:
-                inputs.append(self.__rowdata__[index-self.dataLength:index].values.tolist())
-        else:
-            index = ndx
-            inputs = self.__rowdata__[index+1-self.dataLength:index+1].values.tolist()
-        return inputs
     
     def getActialIndex(self,ndx):
         inputs = []
@@ -119,30 +107,15 @@ class OHLCDataset():
     
     key = "ohlc"
 
-    def __init__(self, data_client: Client, observationDays=1, data_length:int = None, out_columns=["Open", "High", "Low", "Close"], seed = None, isTraining = True):
+    def __init__(self, data_client: Client, observationDays=1, data_length:int = None, in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], seed = None, isTraining = True):
         self.seed(seed)
         self.__rowdata__ = data_client.get_rate_with_indicaters(-1)
         self.data = self.__rowdata__.copy()
         #self.dtype = torch.float32
         self.args = (observationDays, data_length, out_columns, seed)
         columns_dict = data_client.get_ohlc_columns()
-        self.columns = []
-        __ohlc_columns = [str.lower(value) for value in out_columns]
-        if 'open' in __ohlc_columns:
-            self.columns.append(columns_dict['Open'])
-        if 'high' in __ohlc_columns:
-            self.columns.append(columns_dict['High'])
-        if 'low' in __ohlc_columns:
-            self.columns.append(columns_dict['Low'])
-        if 'close' in __ohlc_columns:
-            self.columns.append(columns_dict['Close'])    
-        
-        self.out_columns = self.columns.copy()
-                
-        self.budget_org = 100000
-        self.leverage = 25
-        self.volume_point = 10000
-        self.point = 0.001
+        self.columns = in_columns        
+        self.out_columns = out_columns
 
         self.dims = 5
         frame = data_client.frame
@@ -150,9 +123,9 @@ class OHLCDataset():
         
         self.__preprocesess = []
         self.isTraining = isTraining
-        self.__init_indicies()
+        self.init_indicies()
         
-    def __init_indicies(self):
+    def init_indicies(self):
         length = len(self.data)
         if self.isTraining:
             self.fromIndex = self.dataLength
@@ -245,16 +218,16 @@ class OHLCDataset():
         else:
             random.seed(seed)
             
-class ShiftDataset(Dataset):
+class ShiftDataset(OHLCDataset):
     
     key = "shit_ohlc"
     
     def __init__(self, data_client: Client, observationLength=1000,in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
+        self.shift = floor
         super().__init__(data_client, observationLength, in_columns=in_columns, out_columns=out_columns, seed=seed, isTraining=isTraining)
         self.args = (observationLength,out_columns, floor, seed)
-        self.shift = floor
     
-    def __init_indicies(self):
+    def init_indicies(self):
         length = len(self.data) - self.shift
         if self.isTraining:
             self.fromIndex = self.dataLength
@@ -360,12 +333,12 @@ class RewardDataset(OHLCDataset):
     
     key = "shift_ohlc"
     
-    def __init__(self, data_client: Client, observationDays=1, column = "Close" , seed = None, isTraining=True):
+    def __init__(self, data_client: Client, observationDays=1,in_column = ["Open", "High", "Low", "Close"], column = "Close" , seed = None, isTraining=True):
         super().__init__(data_client, observationDays, out_columns=[], seed=seed, isTraining=isTraining)
         self.args = (observationDays,column, seed)
         self.column = column
     
-    def __init_indicies(self):
+    def init_indicies(self):
         length = len(self.data) - self.shift
         if self.isTraining:
             self.fromIndex = self.dataLength

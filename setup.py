@@ -5,7 +5,8 @@ install_requires = [
     'gym==0.22',
     'numpy',
     'pfrl',
-    'pandas'
+    'pandas',
+    'requests'#vantage, es
 ]
 
 setup(name='stocknet',

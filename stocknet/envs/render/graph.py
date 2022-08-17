@@ -1,9 +1,7 @@
-import os
 import matplotlib.pyplot as plt
 import math
 import numpy
 import pandas as pd
-import threading
 
 class Rendere:
     
@@ -38,7 +36,7 @@ class Rendere:
         else:
             raise Exception(f"unexpected shape: {self.shape}")
         
-        if index < amount-1:
+        if index < amount:
             return True
         else:
             return False
@@ -71,7 +69,6 @@ class Rendere:
         return -1, -1
     
     def __get_nextempy_index(self):
-        indices = numpy.array([])
         next_empty_index = -1
         if len(self.__data) > 0:
             for i in range(0, self.plot_num):
@@ -79,6 +76,9 @@ class Rendere:
                     continue
                 next_empty_index = i
                 break
+        else:
+            #return index of first subplot
+            next_empty_index = 0
         return next_empty_index
     
     def __register_data(self, type_:str, data, title:str, index:int, options:dict = None):
@@ -86,16 +86,18 @@ class Rendere:
             index_ = self.__get_nextempy_index()
             if index_ == -1:
                 self.add_subplot()
-                index_ = self.plot_num -1
+                index_ = self.plot_num - 1#index start with 0. plot_num start with 1
         else:
             index_ = index
             #noisy
             #if len(self.__data) > 0 and index_ in self.__data:
             #    print("Warning: specified index will overwrite data in register_{type_}: {index_}")
-        self.__data[index] = {'type': type_, 'data':data, 'title':title}
+        self.__data[index_] = {'type': type_, 'data':data, 'title':title}
+        # store additional params
         if options != None:
             for key, content in options.items():
-                self.__data[index][key] = content
+                self.__data[index_][key] = content
+        return index_
         
     def register_xy(self, x:list, y:list, title:str=None, index=-1):
         """
@@ -106,7 +108,7 @@ class Rendere:
             y (list): y-axis data
             index (int, optional): index of subplot to plot the data. use greater than 1 to specify subplot index. use -1 to plot on fisrt empty subplot. Defaults to -1.
         """
-        self.__register_data('xy', (x,y, title), index)
+        self.__register_data('xy', (x,y), title=title, index=index)
     
     def append_x(self, x, index:int):
         """
@@ -143,7 +145,19 @@ class Rendere:
             self.__data[index] = {'type': 'ohlc'}
         self.__data[index]["data"] = ohlc
     
-    def register_ohlc(self, ohlc, index=-1,title='OHLC Candle',open='Open',high = 'High', low='Low', close='Close', timestamp=None):
+    def update_ohlc(self, ohlc, index):
+        """ update data of the index
+
+        Args:
+            ohlc (_type_): _description_
+            index (_type_): _description_
+        """
+        if index in self.__data:
+            self.__data[index].update({'data': ohlc})
+        else:
+            print("index not in the data")
+    
+    def register_ohlc(self, ohlc, index=-1,title='OHLC Candle',open='Open',high = 'High', low='Low', close='Close'):
         """
         register ohlc to plot later
         Args:
@@ -153,9 +167,15 @@ class Rendere:
             high (str, optional): Column name of High. Defaults to 'High'.
             low (str, optional): Column name of Low. Defaults to 'Low'.
             close (str, optional): Column name of Close. Defaults to 'Close'.
-            timestamp (str, optional): Column name of timestamp. Default to None
+            time_column (str, optional): Column name of datetime. Default to None
         """
-        self.__register_data('ohlc', ohlc, title, index, {'columns': (open, high, low, close, timestamp)})
+        return self.__register_data('ohlc', ohlc, title, index, {'columns': (open, high, low, close)})
+     
+    def register_indicater_to_overlap(self, data, time_column, index=-1, title=None, columns:list=None, chart_type:str="line"):
+        pass
+    
+    def register_indicater(self):
+        pass
     
     def __plot_candle(self, index, content):
         
@@ -175,7 +195,10 @@ class Rendere:
         if self.__check_subplot_axis():
             ax = self.axs[column][row]
         else:
-            ax = self.axs[row]
+            if self.plot_num == 1:
+                ax = self.axs
+            else:
+                ax = self.axs[row]
         ax.clear()
         index = 0
         for idx, val in ohlc.iterrows():
@@ -197,7 +220,10 @@ class Rendere:
         if self.__check_subplot_axis():
             ax = self.axs[column][row]
         else:
-            ax = self.axs[row]
+            if self.plot_num == 1:
+                ax = self.axs
+            else:
+                ax = self.axs[row]
         ax.clear()
         ax.plot(y,x)
         
@@ -206,20 +232,23 @@ class Rendere:
             self.__is_shown = True
             self.fig, self.axs = plt.subplots(*self.shape)
             self.fig.show()
-        for key, content in self.__data.items():
+        for index, content in self.__data.items():
             data_type = content['type']
             if  data_type == 'ohlc':
-                self.__plot_candle(key, content)
+                self.__plot_candle(index, content)
             elif data_type == 'xy':
-                self.__plot__xy(key, content)
+                self.__plot__xy(index, content)
             else:
-                raise Exception(f'unexpected type was specified in {key}: {data_type}')
+                raise Exception(f'unexpected type was specified in {index}: {data_type}')
         #self.fig.canvas.draw()
         plt.pause(0.01)
         #plt.savefig("img.png")
     
+    def plot_async(self):
+        pass
+        
     def plot(self):
-        threading.Thread(target=self.__plot())
+        self.__plot()
         
     def write_image(self, file_name):
         try:
