@@ -222,10 +222,35 @@ class ShiftDataset(OHLCDataset):
     
     key = "shit_ohlc"
     
-    def __init__(self, data_client: Client, observationLength=1000,in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
-        self.shift = floor
+    def __init__(self, data_client: Client, observationLength=100,in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], shift = 1, output_time_series=False, seed = None, isTraining=True):
+        """ Dataset to predict future data.
+        Ex) IN:  daily ohlc with 100 length (observationLength) from 2022-01-01 to 2022-04-10
+            OUT: daily ohlc with 1 length on 2022-04-02 (shift=1)
+                 If shift=2, 2022-04-03
+                 If shift=2 and output_time_series=True, output from 2022-04-02 to 2022-04-03
+
+        Args:
+            data_client (Client): any client of finance_client
+            observationLength (int, optional): data length for input. Defaults to 1000.
+            in_columns (list, optional): columns for input. Defaults to ["Open", "High", "Low", "Close"].
+            out_columns (list, optional): columns for output. Defaults to ["Open", "High", "Low", "Close"].
+            shift (int, optional): how long far from latest input. Defaults to 1.
+            output_time_series (bool, optional): specify output length should be 1(False) or same as shift length(True). Defaults to False.
+            seed (int, optional): specify random seed. Defaults to None and 1017 is used for random and pytroch random.
+            isTraining (bool, optional): If true, return 70% of the data length. Defaults to True.
+        """
+        if shift < 1:
+            raise ValueError("shift should be greater than 0.")
+        self.shift = shift
+        if output_time_series is True:
+            self.get_output_data = self.__get_ts_output
+        elif output_time_series is False:
+            self.get_output_data = self.__get_mono_output
+        else:
+            raise ValueError("output_time_series should be bool")
+
         super().__init__(data_client, observationLength, in_columns=in_columns, out_columns=out_columns, seed=seed, isTraining=isTraining)
-        self.args = (observationLength,out_columns, floor, seed)
+        self.args = (observationLength,out_columns, shift, output_time_series, seed)
     
     def init_indicies(self):
         length = len(self.data) - self.shift
@@ -257,20 +282,24 @@ class ShiftDataset(OHLCDataset):
                 temp = (self.data[columns].iloc[index+shift-self.dataLength:index+shift].values.tolist())
                 inputs.append(temp)
             return inputs
+
+    def __get_mono_output(self, index, shift):
+        return self.data[self.out_columns].iloc[index+shift-1]
+    
+    def __get_ts_output(self, index, shift):
+        return self.data[self.out_columns].iloc[index+1:index+shift]
     
     def getNextInputs(self, ndx, shift=1):
         inputs = []
         if type(ndx) == int:
             indicies = slice(ndx, ndx+1)
             for index in self.indices[indicies]:
-                temp = self.data[self.out_columns].iloc[index+shift-1]
-                inputs.append(temp)
+                inputs.append(self.self.get_output_data(index, shift))
             return inputs[0]
         elif type(ndx) == slice:
             indicies = ndx
             for index in self.indices[indicies]:
-                temp = self.data[self.out_columns].iloc[index+shift-1]
-                inputs.append(temp)
+                inputs.append(self.self.get_output_data(index, shift))
             return inputs
      
     def outputFunc(self, ndx):
@@ -283,10 +312,10 @@ class HighLowDataset(Dataset):
     
     key = "hl_ohlc"
     
-    def __init__(self, data_client: Client, observationLength=1000,in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], floor = 1, seed = None, isTraining=True):
+    def __init__(self, data_client: Client, observationLength=1000,in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], shift = 1, seed = None, isTraining=True):
         super().__init__(data_client, observationLength, in_columns=in_columns, out_columns=out_columns, seed=seed, isTraining=isTraining)
-        self.args = (observationLength,out_columns, floor, seed)
-        self.shift = floor
+        self.args = (observationLength,out_columns, shift, seed)
+        self.shift = shift
     
     def __init_indicies(self):
         length = len(self.data) - self.shift
@@ -327,7 +356,6 @@ class HighLowDataset(Dataset):
      
     def outputFunc(self, ndx):
         return self.getNextInputs(ndx, self.shift)
-
 
 class RewardDataset(OHLCDataset):
     
