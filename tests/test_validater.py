@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 
-import stocknet.envs.datasets.bc as bc
+import stocknet.datasets.bc as bc
 from stocknet.nets.ae import AELinearModel
 from stocknet.envs.market_clients.csv.client import CSVClient
 import stocknet.envs.utils.preprocess as process

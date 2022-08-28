@@ -1,12 +1,12 @@
 from stocknet.nets.ae import AELinearModel
 from stocknet.nets.dense import ConvDense16, SimpleDense
-from stocknet.nets.lstm import Predictor
+from stocknet.nets.lstm import LSTM
 
 available_models = {
     AELinearModel.key: AELinearModel,
     ConvDense16.key: ConvDense16,
     SimpleDense.key: SimpleDense,
-    Predictor.key: Predictor
+    LSTM.key: LSTM
 }
 
 def model_to_params(model):

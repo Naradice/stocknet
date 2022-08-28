@@ -151,7 +151,7 @@ class BCEnv(gym.Env):
         to initialize a parameter of mini max, just run preprocesses to entire data
         """
         if len(self.preprocess) > 0:
-            data = self.data_client.get_rates(-1)
+            data = self.data_client.get_rates()
             for indicater in self.indicaters:
                 values_dict = indicater.run(data)
                 for key, values in values_dict.items():

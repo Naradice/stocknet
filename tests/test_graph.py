@@ -1,5 +1,8 @@
-import unittest
-from render.render_base import Rendere
+import unittest, os, json, sys, datetime
+module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(module_path)
+
+from stocknet.envs.render.graph import Rendere
 import time
 import pandas as pd
 

@@ -25,7 +25,7 @@ class Trainer():
         self.name = model_name
         
     def __save_result(self, txt:str):
-        save_result_as_txt(self.name,  txt)
+        save_result_as_txt(self.name, txt)
     
     def __save_model(self, model):
         save_model(model, self.name)
@@ -171,9 +171,6 @@ class Trainer():
         file_name = get_validate_filename(self.name, 'png')
         viewer.plot()
         viewer.write_image(file_name)
-                
-    def validate_with_actual_value(self, model, val_loader, mode="console"):
-        pass
 
 class RlTrainer():
     

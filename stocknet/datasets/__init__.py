@@ -1,12 +1,12 @@
-from matplotlib.style import available
-from stocknet.envs.datasets.finance import Dataset, ShiftDataset
-from stocknet.envs.datasets.fx import FXNextMEANDiffDataset, FXDataset
+from h11 import Data
+from stocknet.datasets.shift import ShiftDataset
+from stocknet.datasets.ohlc import OHLCDataset
+from stocknet.datasets.finance import Dataset
 
 available_dataset = {
-    Dataset.key : Dataset,
+    Dataset.key: Dataset,
+    OHLCDataset.key: OHLCDataset,
     ShiftDataset.key: ShiftDataset,
-    FXDataset.key: FXDataset,
-    FXNextMEANDiffDataset.key: FXNextMEANDiffDataset
 }
 
 def dataset_to_params(ds):
