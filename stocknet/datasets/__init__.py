@@ -1,4 +1,3 @@
-from h11 import Data
 from stocknet.datasets.shift import ShiftDataset
 from stocknet.datasets.ohlc import OHLCDataset
 from stocknet.datasets.finance import Dataset

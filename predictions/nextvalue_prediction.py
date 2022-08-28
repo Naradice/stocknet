@@ -32,11 +32,12 @@ def next_ohlc_individual(epoc=-1, h_layer_sizes = [1,2,4,8], target_columns = ["
             
             training_lstm_with_shift(data_client, batch_size, observationDays, shift=shift, in_column=learning_target_columns, out_column=learning_target_columns, hidden_layer_num=hidden_layer_size, version=version, epoc_num=epoc, model_name=model_name)
 
-def next_ohlc(epoc=-1, h_layer_sizes = [1,2,4, 8, 16], target_columns = ["open", "high", "low", "close"]):
+def next_ohlc(epoc=-1, h_layer_sizes = [1,2,4,8, 16], target_columns = ["open", "high", "low", "close"]):
     #ema_ps_2 = indicater.EMApreProcess(key='e26', window=12, is_output=is_multi_output)
     shift = 1
     for h_layer in h_layer_sizes:
-        processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        #processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
         learning_target_columns = target_columns
 
         data_client = fc.CSVClient(file=file_path, frame=60*24, date_column="time", post_process=processes, columns=['high', 'low','open','close'])
@@ -47,7 +48,7 @@ def next_ohlc(epoc=-1, h_layer_sizes = [1,2,4, 8, 16], target_columns = ["open",
         hidden_layer_size = h_layer
         ####################
         #epoc_num = 50
-        version = 4
+        version = 3.1
         model_name = f'next_ohlc/{str(observationDays)}d_diff_{str(shift)}_LSTM-{str(hidden_layer_size)}_v{str(version)}'
         
         training_lstm_with_shift(data_client, batch_size, observationDays, shift=shift, in_column=learning_target_columns, out_column=learning_target_columns, hidden_layer_num=hidden_layer_size, version=version, epoc_num=epoc, model_name=model_name)
@@ -92,7 +93,3 @@ def next_nv():
 
 if __name__ == "__main__":
     next_ohlc()
-
-
-if __name__ == "__main__":
-    next_ema()

@@ -21,12 +21,12 @@ dtype = torch.float32
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("device:", device)
 
-def __train_common(data_client, model, sample_iunput, batch_size, model_name, train_dl, val_dl, epoc_num=-1, loss_fn = nn.MSELoss(), optimizer = None):
+def __train_common(data_client, model, sample_input, batch_size, model_name, train_dl, val_dl, epoc_num=-1, loss_fn = nn.MSELoss(), optimizer = None):
     model = model.to(device)
     if optimizer is None:
         optimizer = optim.Adam(model.parameters(), lr=1e-5)
     tr = trainer.Trainer(model_name, loss_fn, train_dl, val_dl, device)
-    tr.save_architecture(model, sample_iunput, batch_size)
+    tr.save_architecture(model, sample_input, batch_size)
     tr.save_client(data_client)
     tr.training_loop(model,optimizer, epoc_num)
     tr.validate(model, val_dl)
@@ -52,6 +52,7 @@ def training_lstm_model(data_client, batch_size, observationLength, in_column, o
         model_name = f'{kinds}_{str(frame)}min/{model_name}'
     model = LSTM(input_size, hiddenDim=hidden_layer_num, outputDim=o.shape[0], device=device)
     __train_common(data_client=data_client, model=model, model_name=model_name,
+                    sample_input=i, batch_size=batch_size,
                    train_dl=train_dl, val_dl=val_loader, epoc_num=epoc_num,
                    optimizer=optimizer, loss_fn=loss_fn)
     
@@ -59,11 +60,11 @@ def training_lstm_with_shift(data_client, batch_size, observationLength, in_colu
     frame = data_client.frame
     kinds = str(data_client.kinds)
     
-    ds = ds.ShiftDataset(data_client=data_client, observationLength=observationLength, in_columns=in_column, out_columns=out_column, isTraining=True, floor=shift)
-    train_dl = DataLoader(ds, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
-    ds_val = ds.ShiftDataset(data_client=data_client, observationLength=observationLength, isTraining=False, in_columns=in_column, out_columns=out_column, floor=shift)
+    dataset = ds.ShiftDataset(data_client=data_client, observationLength=observationLength, in_columns=in_column, out_columns=out_column, isTraining=True, shift=shift)
+    train_dl = DataLoader(dataset, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
+    ds_val = ds.ShiftDataset(data_client=data_client, observationLength=observationLength, isTraining=False, in_columns=in_column, out_columns=out_column, shift=shift)
     val_loader = DataLoader(ds_val, batch_size = batch_size, drop_last = True, shuffle=False, pin_memory=True)
-    i,o = ds[0]
+    i,o = dataset[0]
     input_size = i.shape[1]
     print("input:", i.shape, "output:", o.shape)
 
@@ -74,6 +75,7 @@ def training_lstm_with_shift(data_client, batch_size, observationLength, in_colu
         model_name = f'{kinds}_{str(frame)}min/{model_name}'
     model = LSTM(input_size,hiddenDim=hidden_layer_num,outputDim=o.shape[0],device=device)
     __train_common(data_client=data_client, model=model, model_name=model_name,
+                    sample_input=i, batch_size=batch_size,
                    train_dl=train_dl, val_dl=val_loader, epoc_num=epoc_num,
                    optimizer=optimizer, loss_fn=loss_fn)
     
