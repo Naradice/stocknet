@@ -43,9 +43,9 @@ inputDim, size = obs.shape
 n_actions = env.action_space.n
 
 
-#model = SimpleDense(30,size, inputDim, 3, removeHistoryData=False, lr=True) #modelの宣言
+#model = SimpleDense(30,size, inputDim, 3, removeHistoryData=False, lr=True)
 model = ConvDense16(size)#.to(device=device)
-criterion = nn.MSELoss() #評価関数の宣言
+criterion = nn.MSELoss()
 batch_size = 32
 
 optimizer = torch.optim.Adam(model.parameters(), eps=1e-5)
