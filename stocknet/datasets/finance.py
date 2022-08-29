@@ -21,10 +21,11 @@ class Dataset():
         
         self.observationLength = observationLength
         self.isTraining = isTraining
- 
+        self.data_client = data_client
         self.data = data_client.get_rate_with_indicaters()
-        self.dataLength = observationLength
+        self.observationLength = observationLength
         self.isTraining = isTraining
+        self.args = (data_client, observationLength, in_columns ,out_columns, merge_columns, seed)
         self.init_indicies()
         
     def init_indicies(self):
@@ -33,7 +34,7 @@ class Dataset():
             raise Exception(f"date length {length} is less than observationLength {self.observationLength}")
         
         if self.isTraining:
-            self.fromIndex = self.dataLength
+            self.fromIndex = self.observationLength
             self.toIndex = int(length*0.7)
         else:
             self.fromIndex = int(length*0.7)+1
@@ -77,7 +78,7 @@ class Dataset():
             batch_indicies = batch_size
             out_indicies = slice(0,None)
         for index in self.indices[batch_indicies]:
-            temp = self.create_column_func(columns, slice(index-self.dataLength, index))
+            temp = self.create_column_func(columns, slice(index-self.observationLength, index))
             inputs.append(temp)
         return inputs[out_indicies]
     
@@ -116,12 +117,6 @@ class Dataset():
         worker_seed = torch.initial_seed() % 2**32
         numpy.random.seed(worker_seed)
         random.seed(worker_seed)
-        
-    def get_params(self):
-        params = {"observationLength": self.observationLength, "in_columns": self.in_columns, "out_columns": self.out_columns, "seed":self.seed_value, "isTraining": self.isTraining }
-        additional = self.get_ds_params()
-        params.update(additional)
-        return params
         
     def render(self, mode='human', close=False):
         '''

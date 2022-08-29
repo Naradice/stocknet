@@ -17,22 +17,22 @@ class OHLCDataset(Dataset):
         
         self.__rowdata__ = data_client.get_rate_with_indicaters()
         self.data = self.__rowdata__.copy()
-        self.dataLength = observationLength
-        
+        self.observationLength = observationLength
         self.isTraining = isTraining
+        self.args = (data_client, observationLength, seed, merge_columns)
         self.init_indicies()
         
     def init_indicies(self):
         length = len(self.data)
         if self.isTraining:
-            self.fromIndex = self.dataLength
+            self.fromIndex = self.observationLength
             self.toIndex = int(length*0.7)
         else:
             self.fromIndex = int(length*0.7)+1
             self.toIndex = length
         
         ##select random indices.
-        k=length - self.dataLength*2 -1
+        k=length - self.observationLength*2 -1
         self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
     
     def outputFunc(self, ndx, shift=0):
@@ -54,7 +54,7 @@ class OHLCDataset(Dataset):
             batch_indicies = batch_size
             out_indicies = slice(0,None)
         for index in self.indices[batch_indicies]:
-            temp = self.create_column_func(columns, slice(index-self.dataLength, index))
+            temp = self.create_column_func(columns, slice(index-self.observationLength, index))
             inputs.append(temp)
         return inputs[out_indicies]
     
@@ -65,10 +65,10 @@ class OHLCDataset(Dataset):
         inputs = []
         if type(ndx) == slice:
             for index in self.indices[ndx]:
-                inputs.append(self.__rowdata__[index-self.dataLength:index].values.tolist())
+                inputs.append(self.__rowdata__[index-self.observationLength:index].values.tolist())
         else:
             index = ndx
-            inputs = self.__rowdata__[index+1-self.dataLength:index+1].values.tolist()
+            inputs = self.__rowdata__[index+1-self.observationLength:index+1].values.tolist()
         return inputs
     
     def getActialIndex(self,ndx):

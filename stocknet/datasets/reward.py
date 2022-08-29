@@ -7,7 +7,7 @@ class RewardDataset(OHLCDataset):
     
     key = "reward_ohlc"
     
-    def __init__(self, data_client, observationDays=1,in_column = ["Open", "High", "Low", "Close"], column = "Close" , seed = None, isTraining=True):
+    def __init__(self, data_client, observationDays=1, in_column = ["Open", "High", "Low", "Close"], out_column = "Close" , seed = None, isTraining=True):
         """ * Not yet implemented.
             Output how much you can obtain a profit
 
@@ -20,20 +20,20 @@ class RewardDataset(OHLCDataset):
             isTraining (bool, optional): _description_. Defaults to True.
         """
         super().__init__(data_client, observationDays, out_columns=[], seed=seed, isTraining=isTraining)
-        self.args = (observationDays,column, seed)
-        self.column = column
+        self.args = (data_client, observationDays, in_column, out_column, seed)
+        self.column = out_column
     
     def init_indicies(self):
-        length = len(self.data) - self.shift
+        length = len(self.data)
         if self.isTraining:
-            self.fromIndex = self.dataLength
-            self.toIndex = int(length*0.7)- self.shift
+            self.fromIndex = self.observationLength
+            self.toIndex = int(length*0.7)
         else:
             self.fromIndex = int(length*0.7)+1
-            self.toIndex = length - self.shift
+            self.toIndex = length
         
         ##select random indices.
-        k=length - self.dataLength*2 -1
+        k=length - self.observationLength*2 -1
         self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
         
     def inputFunc(self, ndx):
@@ -44,13 +44,13 @@ class RewardDataset(OHLCDataset):
         if type(ndx) == int:
             indicies = slice(ndx, ndx+1)
             for index in self.indices[indicies]:
-                temp = (self.data[columns].iloc[index-self.dataLength:index].values.tolist())
+                temp = (self.data[columns].iloc[index-self.observationLength:index].values.tolist())
                 inputs.append(temp)
             return inputs[0]
         elif type(ndx) == slice:
             indicies = ndx
             for index in self.indices[indicies]:
-                temp = (self.data[columns].iloc[index-self.dataLength:index].values.tolist())
+                temp = (self.data[columns].iloc[index-self.observationLength:index].values.tolist())
                 inputs.append(temp)
             return inputs
     

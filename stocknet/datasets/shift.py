@@ -10,19 +10,19 @@ class ShiftDataset(Dataset):
     def __init__(self, data_client, observationLength=1000, in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], shift=1, merge_input_columns=False, seed = None, isTraining=True):
         self.shift = shift
         super().__init__(data_client, observationLength, in_columns=in_columns, out_columns=out_columns, merge_columns=merge_input_columns, seed=seed, isTraining=isTraining)
-        self.args = (observationLength,out_columns, shift, seed)
+        self.args = (data_client, observationLength, in_columns, out_columns, shift, merge_input_columns, seed)
     
     def init_indicies(self):
         length = len(self.data) - self.shift
         if self.isTraining:
-            self.fromIndex = self.dataLength
+            self.fromIndex = self.observationLength
             self.toIndex = int(length*0.7)- self.shift
         else:
             self.fromIndex = int(length*0.7)+1
             self.toIndex = length - self.shift
         
         ##select random indices.
-        k=length - self.dataLength*2 -1
+        k=length - self.observationLength*2 -1
         self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
         
     def inputFunc(self, ndx):
@@ -37,7 +37,7 @@ class ShiftDataset(Dataset):
             batch_indicies = batch_size
             out_indicies = slice(0,None)
         for index in self.indices[batch_indicies]:
-            temp = self.create_column_func(columns, slice(index+shift-self.dataLength, index+shift))
+            temp = self.create_column_func(columns, slice(index+shift-self.observationLength, index+shift))
             inputs.append(temp)
         return inputs[out_indicies]
     

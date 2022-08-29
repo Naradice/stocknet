@@ -9,9 +9,9 @@ available_dataset = {
 }
 
 def dataset_to_params(ds):
-    from finance_client.finance_client.client_base import Client as m_client
+    from finance_client.client_base import Client
     params = {}
-    c_params = m_client.client_to_params(ds.data_client)
+    c_params = Client.client_to_params(ds.data_client)
     params["client"] = c_params
     params["args"] = ds.args
     params["kinds"] = ds.key
@@ -20,11 +20,11 @@ def dataset_to_params(ds):
 def load_dataset(params:dict):
     kinds = params["kinds"]
     if kinds != available_dataset:
-        from finance_client.finance_client.client_base import Client as m_client
+        from finance_client.client_base import Client
         c_params = params["client"]
         c_kinds = c_params["kinds"]
         c_args = c_params["args"]
-        data_client = m_client.load_client(c_kinds, c_args)
+        data_client = Client.load_client(c_kinds, c_args)
         
         Dataset = available_dataset[kinds]
         args = params["args"]
