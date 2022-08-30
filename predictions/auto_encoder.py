@@ -55,6 +55,21 @@ def auto_encoder_ohlc(file, client_columns, client_date_column, frame, epoc_num=
     dataset = ds.OHLCDataset(data_client=data_client, observationLength=observationLength, merge_columns=True, isTraining=True)
     training_lenear_auto_encoder(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_num, middle_layer_size=middle_layer_size, version=version, epoc_num=epoc_num, model_name=model_name)
     
+def lstm_auto_encoder(file, client_columns, client_date_column, epoc_num=-1, version=1):
+    processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
+    data_client = fc.CSVClient(file=file, columns=client_columns, date_column=client_date_column, post_process=processes)
+        
+    ##hyper parameters##
+    observationLength = 30
+    batch_size = 32
+    hidden_layer_num = 5
+    ####################
+    
+    model_name = f'ohlc/LSTMAE-{str(hidden_layer_num)}_v{str(version)}'
+    #dataset = ds.Dataset(data_client=data_client, observationLength=observationLength, in_columns=columns, out_columns=columns, merge_columns=True, isTraining=True)
+    dataset = ds.OHLCDataset(data_client=data_client, observationLength=observationLength, merge_columns=True, isTraining=True)
+    training_lenear_auto_encoder(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_num, version=version, epoc_num=epoc_num, model_name=model_name)
+    
 if __name__ == "__main__":
     file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client/finance_client/data_source/mt5/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv'))
     client_column = ["open", "high", "low", "close"]

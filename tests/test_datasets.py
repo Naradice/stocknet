@@ -162,7 +162,29 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(o.shape[0], batch_size)
         self.assertEqual(o.shape[1], len(out_columns))
         
+    def test_highlow(self):
+        processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        data_client = fc.CSVClient(file=file_path, frame=60*24, date_column="time", post_process=processes, columns=ohlc_columns)
+        observationLength = 60
+        out_columns = ["close"]
+        dataset = ds.HighLowDataset(data_client=data_client, observationLength=observationLength, in_columns=ohlc_columns, out_columns=out_columns, compare_with="close", merge_columns=True)
+        i,o = dataset[0]
         
+        # check if output is shifted
+        #for index in range(1, len(i)):
+        #    self.assertEqual(i[index], o[index])
+        # check output size
+        self.assertEqual(i.shape[0], observationLength * len(ohlc_columns))
+        self.assertEqual(o.shape[0], len(out_columns))
+        
+        # check output size
+        batch_size = 30
+        i, o = dataset[0:batch_size]
+        self.assertEqual(i.shape[0], batch_size)
+        self.assertEqual(i.shape[1], observationLength * len(ohlc_columns))
+
+        self.assertEqual(o.shape[0], batch_size)
+        self.assertEqual(o.shape[1], len(out_columns))
         
 if __name__ == '__main__':
     unittest.main()
