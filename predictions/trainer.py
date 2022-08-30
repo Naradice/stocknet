@@ -83,6 +83,22 @@ def training_lenear_auto_encoder(data_client=None, dataset=None, batch_size=32, 
     
     model = AELinearModel(input_size,hidden_layer_num=hidden_layer_num, middle_layer_size=middle_layer_size, device=device)
     model = model.to(device)
+    
+def training_lstm_auto_encoder(data_client=None, dataset=None, batch_size=32, observationLength=100, in_column=["open"], out_column=None,
+                                 epoc_num=-1, hidden_layer_num = 5, middle_layer_size = 48, version=1,
+                                 optimizer=None, loss_fn=nn.MSELoss(), model_name=None):
+    data_client, train_dl, val_dl, frame, kinds, input, output = __create_dataloaders(data_client=data_client, dataset=dataset, batch_size=batch_size, 
+                                                          observationLength=observationLength, in_column=in_column, out_column=out_column)
+
+    
+    input_size = input.shape[0]
+    if model_name is None:
+        model_name = f'{kinds}_{frame}min/LSTMAE-{str(hidden_layer_num)}_v{str(version)}'
+    else:
+        model_name = f'{kinds}_{str(frame)}min/{model_name}'
+    
+    model = LSTM(input_size,hidden_layer_num=hidden_layer_num, middle_layer_size=middle_layer_size, device=device)
+    model = model.to(device)
 
     __train_common(data_client=data_client, model=model, model_name=model_name,
                     sample_input=input, batch_size=batch_size,
