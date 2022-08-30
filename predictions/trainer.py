@@ -58,7 +58,7 @@ def training_lstm_model(data_client=None, dataset=None, batch_size=32, observati
                                                           observationLength=observationLength, in_column=in_column, out_column=out_column)
     print("input:", i.shape, "output:", o.shape)
     # need to modify the dim when shape is unexpected
-    input_size = i.shape[0]
+    input_size = i.shape[1]
 
     if model_name is None:
         model_name = f'{kinds}_{str(frame)}min/{int(observationLength/(60/frame))}h_LSTM{str(hidden_layer_num)}_v{str(version)}'

@@ -100,5 +100,25 @@ def next_nv():
     dataset = ds.ShiftDataset(data_client, observationLength=observationLength, in_columns=columns, out_columns=columns, shift=shift)
     training_lstm_model(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_size, version=version, epoc_num=epoc_num, model_name=model_name)
 
+def next_high_low(epoc=-1, h_layer_sizes = [2,4,8,16], target_columns = ["open", "high", "low", "close"]):
+    for h_layer in h_layer_sizes:
+        #processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        learning_target_columns = target_columns
+
+        data_client = fc.CSVClient(file=file_path, frame=60*24, date_column="time", post_process=processes, columns=['high', 'low','open','close'])
+        ##hyper parameters##
+        observationDays = 60
+        batch_size = 32
+        hidden_layer_size = h_layer
+        ####################
+        #epoc_num = 50
+        version = 3
+        model_name = f'next_hl/{str(observationDays)}d_LSTM{str(hidden_layer_size)}_v{str(version)}'
+        
+        dataset = ds.HighLowDataset(data_client, observationLength=observationDays, in_columns=learning_target_columns, out_columns=learning_target_columns, compare_with="close", merge_columns=False)
+        training_lstm_model(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_size, version=version, epoc_num=epoc, model_name=model_name)    
+
+
 if __name__ == "__main__":
-    next_ohlc()
+    next_high_low()
