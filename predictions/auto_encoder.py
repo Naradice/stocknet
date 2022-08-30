@@ -20,19 +20,19 @@ import torch.nn as nn
 
 from trainer import training_lenear_auto_encoder
     
-def auto_encoder_macd(file, client_columns, client_date_column, target_column="Close", epoc_num=-1, version=1):
+def auto_encoder_macd(file, client_columns, client_date_column, frame, target_column="Close", epoc_num=-1, version=1):
     macd_ps = fc.utils.MACDpreProcess(target_column=target_column)
     processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
-    data_client = fc.CSVClient(file=file, frame=frame, columns=client_columns,frame=frame, date_column=client_date_column, idc_processes=[macd_ps], post_process=processes)
+    data_client = fc.CSVClient(file=file, frame=frame, columns=client_columns,date_column=client_date_column, idc_processes=[macd_ps], post_process=processes)
     columns = []
     for key, value in macd_ps.columns.items():
         columns.append(value)
         
     ##hyper parameters##
-    observationLength = 30
+    observationLength = 7
     batch_size = 32
     hidden_layer_num = 5
-    middle_layer_size = 12#should be less than data length
+    middle_layer_size = 12#should be less than data length * column num
     ####################
     
     model_name = f'macd/AE-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
@@ -44,10 +44,10 @@ def auto_encoder_ohlc(file, client_columns, client_date_column, frame, epoc_num=
     data_client = fc.CSVClient(file=file, frame=frame, columns=client_columns, date_column=client_date_column, post_process=processes)
         
     ##hyper parameters##
-    observationLength = 7
+    observationLength = 1
     batch_size = 32
     hidden_layer_num = 5
-    middle_layer_size = 12#should be less than data length
+    middle_layer_size = 4#should be less than data length * column num
     ####################
     
     model_name = f'ohlc/AE-{str(hidden_layer_num)}-{str(middle_layer_size).zfill(2)}_v{str(version)}'
