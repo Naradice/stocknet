@@ -1,11 +1,13 @@
 from stocknet.datasets.shift import ShiftDataset
 from stocknet.datasets.ohlc import OHLCDataset
 from stocknet.datasets.finance import Dataset
+from stocknet.datasets.highlow import HighLowDataset
 
 available_dataset = {
     Dataset.key: Dataset,
     OHLCDataset.key: OHLCDataset,
     ShiftDataset.key: ShiftDataset,
+    HighLowDataset.key: HighLowDataset
 }
 
 def dataset_to_params(ds):
