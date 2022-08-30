@@ -103,7 +103,7 @@ def next_nv():
 def next_high_low(epoc=-1, h_layer_sizes = [2,4,8,16], target_columns = ["open", "high", "low", "close"]):
     for h_layer in h_layer_sizes:
         #processes = [fc.utils.DiffPreProcess(), fc.utils.MinMaxPreProcess(scale=(-1,1))]
-        processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        processes = [fc.utils.MinMaxPreProcess(scale=(0,1))]
         learning_target_columns = target_columns
 
         data_client = fc.CSVClient(file=file_path, frame=60*24, date_column="time", post_process=processes, columns=['high', 'low','open','close'])
