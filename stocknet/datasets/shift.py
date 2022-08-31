@@ -5,7 +5,7 @@ from stocknet.datasets.finance import Dataset
 
 class ShiftDataset(Dataset):
     
-    key = "shit_ohlc"
+    key = "shit"
     
     def __init__(self, data_client, observationLength=1000, in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], shift=1, merge_input_columns=False, seed = None, isTraining=True):
         self.shift = shift
@@ -22,8 +22,12 @@ class ShiftDataset(Dataset):
             self.toIndex = length - self.shift
         
         ##select random indices.
-        k=length - self.observationLength*2 -1
-        self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        ## length to select random indices.
+        k = self.__len__()
+        ## if allow duplication
+        #self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        ## if disallow duplication
+        self.indices = random.sample(range(self.fromIndex, self.toIndex), k=k)
         
     def inputFunc(self, ndx):
         return self.getInputs(ndx, self.in_columns)
