@@ -1,4 +1,6 @@
 import unittest, os, json, sys, datetime, copy
+
+from matplotlib.pyplot import axis
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(module_path)
 import stocknet.datasets as ds
@@ -6,7 +8,7 @@ import stocknet.datasets as ds
 finance_client_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client'))
 sys.path.append(finance_client_module_path)
 import finance_client as fc
-
+import torch
 
 file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client/finance_client/data_source/mt5/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv'))
 ohlc_columns = ['high', 'low','open','close']
@@ -233,6 +235,9 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(o.shape[1], len(out_columns))
         
         for index in range(0,30):
+            totals = torch.sum(o[index], axis=1)
+            for value in totals:
+                self.assertEqual(value, 1)
             org_index = dataset.getActialIndex(index)
             last_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index-1])
             last_value = last_values[ohlc_columns.index(compare_with)]
