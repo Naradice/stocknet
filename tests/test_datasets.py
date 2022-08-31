@@ -163,11 +163,13 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(o.shape[1], len(out_columns))
         
     def test_highlow(self):
-        processes = [fc.utils.MinMaxPreProcess(scale=(-1,1))]
+        mm = fc.utils.MinMaxPreProcess(scale=(-1,1))
+        processes = [mm]
         data_client = fc.CSVClient(file=file_path, frame=60*24, date_column="time", post_process=processes, columns=ohlc_columns)
         observationLength = 60
-        out_columns = ["close"]
-        dataset = ds.HighLowDataset(data_client=data_client, observationLength=observationLength, in_columns=ohlc_columns, out_columns=out_columns, compare_with="close", merge_columns=True)
+        out_columns = ["high", "low", "close"]
+        compare_with = "close"
+        dataset = ds.HighLowDataset(data_client=data_client, observationLength=observationLength, in_columns=ohlc_columns, out_columns=out_columns, compare_with=compare_with, merge_columns=True)
         i,o = dataset[0]
         
         # check if output is shifted
@@ -185,6 +187,68 @@ class TestDatasets(unittest.TestCase):
 
         self.assertEqual(o.shape[0], batch_size)
         self.assertEqual(o.shape[1], len(out_columns))
+        
+        for index in range(0,30):
+            org_index = dataset.getActialIndex(index)
+            last_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index-1])
+            last_value = last_values[ohlc_columns.index(compare_with)]
+            next_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index])
+            
+            outputs = o[index].to('cpu').detach().numpy().copy()
+            column_index = 0
+            for o_column in out_columns:
+                next_value = next_values[ohlc_columns.index(o_column)]
+                # o.shape: (30, 3)
+                output = outputs[column_index]
+                if  output == 1:#greater than last_value
+                    self.assertGreater(next_value, last_value)
+                else:
+                    self.assertLessEqual(next_value, last_value)
+                column_index+=1
+                
+    def test_highlow_possibility(self):
+        mm = fc.utils.MinMaxPreProcess(scale=(-1,1))
+        processes = [mm]
+        data_client = fc.CSVClient(file=file_path, frame=60*24, date_column="time", post_process=processes, columns=ohlc_columns)
+        observationLength = 60
+        out_columns = ["high", "low", "close"]
+        compare_with = "close"
+        dataset = ds.HighLowDataset(data_client=data_client, observationLength=observationLength, in_columns=ohlc_columns, out_columns=out_columns, compare_with=compare_with, merge_columns=True, binary_mode=False)
+        i,o = dataset[0]
+        
+        # check if output is shifted
+        #for index in range(1, len(i)):
+        #    self.assertEqual(i[index], o[index])
+        # check output size
+        self.assertEqual(i.shape[0], observationLength * len(ohlc_columns))
+        self.assertEqual(o.shape[0], len(out_columns))
+        
+        # check output size
+        batch_size = 30
+        i, o = dataset[0:batch_size]
+        self.assertEqual(i.shape[0], batch_size)
+        self.assertEqual(i.shape[1], observationLength * len(ohlc_columns))
+
+        self.assertEqual(o.shape[0], batch_size)
+        self.assertEqual(o.shape[1], len(out_columns))
+        
+        for index in range(0,30):
+            org_index = dataset.getActialIndex(index)
+            last_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index-1])
+            last_value = last_values[ohlc_columns.index(compare_with)]
+            next_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index])
+            
+            outputs = o[index].to('cpu').detach().numpy().copy()
+            column_index = 0
+            for o_column in out_columns:
+                next_value = next_values[ohlc_columns.index(o_column)]
+                # o.shape: (30, 3)
+                output = outputs[column_index][0]##High
+                if  output == 1:#greater than last_value
+                    self.assertGreater(next_value, last_value)
+                else:
+                    self.assertLessEqual(next_value, last_value)
+                column_index+=1
         
 if __name__ == '__main__':
     unittest.main()

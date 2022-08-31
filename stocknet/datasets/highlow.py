@@ -1,7 +1,6 @@
 import random
-import numpy
-import torch
 from stocknet.datasets.finance import Dataset
+import pandas as pd
 
 class HighLowDataset(Dataset):
     """ 
@@ -11,7 +10,7 @@ class HighLowDataset(Dataset):
     
     key = "hl"
 
-    def __init__(self, data_client, observationLength:int, in_columns=["Open", "High", "Low", "Close"] ,out_columns=["Open", "High", "Low", "Close"], compare_with="Close", merge_columns = False, seed = None, isTraining = True):
+    def __init__(self, data_client, observationLength:int, in_columns=["Open", "High", "Low", "Close"] ,out_columns=["Open", "High", "Low", "Close"], compare_with="Close", merge_columns = False, seed = None, isTraining = True, binary_mode=True):
         super().__init__(data_client, observationLength, in_columns, out_columns, merge_columns, seed, isTraining)
         self.compare_with = compare_with
         ## TODO: add HL column
@@ -19,6 +18,10 @@ class HighLowDataset(Dataset):
         data = data_client.get_rate_with_indicaters()
         self.row_data = data_client.revert_postprocesses(data)
         self.init_indicies()
+        if binary_mode:
+            self.outputFunc = self.output_binary
+        else:
+            self.outputFunc = self.output_possibility
         
     def init_indicies(self):
         length = len(self.data)
@@ -40,9 +43,8 @@ class HighLowDataset(Dataset):
         ## if disallow duplication
         self.indices = random.sample(range(self.fromIndex, self.toIndex), k=k)
         
-    ## overwrite
-    def outputFunc(self, batch_size):
-        inputs = []
+    def output_binary(self, batch_size):
+        output = []
         if type(batch_size) == int:
             batch_indicies = slice(batch_size, batch_size+1)
             out_indicies = 0
@@ -53,6 +55,25 @@ class HighLowDataset(Dataset):
             last_value_to_compare = self.row_data[self.compare_with].iloc[index-1]
             temp = self.row_data[self.out_columns].iloc[index] > last_value_to_compare
             ##TODO: convert True/False to mini/max value
-            inputs.append(temp)
-        return inputs[out_indicies]
+            output.append(temp)
+        return output[out_indicies]
         
+        
+    def output_possibility(self, batch_size):
+        output = []
+        out_unit = pd.Series([True, False], index=['high', 'low'])
+        if type(batch_size) == int:
+            batch_indicies = slice(batch_size, batch_size+1)
+            out_indicies = 0
+        elif type(batch_size) == slice:
+            batch_indicies = batch_size
+            out_indicies = slice(0,None)
+        for index in self.indices[batch_indicies]:
+            last_value_to_compare = self.row_data[self.compare_with].iloc[index-1]
+            temp = self.row_data[self.out_columns].iloc[index] > last_value_to_compare
+            index_ans = []
+            for is_high in temp:
+                ans = is_high == out_unit
+                index_ans.append(ans)
+            output.append(index_ans)
+        return output[out_indicies]
