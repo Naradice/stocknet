@@ -1,6 +1,8 @@
 import os, sys
 
 from trainer import training_lstm_model
+import torch.nn as nn
+import torch
 
 finance_client_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client'))
 sys.path.append(finance_client_module_path)
@@ -113,11 +115,15 @@ def next_high_low(epoc=-1, h_layer_sizes = [2,4,8,16], target_columns = ["open",
         hidden_layer_size = h_layer
         ####################
         #epoc_num = 50
-        version = 3
+        version = 3.3
+        loss_fn = nn.BCELoss()
+        activate_function = nn.Sigmoid()
         model_name = f'next_hl/{str(observationDays)}d_LSTM{str(hidden_layer_size)}_v{str(version)}'
         
         dataset = ds.HighLowDataset(data_client, observationLength=observationDays, in_columns=learning_target_columns, out_columns=learning_target_columns, compare_with="close", merge_columns=False)
-        training_lstm_model(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_size, version=version, epoc_num=epoc, model_name=model_name)    
+        training_lstm_model(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_size, 
+        version=version, epoc_num=epoc, model_name=model_name,
+        loss_fn=loss_fn, activation_for_output=activate_function)
 
 
 if __name__ == "__main__":

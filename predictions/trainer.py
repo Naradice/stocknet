@@ -24,6 +24,8 @@ def __train_common(data_client, model, sample_input, batch_size, model_name, tra
     model = model.to(device)
     if optimizer is None:
         optimizer = optim.Adam(model.parameters(), lr=1e-5)
+    else:
+        optimizer = optimizer(model.parameters(), lr=1e-5)
     tr = trainer.Trainer(model_name, loss_fn, train_dl, val_dl, device)
     tr.save_architecture(model, sample_input, batch_size)
     tr.save_client(data_client)
@@ -52,7 +54,7 @@ def __create_dataloaders(data_client, dataset, batch_size, observationLength, in
     val_dl = DataLoader(ds_val, batch_size=batch_size, drop_last=True, shuffle=False, pin_memory=True)    
     return data_client, train_dl, val_dl, frame, kinds, input, output
 
-def training_lstm_model(data_client=None, dataset=None, batch_size=32, observationLength=100, in_column=["open"], out_column=["close"], epoc_num=-1, hidden_layer_num=5, optimizer=None, loss_fn=nn.MSELoss(), version=1, model_name=None):
+def training_lstm_model(data_client=None, dataset=None, batch_size=32, observationLength=100, in_column=["open"], out_column=["close"], epoc_num=-1, hidden_layer_num=5, optimizer=None, loss_fn=nn.MSELoss(), version=1, model_name=None, activation_for_output=torch.tanh):
 
     data_client, train_dl, val_dl, frame, kinds, i, o = __create_dataloaders(data_client=data_client, dataset=dataset, batch_size=batch_size, 
                                                           observationLength=observationLength, in_column=in_column, out_column=out_column)
@@ -64,7 +66,7 @@ def training_lstm_model(data_client=None, dataset=None, batch_size=32, observati
         model_name = f'{kinds}_{str(frame)}min/{int(observationLength/(60/frame))}h_LSTM{str(hidden_layer_num)}_v{str(version)}'
     else:
         model_name = f'{kinds}_{str(frame)}min/{model_name}'
-    model = LSTM(input_size, hiddenDim=hidden_layer_num, outputDim=o.shape[0], device=device)
+    model = LSTM(input_size, hiddenDim=hidden_layer_num, outputDim=o.shape[0], device=device, activation_for_output=activation_for_output)
     __train_common(data_client=data_client, model=model, model_name=model_name,
                     sample_input=i, batch_size=batch_size,
                    train_dl=train_dl, val_dl=val_dl, epoc_num=epoc_num,

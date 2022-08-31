@@ -1,10 +1,11 @@
 import torch.nn as nn
+from torch import tanh
 
 class LSTM(nn.Module):
     
     key = "lstm"
     
-    def __init__(self, inputDim, hiddenDim, outputDim, device):
+    def __init__(self, inputDim, hiddenDim, outputDim, device, activation_for_output = tanh):
         self.args = (inputDim, hiddenDim, outputDim, device)
         super(LSTM, self).__init__()
 
@@ -13,6 +14,7 @@ class LSTM(nn.Module):
                             batch_first = True,
                             device=device)
         self.output_layer = nn.Linear(hiddenDim, outputDim, device=device)
+        self.activation_for_output = activation_for_output
         self.device = device
     
     def forward(self, inputs, hidden0=None):
@@ -22,5 +24,6 @@ class LSTM(nn.Module):
         # output = self.output_layer(output)
         l_inpuuts = output[:, -1, :]
         output = self.output_layer(l_inpuuts.to(self.device))
+        output = self.activation_for_output(output)
 
         return output
