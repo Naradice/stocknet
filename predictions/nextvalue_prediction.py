@@ -116,8 +116,8 @@ def next_high_low(epoc=-1, h_layer_sizes = [2,4,8,16], target_columns = ["open",
         ####################
         #epoc_num = 50
         version = 3.3
-        loss_fn = nn.MSELoss()
-        activate_function = nn.Softmax(dim=1)
+        loss_fn = nn.BCELoss()
+        activate_function = nn.Sigmoid()
         model_name = f'next_hl/{str(observationDays)}d_LSTM{str(hidden_layer_size)}_v{str(version)}'
         
         dataset = ds.HighLowDataset(data_client, observationLength=observationDays, in_columns=learning_target_columns, out_columns=learning_target_columns, compare_with="close", merge_columns=False)
