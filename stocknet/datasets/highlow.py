@@ -16,6 +16,8 @@ class HighLowDataset(Dataset):
         self.compare_with = compare_with
         ## TODO: add HL column
         self.args = (data_client, observationLength, in_columns ,out_columns, compare_with, merge_columns, seed)
+        data = data_client.get_rate_with_indicaters()
+        self.row_data = data_client.revert_postprocesses(data)
         self.init_indicies()
         
     def init_indicies(self):
@@ -48,8 +50,8 @@ class HighLowDataset(Dataset):
             batch_indicies = batch_size
             out_indicies = slice(0,None)
         for index in self.indices[batch_indicies]:
-            last_value_to_compare = self.data[self.compare_with].iloc[index-1]
-            temp = self.data[self.out_columns].iloc[index] > last_value_to_compare
+            last_value_to_compare = self.row_data[self.compare_with].iloc[index-1]
+            temp = self.row_data[self.out_columns].iloc[index] > last_value_to_compare
             ##TODO: convert True/False to mini/max value
             inputs.append(temp)
         return inputs[out_indicies]
