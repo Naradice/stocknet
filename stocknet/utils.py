@@ -2,7 +2,7 @@ import os
 import torch
 from torchinfo import summary
 import finance_client.utils.idcprocess as ips
-import finance_client.utils.postprocess as pps
+import finance_client.utils.preprocess as pps
 from finance_client import client_to_params
 import datetime
 import json

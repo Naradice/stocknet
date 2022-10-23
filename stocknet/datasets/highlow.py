@@ -16,7 +16,7 @@ class HighLowDataset(Dataset):
         ## TODO: add HL column
         self.args = (data_client, observationLength, in_columns ,out_columns, compare_with, merge_columns, seed)
         data = data_client.get_rate_with_indicaters()
-        self.row_data = data_client.revert_postprocesses(data)
+        self.row_data = data_client.revert_preprocesses(data)
         self.init_indicies()
         if binary_mode:
             self.outputFunc = self.output_binary

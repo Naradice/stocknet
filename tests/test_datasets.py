@@ -235,15 +235,17 @@ class TestDatasets(unittest.TestCase):
         self.assertEqual(o.shape[1], len(out_columns))
         
         for index in range(0,30):
-            totals = torch.sum(o[index], axis=1)
+            index_out = o[index]
+            totals = torch.sum(index_out, axis=1)
             for value in totals:
                 self.assertEqual(value, 1)
+            sf = torch.nn.Softmax(dim=1)(index_out)
             org_index = dataset.getActialIndex(index)
             last_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index-1])
             last_value = last_values[ohlc_columns.index(compare_with)]
             next_values = mm.revert(dataset.data[ohlc_columns].iloc[org_index])
             
-            outputs = o[index].to('cpu').detach().numpy().copy()
+            outputs = index_out.to('cpu').detach().numpy().copy()
             column_index = 0
             for o_column in out_columns:
                 next_value = next_values[ohlc_columns.index(o_column)]
