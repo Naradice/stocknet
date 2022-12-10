@@ -29,10 +29,10 @@ def __train_common(data_client, model, sample_input, batch_size, model_name, tra
     tr = trainer.Trainer(model_name, loss_fn, train_dl, val_dl, device)
     tr.save_architecture(model, sample_input, batch_size)
     tr.save_client(data_client)
-    tr.training_loop(model,optimizer, epoc_num)
+    tr.training_loop(model, optimizer, epoc_num)
     tr.validate(model, val_dl)
 
-def __create_dataloaders(data_client, dataset, batch_size, observationLength, in_column, out_column):
+def __create_dataloaders(data_client, dataset, batch_size, observationLength, in_column, out_column, idc_processes=[], pre_processes=[]):
     if data_client is None and dataset is None:
         raise Exception("You need to provide either data_client or dataset")
     
@@ -47,17 +47,17 @@ def __create_dataloaders(data_client, dataset, batch_size, observationLength, in
         frame = data_client.frame
         kinds = str(data_client.kinds)
         
-        dataset = ds.Dataset(data_client=data_client, observationLength=observationLength, in_columns=in_column, out_columns=out_column)
-        ds_val = ds.Dataset(data_client=data_client, observationLength=observationLength, in_columns=in_column, out_columns=out_column, isTraining=False)
+        dataset = ds.Dataset(data_client=data_client, idc_processes=idc_processes, pre_processes=pre_processes, observationLength=observationLength, in_columns=in_column, out_columns=out_column, merge_columns=False)
+        ds_val = ds.Dataset(data_client=data_client, idc_processes=idc_processes, pre_processes=pre_processes, observationLength=observationLength, in_columns=in_column, out_columns=out_column, merge_columns=False, isTraining=False)
     input, output = dataset[0]
     train_dl = DataLoader(dataset, batch_size=batch_size, drop_last=True, shuffle=False, pin_memory=True)
     val_dl = DataLoader(ds_val, batch_size=batch_size, drop_last=True, shuffle=False, pin_memory=True)    
     return data_client, train_dl, val_dl, frame, kinds, input, output
 
-def training_lstm_model(data_client=None, dataset=None, batch_size=32, observationLength=100, in_column=["open"], out_column=["close"], epoc_num=-1, hidden_layer_num=5, optimizer=None, loss_fn=nn.MSELoss(), version=1, model_name=None, activation_for_output=torch.tanh):
+def training_lstm_model(data_client=None, dataset=None, idc_processes=[], pre_processes=[], batch_size=32, observationLength=100, in_column=["open"], out_column=["close"], epoc_num=-1, hidden_layer_num=5, optimizer=None, loss_fn=nn.MSELoss(), version=1, model_name=None, activation_for_output=torch.tanh):
 
-    data_client, train_dl, val_dl, frame, kinds, i, o = __create_dataloaders(data_client=data_client, dataset=dataset, batch_size=batch_size, 
-                                                          observationLength=observationLength, in_column=in_column, out_column=out_column)
+    data_client, train_dl, val_dl, frame, kinds, i, o = __create_dataloaders(data_client=data_client, dataset=dataset, idc_processes=idc_processes, pre_processes=pre_processes, 
+                                                                             batch_size=batch_size, observationLength=observationLength, in_column=in_column, out_column=out_column)
     print("input:", i.shape, "output:", o.shape)
     # need to modify the dim when shape is unexpected
     input_size = i.shape[1]

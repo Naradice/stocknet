@@ -64,7 +64,7 @@ class Trainer():
     def save_architecture(self, model, input, batch_size):
         save_model_architecture(model, input, batch_size, self.name)
         
-    def training_loop(self,model, optimizer, n_epochs=-1,mode="human", validate=False):
+    def training_loop(self, model, optimizer, n_epochs=-1, mode="human", validate=False):
         self.model_cp = copy.deepcopy(model)
         mean_loss = 0
         start_time = datetime.datetime.now()

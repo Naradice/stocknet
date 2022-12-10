@@ -1,5 +1,6 @@
 *.csv
 #Python env
+fc_env/
 bin/
 lib/
 lib64
