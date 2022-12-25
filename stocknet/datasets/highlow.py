@@ -1,6 +1,8 @@
-import random
-from stocknet.datasets.finance import Dataset
 import pandas as pd
+import torch
+
+from stocknet.datasets.finance import Dataset
+
 
 class HighLowDataset(Dataset):
     """ 
@@ -10,70 +12,61 @@ class HighLowDataset(Dataset):
     
     key = "hl"
 
-    def __init__(self, data_client, observationLength:int, in_columns=["Open", "High", "Low", "Close"] ,out_columns=["Open", "High", "Low", "Close"], compare_with="Close", merge_columns = False, seed = None, isTraining = True, binary_mode=True):
-        super().__init__(data_client, observationLength, in_columns, out_columns, merge_columns, seed, isTraining)
+    def __init__(self, data_client, observationLength:int, idc_processes=[], pre_processes=[], in_columns=["Open", "High", "Low", "Close"] ,out_columns=["Open", "High", "Low", "Close"], compare_with="Close", merge_columns = False, seed = None, binary_mode=True, isTraining=True):
+        super().__init__(data_client, observationLength,idc_processes, pre_processes, in_columns, out_columns, merge_columns, seed, isTraining)
         self.compare_with = compare_with
+        list([compare_with]+out_columns)
         ## TODO: add HL column
-        self.args = (data_client, observationLength, in_columns ,out_columns, compare_with, merge_columns, seed)
-        data = data_client.get_rate_with_indicaters()
-        self.row_data = data_client.revert_preprocesses(data)
+        self.args = (data_client, observationLength, idc_processes, pre_processes, in_columns ,out_columns, compare_with, merge_columns, seed, binary_mode)
         self.init_indicies()
         if binary_mode:
             self.outputFunc = self.output_binary
         else:
             self.outputFunc = self.output_possibility
         
-    def init_indicies(self):
-        length = len(self.data)
-        if length < self.observationLength:
-            raise Exception(f"date length {length} is less than observationLength {self.observationLength}")
-        
-        if self.isTraining:
-            self.fromIndex = self.observationLength+1
-            self.toIndex = int(length*0.7)
-        else:
-            self.fromIndex = int(length*0.7)+1
-            self.toIndex = length
-        
-        training_data_length = self.__len__()
-        ## length to select random indices.
-        k = training_data_length
-        ## if allow duplication
-        #self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
-        ## if disallow duplication
-        self.indices = random.sample(range(self.fromIndex, self.toIndex), k=k)
-        
     def output_binary(self, batch_size):
         output = []
+        columns = list(set([self.compare_with]) | set(self.out_columns))
+        
         if type(batch_size) == int:
             batch_indicies = slice(batch_size, batch_size+1)
-            out_indicies = 0
         elif type(batch_size) == slice:
             batch_indicies = batch_size
-            out_indicies = slice(0,None)
+            
+        symbols = self.data_client.symbols
+        
         for index in self.indices[batch_indicies]:
-            last_value_to_compare = self.row_data[self.compare_with].iloc[index-1]
-            temp = self.row_data[self.out_columns].iloc[index] > last_value_to_compare
+            data = self.data_client.get_train_data(index-1, 2, columns, symbols, self.idc_processes, self.pre_processes)
+            data = data.T
+            last_value_to_compare = data[self.compare_with].iloc[-2]
+            temp = data[self.out_columns].iloc[-1] > last_value_to_compare
+            temp = temp.replace([True, False], [1.0, 0.0])
             ##TODO: convert True/False to mini/max value
-            output.append(temp)
-        return output[out_indicies]
+            output.append(temp.tolist())
+        return torch.tensor(output).reshape((len(output) * len(symbols)* len(self.out_columns) * 1))
         
         
     def output_possibility(self, batch_size):
         output = []
+        columns = list(set([self.compare_with]) | set(self.out_columns))
         out_unit = pd.Series([True, False], index=['high', 'low'])
         if type(batch_size) == int:
             batch_indicies = slice(batch_size, batch_size+1)
-            out_indicies = 0
         elif type(batch_size) == slice:
             batch_indicies = batch_size
-            out_indicies = slice(0,None)
+
+        symbols = self.data_client.symbols
         for index in self.indices[batch_indicies]:
-            last_value_to_compare = self.row_data[self.compare_with].iloc[index-1]
-            temp = self.row_data[self.out_columns].iloc[index] > last_value_to_compare
+            data = self.data_client.get_train_data(index-1, 2, columns, symbols, self.idc_processes, self.pre_processes)
+            data = data.T
+            last_value_to_compare = data[self.compare_with].iloc[-2]
+            temp = data[self.out_columns].iloc[-1] > last_value_to_compare
             index_ans = []
             for is_high in temp:
-                ans = is_high == out_unit
+                if is_high == out_unit:
+                    ans = 1.0
+                else:
+                    ans = 0.0
                 index_ans.append(ans)
             output.append(index_ans)
-        return output[out_indicies]
+        return torch.tensor(output).reshape((len(output) * len(symbols)* len(self.out_columns) * 1))

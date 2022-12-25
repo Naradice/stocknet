@@ -1,9 +1,9 @@
 import random
 import numpy
 import torch
-from stocknet.datasets.ohlc import OHLCDataset
+from stocknet.datasets.finance import Dataset
 
-class RewardDataset(OHLCDataset):
+class RewardDataset(Dataset):
     
     key = "reward_ohlc"
     

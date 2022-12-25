@@ -1,7 +1,10 @@
 import random
+
 import numpy
 import torch
+
 import finance_client as fc
+
 
 class Dataset():
     """
@@ -14,9 +17,9 @@ class Dataset():
         self.in_columns = list(in_columns)
         self.out_columns = list(out_columns)
         if merge_columns:
-            self.__get_data_func = self.__create_merge
+            self.__get_data_func = self._create_merge
         else:
-            self.__get_data_func = self.__create_wo_merge
+            self.__get_data_func = self._create_wo_merge
         
         self.seed(seed)
         
@@ -54,30 +57,26 @@ class Dataset():
     def outputFunc(self, batch_size):
         '''
         ndx: slice type or int
-        return ans value array from actual tick data. data format (rate, diff etc) is depends on data initialization. default is diff
+        return a latest tick(1 length) of out_columns as answer values.
         '''
         if type(batch_size) == int:
             batch_indicies = slice(batch_size, batch_size+1)
         elif type(batch_size) == slice:
             batch_indicies = batch_size
         
-        chunk_data = []
-        for index in self.indices[batch_indicies]:
-            data = self.data_client.get_train_data(index, 1, self.out_columns, self.data_client.symbols, self.idc_processes, self.pre_processes)
-            chunk_data.append(data.values.tolist())
-        return self.__create_merge(batch_indicies, 1, self.out_columns, self.data_client.symbols)        
+        return self._create_merge(batch_indicies, 1, self.out_columns, self.data_client.symbols)        
     
     def inputFunc(self, ndx):
         return self.getInputs(ndx, self.in_columns, self.observationLength)
     
-    def __create_merge(self, ndx, length, columns, symbols):
+    def _create_merge(self, ndx, length, columns, symbols):
         chunk_data = []
         for index in self.indices[ndx]:
             data = self.data_client.get_train_data(index, length, columns, symbols, self.idc_processes, self.pre_processes)
             chunk_data.append(data.values.tolist())
         return torch.tensor(chunk_data).reshape((len(chunk_data) * len(symbols)* len(columns) * length))
 
-    def __create_wo_merge(self, ndx, length, columns, symbols):
+    def _create_wo_merge(self, ndx, length, columns, symbols):
         chunk_data = []
         for index in self.indices[ndx]:
             data = self.data_client.get_train_data(index, length, columns, symbols, self.idc_processes, self.pre_processes)
@@ -130,3 +129,70 @@ class Dataset():
         '''
         '''
         pass
+    
+    
+    def getRowData(self, ndx):
+        inputs = []
+        if type(ndx) == slice:
+            for index in self.indices[ndx]:
+                df = self.data_client.get_train_data(index, self.observationLength).values()
+                inputs.append(df)
+        else:
+            index = ndx
+            inputs = self.data_client.get_train_data(index, self.observationLength).values()
+        return inputs
+    
+    def getActialIndex(self,ndx):
+        inputs = []
+        if type(ndx) == slice:
+            for index in self.indices[ndx]:
+                inputs.append(index)
+        else:
+            inputs = self.indices[ndx]
+
+        return inputs
+
+class MultiFrameDataset(Dataset):
+    """Dataset to output different timeframe from input 
+    """
+    
+    key="multi"
+    
+    def __init__(self, data_client: fc.CSVClient, observationLength:int, in_frame, out_frame, idc_processes=[], pre_processes=[], in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], merge_columns=False, seed=None, isTraining=True):
+        if data_client.frame > in_frame or data_client.frame > out_frame:
+            raise ValueError(f"Can't down size frame. Client has {data_client.frame}.")
+        self.in_frame = in_frame
+        self.out_frame = out_frame
+        self.outLength = int(observationLength * in_frame/out_frame )
+        super().__init__(data_client, observationLength, idc_processes, pre_processes, in_columns, out_columns, merge_columns, seed, isTraining)
+        self.args = (data_client, observationLength, in_frame, out_frame, idc_processes,pre_processes, in_columns ,out_columns, merge_columns, seed)
+        
+    def __getRolledData(self, batch_size:slice, columns:list, length:int, frame, marge=False):
+        if type(batch_size) == int:
+            batch_indicies = slice(batch_size, batch_size+1)
+        elif type(batch_size) == slice:
+            batch_indicies = batch_size
+            
+        chunk_data = []
+        frame_ratio = int(frame/self.data_client.frame)
+        req_length = length * frame_ratio
+        symbols = self.data_client.symbols
+        
+        for index in self.indices[batch_indicies]:
+            data = self.data_client.get_train_data(index, req_length, [], symbols, self.idc_processes, self.pre_processes)
+            data = self.data_client.roll_ohlc_data(data.T, frame, grouped_by_symbol=None)
+            data.fillna(method="ffill", inplace=True)
+            data.fillna(method="bfill", inplace=True)
+            data = data[columns].iloc[:length]
+            chunk_data.append(data.values.tolist())
+        if marge:
+            tr = torch.tensor(chunk_data).reshape((len(chunk_data) * len(symbols)* len(columns) * length))
+        else:
+            tr = torch.tensor(chunk_data).reshape((len(chunk_data) * len(symbols)* len(columns), length))
+        return tr
+    
+    def inputFunc(self, ndx):
+        return self.__getRolledData(ndx, self.in_columns, self.observationLength, self.in_frame)
+    
+    def outputFunc(self, batch_size):
+        return self.__getRolledData(batch_size, self.out_columns, self.outLength, self.out_frame, True)

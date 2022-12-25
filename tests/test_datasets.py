@@ -1,14 +1,19 @@
-import unittest, os, json, sys, datetime, copy
+import copy
+import datetime
+import json
+import os
+import sys
+import unittest
 
-from matplotlib.pyplot import axis
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(module_path)
 import stocknet.datasets as ds
 
 finance_client_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client'))
 sys.path.append(finance_client_module_path)
-import finance_client as fc
 import torch
+
+import finance_client as fc
 
 file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client/finance_client/data_source/mt5/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv'))
 ohlc_columns = ['high', 'low','open','close']

@@ -1,13 +1,14 @@
-import os, sys
+import os
+import sys
+
 from trainer import training_lstm_model
 
-"""
 finance_client_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../finance_client'))
 sys.path.append(finance_client_module_path)
-"""
 
 import finance_client as fc
 import finance_client.utils.idcprocess as indicater
+
 
 def renko_trend():
     ohlc_column = ('Open','High','Low','Close')
