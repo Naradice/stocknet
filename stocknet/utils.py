@@ -47,13 +47,14 @@ def save_model(model, model_name):
     check_directory(dir_name)
     torch.save(model.state_dict(), f'models/{dir_name}/model_{version}.torch')
     
-def save_model_architecture(model, input, batch_size, model_name):
+def save_model_architecture(model, input, batch_size, model_name, device):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
     sum = summary(
         model,
         input_size = (batch_size, *input.shape),
-        col_names=["input_size", "output_size", "num_params"]
+        col_names=["input_size", "output_size", "num_params"],
+        device=device
     )
     sum_str = str(sum)
     with open(f'models/{dir_name}/architecture_{version}.txt', 'w', encoding='utf-8') as f:

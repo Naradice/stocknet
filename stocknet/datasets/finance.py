@@ -166,6 +166,32 @@ class FrameConvertDataset(Dataset):
         self.outLength = int(observationLength * in_frame/out_frame )
         super().__init__(data_client, observationLength, idc_processes, pre_processes, in_columns, out_columns, merge_columns, seed, isTraining)
         self.args = (data_client, observationLength, in_frame, out_frame, idc_processes,pre_processes, in_columns ,out_columns, merge_columns, seed)
+    
+    def init_indicies(self):
+        length = len(self.data_client)
+        if self.in_frame > self.out_frame:
+            frame_ratio = int(self.in_frame/self.data_client.frame)
+        else:
+            frame_ratio = int(self.out_frame/self.data_client.frame)
+        req_length = self.observationLength * frame_ratio
+        if length < req_length:
+            raise Exception(f"date length {length} is less than observationLength {self.observationLength}")
+        
+        if self.isTraining:
+            #TODO: need to caliculate required length
+            self.fromIndex = req_length + 100
+            self.toIndex = int(length*0.7)
+        else:
+            self.fromIndex = int(length*0.7)+1
+            self.toIndex = length
+        
+        training_data_length = self.__len__()
+        ## length to select random indices.
+        k = training_data_length
+        ## if allow duplication
+        #self.indices = random.choices(range(self.fromIndex, self.toIndex), k=k)
+        ## if disallow duplication
+        self.indices = random.sample(range(self.fromIndex, self.toIndex), k=k)
         
     def __getRolledData(self, batch_size:slice, columns:list, length:int, frame, marge=False):
         if type(batch_size) == int:
@@ -180,7 +206,7 @@ class FrameConvertDataset(Dataset):
         
         for index in self.indices[batch_indicies]:
             data = self.data_client.get_train_data(index, req_length, [], symbols, self.idc_processes, self.pre_processes)
-            data = self.data_client.roll_ohlc_data(data.T, frame, grouped_by_symbol=None)
+            data = self.data_client.roll_ohlc_data(data.T, frame, grouped_by_symbol=None, Volume=None)
             data.fillna(method="ffill", inplace=True)
             data.fillna(method="bfill", inplace=True)
             data = data[columns].iloc[:length]

@@ -62,7 +62,7 @@ class Trainer():
         save_client_params(self.name, client)
         
     def save_architecture(self, model, input, batch_size):
-        save_model_architecture(model, input, batch_size, self.name)
+        save_model_architecture(model, input, batch_size, self.name, self.device)
         
     def training_loop(self, model, optimizer, n_epochs=-1, mode="human", validate=False):
         self.model_cp = copy.deepcopy(model)

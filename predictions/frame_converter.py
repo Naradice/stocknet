@@ -32,8 +32,8 @@ def roll_down(epoc=-1, h_layer_sizes = [4,8, 16], target_columns = ["open", "hig
         version = 3.1
         model_name = f'roll_down/{str(observationDays)}d_LSTM{str(hidden_layer_size)}_v{str(version)}'
         
-        dataset = ds.FrameConvertDataset(data_client, observationLength=observationDays, pre_processes=processes,in_frame=5,out_frame=30,in_columns=learning_target_columns, out_columns=["close"])
+        dataset = ds.FrameConvertDataset(data_client, observationLength=observationDays, pre_processes=processes,in_frame=30,out_frame=15,in_columns=learning_target_columns, out_columns=["close"])
         training_lstm_model(dataset=dataset, batch_size=batch_size, hidden_layer_num=hidden_layer_size, version=version, epoc_num=epoc, model_name=model_name)
         
 if __name__ == "__main__":
-    roll_down(epoc=10, h_layer_sizes=[16])
+    roll_down(epoc=-1, h_layer_sizes=[16])
