@@ -1,10 +1,10 @@
 from stocknet.datasets.shift import ShiftDataset
-from stocknet.datasets.finance import Dataset, MultiFrameDataset
+from stocknet.datasets.finance import Dataset, FrameConvertDataset
 from stocknet.datasets.highlow import HighLowDataset
 
 available_dataset = {
     Dataset.key: Dataset,
-    MultiFrameDataset.key: MultiFrameDataset,
+    FrameConvertDataset.key: FrameConvertDataset,
     ShiftDataset.key: ShiftDataset,
     HighLowDataset.key: HighLowDataset
 }

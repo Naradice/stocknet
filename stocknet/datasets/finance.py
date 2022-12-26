@@ -152,11 +152,11 @@ class Dataset():
 
         return inputs
 
-class MultiFrameDataset(Dataset):
+class FrameConvertDataset(Dataset):
     """Dataset to output different timeframe from input 
     """
     
-    key="multi"
+    key="framecvt"
     
     def __init__(self, data_client: fc.CSVClient, observationLength:int, in_frame, out_frame, idc_processes=[], pre_processes=[], in_columns=["Open", "High", "Low", "Close"], out_columns=["Open", "High", "Low", "Close"], merge_columns=False, seed=None, isTraining=True):
         if data_client.frame > in_frame or data_client.frame > out_frame:
@@ -188,7 +188,7 @@ class MultiFrameDataset(Dataset):
         if marge:
             tr = torch.tensor(chunk_data).reshape((len(chunk_data) * len(symbols)* len(columns) * length))
         else:
-            tr = torch.tensor(chunk_data).reshape((len(chunk_data) * len(symbols)* len(columns), length))
+            tr = torch.tensor(chunk_data).reshape((len(chunk_data) * length, len(symbols)* len(columns)))
         return tr
     
     def inputFunc(self, ndx):
