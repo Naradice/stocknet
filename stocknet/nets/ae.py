@@ -1,7 +1,9 @@
 import math
+
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
+
 
 def initialize_activation_func(func_type: str):
     if func_type == "Tanh()":
@@ -9,10 +11,10 @@ def initialize_activation_func(func_type: str):
     else:
         print("please create...")
 
+
 class AELinearModel(nn.Module):
-    
     key = "ae"
-    
+
     def default_setup(self, input_size):
         i_size = input_size
         digits = 0
@@ -20,15 +22,15 @@ class AELinearModel(nn.Module):
             i_size = i_size / 10
             digits += 1
         i_size = input_size
-        o_size = round(input_size / (2+digits-1))
+        o_size = round(input_size / (2 + digits - 1))
         self.middle_out_index = digits
-        for d in range(1, digits+1):
+        for d in range(1, digits + 1):
             layer = nn.Linear(i_size, o_size).to(self.device)
             i_size = o_size
-            o_size = round(i_size / (2 + digits-d-1))
+            o_size = round(i_size / (2 + digits - d - 1))
             self.layers.append(layer)
         temp_layers = self.layers
-        for index in range(len(temp_layers)-1, -1, -1):
+        for index in range(len(temp_layers) - 1, -1, -1):
             i_size = temp_layers[index].out_features
             o_size = temp_layers[index].in_features
             layer = nn.Linear(i_size, o_size).to(self.device)
@@ -39,32 +41,32 @@ class AELinearModel(nn.Module):
         if input_size < middle_size:
             raise Exception("middle layer size is lager than input size")
         if layer_num % 2 == 0:
-            half_hidden_layer_size = layer_num/2
+            half_hidden_layer_size = layer_num / 2
             self.middle_out_index = half_hidden_layer_size
             even = True
         else:
-            half_hidden_layer_size = math.ceil(layer_num/2)
+            half_hidden_layer_size = math.ceil(layer_num / 2)
             self.middle_out_index = half_hidden_layer_size
             even = False
-            
-        step_reduce_size = (input_size - middle_size)/half_hidden_layer_size
+
+        step_reduce_size = (input_size - middle_size) / half_hidden_layer_size
         self.middle_out_index
-        
-        half_layer_sizes = [ input_size - math.floor(i*step_reduce_size) for i in range(0, half_hidden_layer_size)]
+
+        half_layer_sizes = [input_size - math.floor(i * step_reduce_size) for i in range(0, half_hidden_layer_size)]
         layer_sizes = half_layer_sizes.copy()
         layer_sizes.append(middle_size)
         if even:
             layer_sizes.append(middle_size)
         for value in reversed(half_layer_sizes):
             layer_sizes.append(value)
-            
+
         layer_input_size = input_size
         for layer_out_size in layer_sizes[1:]:
             layer = nn.Linear(layer_input_size, layer_out_size).to(self.device)
             layer_input_size = layer_out_size
-            self.layers.append(layer)            
-    
-    def __init__(self, input_size, hidden_layer_num = -1, middle_layer_size = -1, activation_func = nn.Tanh(), out_middle_layer=False, device=None):
+            self.layers.append(layer)
+
+    def __init__(self, input_size, hidden_layer_num=-1, middle_layer_size=-1, activation_func=nn.Tanh(), out_middle_layer=False, device=None):
         super().__init__()
         if type(activation_func) == str:
             activation_func = initialize_activation_func(activation_func)
@@ -96,7 +98,7 @@ class AELinearModel(nn.Module):
                     raise Exception("middle_layer_size should be greater than 2.")
             else:
                 raise Exception("hidden_layer_num should be grater than 2.")
-        
+
     def forward(self, x):
         out = x.to(self.device)
         index = 1

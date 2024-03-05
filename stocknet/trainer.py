@@ -1,21 +1,23 @@
-import numpy as np
-import datetime
-import torch
-import os
-from stocknet import logger as lg
-from stocknet.envs.render.graph import *
-import threading
 import copy
+import datetime
+import os
+import threading
+
+import numpy as np
+import torch
 import torch.multiprocessing as mp
-from torch import nn
 from pfrl.experiments.evaluator import AsyncEvaluator
 from pfrl.utils import async_, random_seed
-from stocknet.utils import *
-##DEBUG
-#from envs.render.graph import Rendere
+from torch import nn
 
-class Trainer():
-    
+from stocknet import logger as lg
+from stocknet.envs.render.graph import *
+from stocknet.utils import *
+
+# from envs.render.graph import Rendere
+
+
+class Trainer:
     def __init__(self, model_name, loss_fn, train_loader, val_loader, device) -> None:
         self.validation_losses = []
         self.loss_fn = loss_fn
@@ -23,13 +25,13 @@ class Trainer():
         self.val_loader = val_loader
         self.device = device
         self.name = model_name
-        
-    def __save_result(self, txt:str):
+
+    def __save_result(self, txt: str):
         save_result_as_txt(self.name, txt)
-    
+
     def __save_model(self, model):
         save_model(model, self.name)
-    
+
     def __check(self):
         mean_loss = 0.0
         with torch.no_grad():
@@ -38,32 +40,32 @@ class Trainer():
                 ans = ans.to(self.device)
                 loss = self.loss_fn(outputs, ans)
                 mean_loss += loss.item()
-        print("current validation loss:", mean_loss/len(self.val_loader))
-        if len(self.validation_losses) > 0 :
-            if self.validation_losses[-1]  > mean_loss:
+        print("current validation loss:", mean_loss / len(self.val_loader))
+        if len(self.validation_losses) > 0:
+            if self.validation_losses[-1] > mean_loss:
                 self.__save_model(self.model_cp)
                 self.val_decreased = False
             else:
                 self.val_decreased = True
         self.validation_losses.append(mean_loss)
-        
+
     def check(self, model):
         self.model_copy(model)
         threading.Thread(target=self.__check())
-        
+
     def plot_validation_results(self):
-        line_plot(self.validation_losses, 10, True, f'{self.name}.png')
-        
+        line_plot(self.validation_losses, 10, True, f"{self.name}.png")
+
     def model_copy(self, model):
         self.model_cp.load_state_dict(model.state_dict())
         self.model_cp = self.model_cp.to(self.device)
-        
+
     def save_client(self, client):
         save_client_params(self.name, client)
-        
+
     def save_architecture(self, model, input, batch_size):
         save_model_architecture(model, input, batch_size, self.name, self.device)
-        
+
     def training_loop(self, model, optimizer, n_epochs=-1, mode="human", validate=False):
         self.model_cp = copy.deepcopy(model)
         mean_loss = 0
@@ -71,8 +73,8 @@ class Trainer():
         ep_consumed_total_time = datetime.timedelta(0)
         load_model(model, self.name)
         model = model.to(self.device)
-        #save_tarining_params(ds.get_params(), model_name)
-        
+        # save_tarining_params(ds.get_params(), model_name)
+
         epoch = 1
         auto = False
         if n_epochs == -1:
@@ -80,11 +82,11 @@ class Trainer():
             n_epochs = 10
             max_cont_false = 2
             false_count = 0
-            
+
         self.val_decreased = False
-        print(start_time,'start epocs')
+        print(start_time, "start epocs")
         while epoch <= n_epochs:
-            loss_train  = np.array([])
+            loss_train = np.array([])
             ep_start_time = datetime.datetime.now()
             for inputValues, ansValue in self.train_loader:
                 outputs = model(inputValues.to(self.device))
@@ -92,21 +94,22 @@ class Trainer():
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-                #loss_train += loss.item()
+                # loss_train += loss.item()
                 loss_train = np.append(loss_train, loss.item())
             ep_end_time = datetime.datetime.now()
             ep_consumed_time = ep_end_time - ep_start_time
-            #total = ep_consumed_time.total_seconds()
-            #print(f'{time_records["render"]}/{total}, {time_records["action"]}/{total}, {time_records["step"]}/{total}, {time_records["observe"]}/{total}, {time_records["log"]}/{total}')
+            # total = ep_consumed_time.total_seconds()
+            # print(f'{time_records["render"]}/{total}, {time_records["action"]}/{total}, {time_records["step"]}/{total}, {time_records["observe"]}/{total}, {time_records["log"]}/{total}')
             ep_consumed_total_time += ep_consumed_time
-            
-            
+
             temp_loss = mean_loss
             mean_loss = loss_train.mean()
             diff_loss = mean_loss - temp_loss
-            
+
             if epoch == 1 or epoch % 10 == 0:
-                print(f'{datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}')
+                print(
+                    f"{datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}"
+                )
                 print(f"consumed time: {ep_consumed_time}, may end on :{ep_end_time + (n_epochs - epoch) *  ep_consumed_total_time/epoch}")
             if validate:
                 self.check(model)
@@ -114,7 +117,7 @@ class Trainer():
                     if self.val_decreased:
                         break
                     else:
-                        n_epochs+=1
+                        n_epochs += 1
             elif auto:
                 if epoch > 1:
                     if min_loss > mean_loss:
@@ -127,24 +130,24 @@ class Trainer():
                             break
                 else:
                     min_loss = mean_loss
-                n_epochs+=1
-            epoch+=1
+                n_epochs += 1
+            epoch += 1
         self.__save_model(model)
-        #self.plot_validation_results()
-        result_txt = f'training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}'
+        # self.plot_validation_results()
+        result_txt = f"training finished on {datetime.datetime.now()}, {datetime.datetime.now()} Epoch {epoch}, Training loss:: Mean: {mean_loss} : Std: {loss_train.std()}, Range: {loss_train.min()} to {loss_train.max()}, Diff: {diff_loss}"
         print(result_txt)
         self.__save_result(result_txt)
-        
+
     def validate(self, model, val_loader):
         mean_loss = 0
         out_ = {}
         ans_ = {}
-        output_shape = val_loader.dataset[0][1].shape#tuple(batch, input, output]
+        output_shape = val_loader.dataset[0][1].shape  # tuple(batch, input, output]
         output_size = output_shape.numel()
         for index in range(0, output_size):
             out_[index] = np.array([])
             ans_[index] = np.array([])
-            
+
         viewer = Rendere()
 
         with torch.no_grad():
@@ -154,119 +157,119 @@ class Trainer():
                 ans = ans.to(self.device)
                 loss = self.loss_fn(outputs, ans)
                 mean_loss += loss.item()
-                #output: [batchDim, outputDim]
+                # output: [batchDim, outputDim]
                 for index in range(0, output_size):
-                    out_[index] = np.append(out_[index], outputs.to('cpu').detach().numpy().copy())
-                    ans_[index] = np.append(ans_[index], ans.to('cpu').detach().numpy().copy())
+                    out_[index] = np.append(out_[index], outputs.to("cpu").detach().numpy().copy())
+                    ans_[index] = np.append(ans_[index], ans.to("cpu").detach().numpy().copy())
                 count += 1
-        
-        print('--------------------------------------------------')
-        print(f'mean loss: {mean_loss/count}')
-        print(f'mean dif ({index}): {[(out_[index] - ans_[index]).mean() for index in range(0, output_size)]}, var: {[(out_[index] - ans_[index]).var() for index in range(0, output_size)]}')
-        print('--------------------------------------------------')
 
-        
+        print("--------------------------------------------------")
+        print(f"mean loss: {mean_loss/count}")
+        print(
+            f"mean dif ({index}): {[(out_[index] - ans_[index]).mean() for index in range(0, output_size)]}, var: {[(out_[index] - ans_[index]).var() for index in range(0, output_size)]}"
+        )
+        print("--------------------------------------------------")
+
         for index in range(0, output_size):
             viewer.register_xy(ans_[index], out_[index], index=-1)
-        file_name = get_validate_filename(self.name, 'png')
+        file_name = get_validate_filename(self.name, "png")
         viewer.plot()
         viewer.write_image(file_name)
 
-class RlTrainer():
-    
+
+class RlTrainer:
     def __init__(self) -> None:
         self.end_time = None
-    
-    # TODO: create base class
-    def set_end_time(self, date:datetime):
-        self.end_time = date
-        
-    def add_end_time(self, day:int = 0, hours:int = 0):
-        self.end_time = datetime.datetime.now() + datetime.timedelta(days=day,hours=hours)
 
-    def training_loop(self, env, agent, model_name:str, n_episodes:int = 20, max_step_len:int = 1000, device=None, render=True):
+    # TODO: create base class
+    def set_end_time(self, date: datetime):
+        self.end_time = date
+
+    def add_end_time(self, day: int = 0, hours: int = 0):
+        self.end_time = datetime.datetime.now() + datetime.timedelta(days=day, hours=hours)
+
+    def training_loop(self, env, agent, model_name: str, n_episodes: int = 20, max_step_len: int = 1000, device=None, render=True):
         mr = 0
         pl = 0
-        max_mean_reward = env.reward_range[0]*max_step_len
+        max_mean_reward = env.reward_range[0] * max_step_len
         ep_consumed_total_time = datetime.timedelta(0)
         load_model(agent.model, model_name)
-        
+
         start_time = datetime.datetime.now()
-        start_time = start_time.isoformat().split('.')[0].replace(':', '-')
-        logger = lg.pt_logs(env, folder=f'logs/{model_name}/{start_time}')
+        start_time = start_time.isoformat().split(".")[0].replace(":", "-")
+        logger = lg.pt_logs(env, folder=f"logs/{model_name}/{start_time}")
         viewer = Rendere()
         viewer.add_subplot()
         obs = env.reset()
         save_model_architecture(agent.model, obs, agent.minibatch_size, model_name)
         save_tarining_params(env.get_params(), model_name)
-        
-        print(start_time,'start episodes')
-        ## show details
-        ##
+
+        print(start_time, "start episodes")
+        # show details
         for i in range(1, n_episodes + 1):
-            #obs = obs.to('cpu').detach().numpy().copy()
+            # obs = obs.to('cpu').detach().numpy().copy()
             R = 0  # return (sum of rewards)
             t = 0  # time step
             ep_start_time = datetime.datetime.now()
-            #time_records = { 'render':0, 'action':0, 'step':0, 'observe':0, 'log':0 }
+            # time_records = { 'render':0, 'action':0, 'step':0, 'observe':0, 'log':0 }
             while True:
                 # Uncomment to watch the behavior in a GUI window
-                #render_start = datetime.datetime.now()
+                # render_start = datetime.datetime.now()
                 if render:
                     env.render()
-                #render_end = datetime.datetime.now()
-                #time_records['render'] += (render_end - render_start).total_seconds()
-                
+                # render_end = datetime.datetime.now()
+                # time_records['render'] += (render_end - render_start).total_seconds()
+
                 action = agent.act(obs)
-                #act_end = datetime.datetime.now()
-                #time_records['action'] += (act_end - render_end).total_seconds()
-                
+                # act_end = datetime.datetime.now()
+                # time_records['action'] += (act_end - render_end).total_seconds()
+
                 obs, reward, done, ops = env.step(action)
-                #step_end = datetime.datetime.now()
-                #time_records['step'] += (step_end - act_end).total_seconds()
-                
+                # step_end = datetime.datetime.now()
+                # time_records['step'] += (step_end - act_end).total_seconds()
+
                 R += reward
                 t += 1
                 reset = t == max_step_len
                 agent.observe(obs, reward, done, reset)
-                #observe_end = datetime.datetime.now()
-                #time_records['observe'] += (observe_end - step_end).total_seconds()
-                
+                # observe_end = datetime.datetime.now()
+                # time_records['observe'] += (observe_end - step_end).total_seconds()
+
                 logger.store(obs, action, reward)
-                #log_end = datetime.datetime.now()
-                #time_records['log'] += (log_end - observe_end).total_seconds()
-                
+                # log_end = datetime.datetime.now()
+                # time_records['log'] += (log_end - observe_end).total_seconds()
+
                 if reset or done:
                     break
             ep_end_time = datetime.datetime.now()
             ep_consumed_time = ep_end_time - ep_start_time
-            #total = ep_consumed_time.total_seconds()
-            #print(f'{time_records["render"]}/{total}, {time_records["action"]}/{total}, {time_records["step"]}/{total}, {time_records["observe"]}/{total}, {time_records["log"]}/{total}')
+            # total = ep_consumed_time.total_seconds()
+            # print(f'{time_records["render"]}/{total}, {time_records["action"]}/{total}, {time_records["step"]}/{total}, {time_records["observe"]}/{total}, {time_records["log"]}/{total}')
             ep_consumed_total_time += ep_consumed_time
             logger.save(i)
             pl += env.pl
-            mean_reward = R/t
+            mean_reward = R / t
             mr += mean_reward
-            viewer.append_x(mean_reward,0)
+            viewer.append_x(mean_reward, 0)
             viewer.append_x(env.pl, 1)
             viewer.plot()
             obs = env.reset()
             if i % 10 == 0:
-                sma = mr/10#TODO: changeg it to simple moving average or ema
+                sma = mr / 10  # TODO: changeg it to simple moving average or ema
                 if sma > max_mean_reward:
-                    save_model(agent.model, f'{model_name}_mr')
+                    save_model(agent.model, f"{model_name}_mr")
                     max_mean_reward = sma
-                print('statistics:', agent.get_statistics(), 'R:', R/t, 'Mean R:', sma, 'PL:', env.pl, 'Mean PL:', pl/10)
+                print("statistics:", agent.get_statistics(), "R:", R / t, "Mean R:", sma, "PL:", env.pl, "Mean PL:", pl / 10)
                 print(f"consumed time: {ep_consumed_time}, may end on :{ep_end_time + (n_episodes -i) *  ep_consumed_total_time/i}")
                 mr = 0
                 pl = 0
             if self.end_time != None:
                 if self.end_time < datetime.datetime.now():
                     break
-        print(f'Finished on {datetime.datetime.now()}')
+        print(f"Finished on {datetime.datetime.now()}")
         save_model(agent.model, model_name)
-        viewer.write_image(f'models/{model_name}.png')
-        
+        viewer.write_image(f"models/{model_name}.png")
+
     def train_agent_async(
         self,
         outdir,
@@ -334,7 +337,7 @@ class RlTrainer():
             use_shared_memory (bool): Share memory amongst asynchronous agents.
         Returns:
             Trained agent.
-    """
+        """
 
         for hook in evaluation_hooks:
             if not hook.support_train_agent_async:
@@ -429,9 +432,7 @@ class RlTrainer():
             if profile:
                 import cProfile
 
-                cProfile.runctx(
-                    "f()", globals(), locals(), "profile-{}.out".format(os.getpid())
-                )
+                cProfile.runctx("f()", globals(), locals(), "profile-{}.out".format(os.getpid()))
             else:
                 f()
 
