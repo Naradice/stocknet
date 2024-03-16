@@ -6,15 +6,13 @@ import torch.nn.functional as F
 
 
 def initialize_activation_func(func_type: str):
-    if func_type == "Tanh()":
+    if func_type == "Tanh":
         return nn.Tanh()
     else:
         print("please create...")
 
 
 class AELinearModel(nn.Module):
-    key = "ae"
-
     def default_setup(self, input_size):
         i_size = input_size
         digits = 0
@@ -66,15 +64,20 @@ class AELinearModel(nn.Module):
             layer_input_size = layer_out_size
             self.layers.append(layer)
 
-    def __init__(self, input_size, hidden_layer_num=-1, middle_layer_size=-1, activation_func=nn.Tanh(), out_middle_layer=False, device=None):
+    def __init__(
+        self, input_size, hidden_layer_num=-1, middle_layer_size=-1, activation_func=nn.Tanh(), out_middle_layer=False, device=None, **kwargs
+    ):
         super().__init__()
         if type(activation_func) == str:
             activation_func = initialize_activation_func(activation_func)
-        self.args = (input_size, hidden_layer_num, middle_layer_size, str(activation_func), out_middle_layer, device)
-        if device == None:
-            self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
+        self.args = {
+            "input_size": input_size,
+            "hidden_layer_num": hidden_layer_num,
+            "middle_layer_size": middle_layer_size,
+            "activation_func": activation_func._get_name(),
+            "out_middle_layer": out_middle_layer,
+        }
+        self.device = device
         self.activation = activation_func.to(self.device)
         self.layers = nn.ModuleList().to(self.device)
         self.out_middle_layer = out_middle_layer
@@ -108,7 +111,7 @@ class AELinearModel(nn.Module):
             if index == self.middle_out_index:
                 self.middle_layer_output = out
             index += 1
-        if self.out_middle_layer == True:
+        if self.out_middle_layer:
             return out, self.out_middle_layer
         else:
             return out

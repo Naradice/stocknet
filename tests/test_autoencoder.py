@@ -16,7 +16,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 import stocknet.datasets as ds
-import stocknet.trainer as trainer
+import stocknet.train.rltrainer as rltrainer
 from stocknet.nets.ae import AELinearModel
 
 file_path = os.path.abspath(
@@ -53,7 +53,7 @@ class TestAELinearModel(unittest.TestCase):
         # optimizer = optim.SGD(model.parameters(), lr=1e-6)
         loss_fn = nn.MSELoss()
 
-        tr = trainer.Trainer(model_name, loss_fn, train_dl, val_loader, device)
+        tr = rltrainer.Trainer(model_name, loss_fn, train_dl, val_loader, device)
         tr.training_loop(model, optimizer, epoc_num)
 
 

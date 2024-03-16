@@ -1,23 +1,30 @@
-import numpy as np
-import pfrl
 import torch
 import torch.nn as nn
 
 
 class SimpleDense(nn.Module):
-    key = "dense"
-
-    def __init__(self, layer_num, size, inputDim, n_actions, removeHistoryData=True, lr=True):
+    def __init__(self, layer_num, size, input_dim, n_actions, remove_history_data=True, lr=True, **kwargs):
         super().__init__()
-        self.args = (layer_num, size, inputDim, n_actions, removeHistoryData, lr)
+        self.args = {
+            "layer_num": layer_num,
+            "size": size,
+            "input_dim": input_dim,
+            "n_actions": n_actions,
+            "remove_history_data": remove_history_data,
+            "lr": lr,
+        }
         self.__lr = lr
+        if lr is True:
+            import pfrl
+
+            self.__lr_module = pfrl
         self.size = size
-        self.rhd = removeHistoryData
-        self.ActionHistoryDim = 2
-        if removeHistoryData:
-            input_dims = inputDim - self.ActionHistoryDim
+        self.rhd = remove_history_data
+        self.action_history_dim = 2
+        if remove_history_data:
+            input_dims = input_dim - self.action_history_dim
         else:
-            input_dims = inputDim
+            input_dims = input_dim
         self.layerDips = size * input_dims
         self.layers = nn.ModuleList()
         for i in range(0, layer_num):
@@ -26,14 +33,14 @@ class SimpleDense(nn.Module):
 
         out_in_dims = self.layerDips
         if self.rhd:
-            out_in_dims += self.ActionHistoryDim
+            out_in_dims += self.action_history_dim
         self.output_layer = nn.Linear(out_in_dims, n_actions)
 
     def forward(self, inputs):
         batch_size, feature_len, seq_len = inputs.shape[0], inputs.shape[1], inputs.shape[2]
         if self.rhd:
-            feature_len = feature_len - self.ActionHistoryDim
-            last_actions = inputs[:, -self.ActionHistoryDim :, -1]  # [1, ActionHistoryDim] (ex.torch.Size([1, 3]))
+            feature_len = feature_len - self.action_history_dim
+            last_actions = inputs[:, -self.action_history_dim :, -1]  # [1, action_history_dim] (ex.torch.Size([1, 3]))
         out = inputs[:, :feature_len, :]
         layerDips = feature_len * seq_len
         # assert layerDips == self.layerDips
@@ -45,17 +52,15 @@ class SimpleDense(nn.Module):
         # out = torch.tanh()
         out = self.output_layer(out)
         if self.__lr:
-            return pfrl.action_value.DiscreteActionValue(out)
+            return self.__lr_module.action_value.DiscreteActionValue(out)
         else:
             return out
 
 
 class ConvDense16(nn.Module):
-    key = "conv16"
-
     def __init__(self, size, channel=5, out_size=3, lr=True):
         super().__init__()
-        self.args = (size, channel, out_size, lr)
+        self.args = {"size": size, "channel": channel, "out_size": out_size, "lr": lr}
         self.__lr = lr
         self.size = size
         dtype = torch.float32

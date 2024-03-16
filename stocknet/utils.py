@@ -3,11 +3,8 @@ import json
 import os
 
 import torch
-from torchinfo import summary
-
-import finance_client.utils.idcprocess as ips
-import finance_client.utils.preprocess as pps
-from finance_client import client_to_params
+from fprocess import idcprocess as ips
+from fprocess import preprocess as pps
 
 
 def get_validate_filename(model_name, extension="png"):
@@ -38,34 +35,10 @@ def save_result_as_txt(model_name: str, result: str, use_date_to_filename=True):
         f.write(result)
 
 
-# Todo create model from architecture
-def load_model(model, model_name):
-    dir_name, version = __remove_version_str(model_name)
-    model_path = f"models/{dir_name}/model_{version}.torch"
-    if os.path.exists(model_path):
-        model.load_state_dict(torch.load(model_path))
-    else:
-        print("model name doesn't exist. new model will be created.")
-
-
 def save_model(model, model_name):
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
     torch.save(model.state_dict(), f"models/{dir_name}/model_{version}.torch")
-
-
-def save_model_architecture(model, input, batch_size, model_name, device):
-    dir_name, version = __remove_version_str(model_name)
-    check_directory(dir_name)
-    sum = summary(model, input_size=(batch_size, *input.shape), col_names=["input_size", "output_size", "num_params"], device=device)
-    sum_str = str(sum)
-    with open(f"models/{dir_name}/architecture_{version}.txt", "w", encoding="utf-8") as f:
-        f.write(sum_str)
-
-
-# def copy_model(model):
-#    copied_model = copy.deepcopy(model)
-#    return copied_model
 
 
 def save_tarining_params(params: dict, model_name):
@@ -93,6 +66,8 @@ def check_directory(model_name: str) -> None:
 
 
 def save_client_params(model_name, client):
+    from finance_client import client_to_params
+
     dir_name, version = __remove_version_str(model_name)
     check_directory(dir_name)
     txt_file_name = f"models/{dir_name}/client_{version}.json"
@@ -131,7 +106,10 @@ def load_params(model_name):
 
 
 def dataset_to_params(model_name, ds):
+    from finance_client import client_to_params
+
     client_params = client_to_params(ds.data_client)
+    return client_params
 
 
 def load_model(model, model_name):

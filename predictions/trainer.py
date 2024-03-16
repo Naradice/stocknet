@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 import finance_client.utils.idcprocess as indicater
 import stocknet.datasets as ds
-import stocknet.trainer as trainer
+import stocknet.train.trainer as trainer
 from stocknet.nets.ae import AELinearModel
 from stocknet.nets.lstm import LSTM
 
@@ -30,7 +30,6 @@ def __train_common(data_client, model, sample_input, batch_size, model_name, tra
     else:
         optimizer = optimizer(model.parameters(), lr=1e-5)
     tr = trainer.Trainer(model_name, loss_fn, train_dl, val_dl, device)
-    tr.save_architecture(model, sample_input, batch_size)
     tr.save_client(data_client)
     tr.training_loop(model, optimizer, epoc_num)
     tr.validate(model, val_dl)

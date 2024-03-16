@@ -3,10 +3,6 @@ import sys
 
 finance_client_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../finance_client"))
 sys.path.append(finance_client_module_path)
-
-import finance_client as fc
-import finance_client.utils.idcprocess as indicater
-
 stocknet_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 sys.path.append(stocknet_module_path)
 import torch
@@ -16,8 +12,9 @@ from torch.utils.data import DataLoader
 from trainer import training_lenear_auto_encoder, training_lstm_model
 
 import finance_client as fc
+import finance_client.fprocess.idc_processes as indicater
 import stocknet.datasets as ds
-import stocknet.trainer as trainer
+import stocknet.train.rltrainer as rltrainer
 from stocknet.nets.ae import AELinearModel
 
 

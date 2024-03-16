@@ -1,0 +1,11 @@
+{
+    "nhead": 1,
+    "dim_feedforward": 2,
+    "num_encoder_layers": 10,
+    "num_decoder_layers": 10,
+    "dropout": 0.1,
+    "d_model": 4,
+    "positional_encoding": {
+        "key": "Seq2SeqTransformer"
+    }
+}

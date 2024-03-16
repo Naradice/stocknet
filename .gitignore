@@ -1,6 +1,5 @@
 *.csv
 #Python env
-fc_env/
 bin/
 lib/
 lib64
@@ -24,7 +23,7 @@ resources/
 *.csv
 __pycache__/
 logs/
-venv/
+venv*/
 build/
 data_source/
 /stocknet.egg-info

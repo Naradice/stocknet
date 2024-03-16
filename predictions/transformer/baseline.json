@@ -1,0 +1,123 @@
+{
+  "dataset": {
+    "key": "seq2seq",
+    "source": [
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min5.csv",
+        "batch_size": [
+          8,
+          16
+        ]
+      },
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv",
+        "processes": [
+          {
+            "diff_1": {
+              "periods": 1,
+              "columns": [
+                "open",
+                "high",
+                "low",
+                "close"
+              ],
+              "kinds": "Diff"
+            },
+            "minmax": {
+              "columns": [
+                "open",
+                "high",
+                "low",
+                "close"
+              ],
+              "scale": [
+                -1,
+                1
+              ],
+              "min_values": {
+                "open": -0.41499999999999204,
+                "high": -0.3930000000000007,
+                "low": -0.41500000000000625,
+                "close": -0.41499999999999204
+              },
+              "max_values": {
+                "open": 0.36700000000000443,
+                "high": 0.34199999999999875,
+                "low": 0.37000000000000455,
+                "close": 0.367999999999995
+              },
+              "kinds": "MiniMax"
+            }
+          }
+        ]
+      },
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_h1.csv"
+      },
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv"
+      }
+    ],
+    "args": {
+      "columns": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "processes": [
+        "Diff",
+        "MiniMax"
+      ]
+    },
+    "observation": {
+      "length": [
+        30,
+        60,
+        120
+      ]
+    },
+    "prediction": {
+      "length": [
+        1,
+        5,
+        10
+      ]
+    }
+  },
+  "model": {
+    "key": "basic_tf",
+    "model_name": "finance_basic_transformer",
+    "configs": "./baseline_params/*.json"
+  },
+  "trainer": {
+    "optimizer": {
+      "key": "AdamW",
+      "lr": 0.01
+    },
+    "scheduler": {
+      "key": "StepLR",
+      "step_size": 1,
+      "gamma": 0.5
+    },
+    "loss": {
+      "key": "MSELoss"
+    },
+    "batch_size": [
+      16,
+      32,
+      64,
+      128
+    ],
+    "epoch": 300,
+    "patience": 3,
+    "device": "cuda"
+  },
+  "log": {
+    "path": "./logs",
+    "cloud_storage": {
+      "key": "dropbox",
+      "client_id": ""
+    }
+  }
+}
