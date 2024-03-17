@@ -81,7 +81,7 @@ def train_from_config(training_config_file: str):
             else:
                 model_version_str = f"{version_suffix}_v{model_version}"
 
-            print(f"new model loaded: {model_name}")
+            print(f"new model created: {model_name}")
             training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler)
             opt_config = train_config["optimizer"].copy()
             opt_key = opt_config.pop("key")

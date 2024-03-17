@@ -76,7 +76,7 @@ def load_model_checkpoint(
     train=True,
     storage_handler=None,
 ):
-    default_response = (False, None, None, None, np.inf)
+    default_response = (False, model, optimizer, scheduler, np.inf)
     model_path = create_model_file_path(model_folder, model_name, model_version_str, train)
     if os.path.exists(model_path) is False:
         if storage_handler is None:
