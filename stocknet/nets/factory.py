@@ -17,7 +17,7 @@ def model_to_params(model):
     return params
 
 
-def load_a_model(params: dict, key: str = None):
+def load_a_model(params: dict, key: str = None, device=None):
     if key is None:
         kinds = params["key"].lower()
     else:
@@ -29,6 +29,7 @@ def load_a_model(params: dict, key: str = None):
                 args = params["args"]
             else:
                 args = params
+            args["device"] = device
             if hasattr(model_class, "load"):
                 # if args include another nn.Module, create it in load function.
                 model = model_class.load(**args)
@@ -40,7 +41,7 @@ def load_a_model(params: dict, key: str = None):
     return None
 
 
-def load_models(model_configs: dict):
+def load_models(model_configs: dict, device=None):
     model_key = model_configs["key"]
     if "model_name" in model_configs:
         model_name = model_configs["model_name"]
@@ -72,7 +73,7 @@ def load_models(model_configs: dict):
             else:
                 print(f"unsupported file type for model: {config_file}")
                 yield None, model_name, model_version
-            model = load_a_model(params, model_key)
+            model = load_a_model(params, model_key, device=device)
 
             if "model_version" in params:
                 model_version = params["model_version"]
@@ -85,7 +86,7 @@ def load_models(model_configs: dict):
         model_params = model_configs["params"]
 
         if isinstance(model_params, dict):
-            model = load_a_model(model_params, model_key)
+            model = load_a_model(model_params, model_key, device=device)
             if "model_version" in model_params:
                 model_version = model_params["model_version"]
             elif model_version_number is not None:
@@ -95,7 +96,7 @@ def load_models(model_configs: dict):
             yield model, model_name, model_version
         elif isinstance(model_params, Sequence):
             for params in model_params:
-                model = load_a_model(params, model_key)
+                model = load_a_model(params, model_key, device=device)
                 if "model_version" in params:
                     model_version = params["model_version"]
                 elif model_version_number is not None:

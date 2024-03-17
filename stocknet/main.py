@@ -69,7 +69,7 @@ def train_from_config(training_config_file: str):
             continue
         print("new dataset loaded")
         model_key = model_config["key"]
-        models = mdl_factory.load_models(model_config.copy())
+        models = mdl_factory.load_models(model_config.copy(), device=device)
         for model, model_name, model_version in models:
             if model is None:
                 continue
@@ -119,8 +119,11 @@ def train_from_config(training_config_file: str):
                 batch_sizes = batch_sizes_4_ds
 
             trainer_func, eval_func, train_options = tr_factory.load_trainers(model_key, train_config)
+            succ, model, optimizer, scheduler, best_loss = logger.load_model_checkpoint(
+                model, model_name, model_version_str, optimizer, scheduler, log_path, eval_func is None, storage_handler
+            )
             for batch_size in batch_sizes:
-                print(training_logger.log_file_path, batch_size)
+                print(f"start training model with batch_size: {batch_size}")
                 epoch_trainer(
                     epoch=epoch,
                     model=model,

@@ -58,38 +58,35 @@ def load_model(create_model_func, model_folder, model_name, model_version, stora
     return params, model
 
 
+def create_model_file_path(model_folder, model_name, model_version_str, is_train=False):
+    if is_train:
+        model_path = f"{model_folder}/{model_name}/{model_name}_train_{model_version_str}.torch"
+    else:
+        model_path = f"{model_folder}/{model_name}/{model_name}_{model_version_str}.torch"
+    return model_path
+
+
 def load_model_checkpoint(
-    create_model_func,
+    model,
     model_name,
-    model_version,
+    model_version_str,
+    optimizer,
+    scheduler,
     model_folder,
-    optimizer_class,
-    scheduler_class,
     train=True,
     storage_handler=None,
-    optimizer_kwargs={"lr": 1e-3},
-    scheduler_kwargs={"step_size": 1, "gamma": 0.95},
 ):
-    default_response = (False, None, None, None, None, np.inf)
-
-    params, model = load_model(create_model_func, model_folder, model_name, model_version, storage_handler)
-    if model is None:
-        return default_response
-    optimizer = optimizer_class(model.parameters(), **optimizer_kwargs)
-    scheduler = scheduler_class(optimizer, **scheduler_kwargs)
-    if train:
-        model_path = f"{model_folder}/{model_name}_train_v{model_version}.torch"
-    else:
-        model_path = f"{model_folder}/{model_name}_v{model_version}.torch"
+    default_response = (False, None, None, None, np.inf)
+    model_path = create_model_file_path(model_folder, model_name, model_version_str, train)
     if os.path.exists(model_path) is False:
         if storage_handler is None:
             print("exsisting model not found.")
             return default_response
-    file_name = os.path.basename(model_path)
-    response = storage_handler.download_file(f"/{model_name}/{file_name}", model_path)
-    if response is None:
-        print("exsisting model not found.")
-        return default_response
+        file_name = os.path.basename(model_path)
+        response = storage_handler.download_file(f"/{model_name}/{file_name}", model_path)
+        if response is None:
+            print("exsisting model not found.")
+            return default_response
 
     if torch.cuda.is_available():
         check_point = torch.load(model_path)
@@ -104,11 +101,37 @@ def load_model_checkpoint(
         else:
             print("best_loss not found.")
             best_loss = np.inf
-        return params, model, optimizer, scheduler, best_loss
+        print("state dict was loaded from checkpoint")
+        return True, model, optimizer, scheduler, best_loss
     else:
         print("checkpoint is not available.")
         model.load_state_dict(check_point)
-        return params, model, None, None, np.inf
+        return False, model, optimizer, scheduler, np.inf
+
+
+def load_model_checkpoint_with_creation(
+    create_model_func,
+    model_name,
+    model_version_str,
+    model_folder,
+    optimizer_class,
+    scheduler_class,
+    train=True,
+    storage_handler=None,
+    optimizer_kwargs={"lr": 1e-3},
+    scheduler_kwargs={"step_size": 1, "gamma": 0.95},
+):
+    default_response = (False, None, None, None, None, np.inf)
+
+    params, model = load_model(create_model_func, model_folder, model_name, model_version_str, storage_handler)
+    if model is None:
+        return default_response
+    optimizer = optimizer_class(model.parameters(), **optimizer_kwargs)
+    scheduler = scheduler_class(optimizer, **scheduler_kwargs)
+    succ, model, optimizer, scheduler, best_loss = load_model_checkpoint(
+        model, model_name, model_version_str, optimizer, scheduler, model_folder, train, storage_handler
+    )
+    return succ, params, model, optimizer, scheduler, best_loss
 
 
 class TrainingLogger:
@@ -247,7 +270,7 @@ class TrainingLogger:
             if self.__use_cloud_storage:
                 self.__store_files_to_cloud_storage(model_path)
 
-    def load_model_checkpoint(
+    def load_model_checkpoint_with_creation(
         self,
         create_model_func,
         model_name,
@@ -264,7 +287,7 @@ class TrainingLogger:
             data_folder = os.path.dirname(self.log_file_path)
         else:
             data_folder = model_folder
-        return load_model_checkpoint(
+        return load_model_checkpoint_with_creation(
             create_model_func,
             model_name,
             model_version,
