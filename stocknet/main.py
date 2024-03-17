@@ -172,6 +172,17 @@ def epoch_trainer(
 
         elapsed_mins = math.floor(elapsed_time / 60)
         logger.add_training_log(loss_train, loss_valid, elapsed_time)
+        log = "[{}/{}] train loss: {:.10f}, valid loss: {:.10f}  [{}{:.0f}s] count: {}, {}".format(
+            loop,
+            epoch,
+            loss_train,
+            loss_valid,
+            str(int(elapsed_mins)) + "m" if elapsed_mins > 0 else "",
+            elapsed_time % 60,
+            counter,
+            "**" if best_valid_loss > loss_valid else "",
+        )
+        print(log)
 
         if best_train_loss > loss_train:
             best_train_loss = loss_train
@@ -193,18 +204,6 @@ def epoch_trainer(
             if train_to_best is False:
                 counter += 1
             scheduler.step()
-
-        log = "[{}/{}] train loss: {:.10f}, valid loss: {:.10f}  [{}{:.0f}s] count: {}, {}".format(
-            loop,
-            epoch,
-            loss_train,
-            loss_valid,
-            str(int(elapsed_mins)) + "m" if elapsed_mins > 0 else "",
-            elapsed_time % 60,
-            counter,
-            "**" if best_valid_loss > loss_valid else "",
-        )
-        print(log)
 
         if counter > patience:
             break
