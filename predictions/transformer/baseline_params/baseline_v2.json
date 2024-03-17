@@ -6,6 +6,6 @@
     "dropout": 0.1,
     "d_model": 4,
     "positional_encoding": {
-        "key": "Seq2SeqTransformer"
+        "key": "PositionalEncoding"
     }
 }

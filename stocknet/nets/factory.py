@@ -1,9 +1,10 @@
 import glob
 import json
+import os
 from inspect import getmembers, isclass
 from typing import Sequence
 
-from . import __init__ as nets
+from .. import nets
 
 
 def model_to_params(model):
@@ -46,11 +47,15 @@ def load_models(model_configs: dict):
     else:
         model_name = model_key
     model_version = None
+    model_version_number = None
+    if "increment_version" in model_configs:
+        model_version_number = int(model_configs["increment_version"])
 
     if "configs" in model_configs:
         config_files_path = model_configs["configs"]
         if isinstance(config_files_path, str):
-            config_files = glob.glob(config_files_path)
+            formatted_path = os.path.abspath(os.path.join(os.getcwd(), config_files_path))
+            config_files = glob.glob(formatted_path)
         elif isinstance(config_files_path, Sequence):
             config_files = config_files_path
         else:
@@ -71,15 +76,31 @@ def load_models(model_configs: dict):
 
             if "model_version" in params:
                 model_version = params["model_version"]
+            else:
+                if model_version_number is not None:
+                    model_version = model_version_number
+                    model_version_number += 1
             yield model, model_name, model_version
     if "params" in model_configs:
-        model_params = model_configs["configs"]
+        model_params = model_configs["params"]
+
         if isinstance(model_params, dict):
             model = load_a_model(model_params, model_key)
-            yield model, model_name
+            if "model_version" in model_params:
+                model_version = model_params["model_version"]
+            elif model_version_number is not None:
+                model_version = model_version_number
+                model_version_number += 1
+
+            yield model, model_name, model_version
         elif isinstance(model_params, Sequence):
             for params in model_params:
-                model = load_a_model(model_params, model_key)
+                model = load_a_model(params, model_key)
+                if "model_version" in params:
+                    model_version = params["model_version"]
+                elif model_version_number is not None:
+                    model_version = model_version_number
+                    model_version_number += 1
                 yield model, model_name, model_version
         else:
             raise TypeError(f"unsupported params provided: {model_params}. Suppose dict or its list.")

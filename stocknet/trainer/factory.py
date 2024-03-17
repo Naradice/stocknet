@@ -4,10 +4,10 @@ from typing import Sequence
 from torch import nn, optim
 from torch.optim import lr_scheduler
 
-from ..nets import factory
+from .. import nets
 from . import sltrainer
 
-models_4_seq2seq = [factory.Seq2SeqTransformer.key]
+models_4_seq2seq = [nets.Seq2SeqTransformer.__name__]
 models_4_seq2seq_sim = []
 
 
@@ -19,7 +19,8 @@ def load_trainers(model_key: str, configs: dict):
             options["batch_first"] = batch_first
         return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options.copy()
     elif model_key in models_4_seq2seq_sim:
-        pass
+        # return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options.copy()
+        return None, None, options.copy()
     else:
         # dummy
         trainer = sltrainer.Trainer()

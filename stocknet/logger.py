@@ -169,7 +169,7 @@ class TrainingLogger:
         model_log_folder = os.path.join(self.base_path, model_name)
         if not os.path.exists(model_log_folder):
             os.makedirs(model_log_folder)
-        file_name = f"{model_name}_v{version}.csv"
+        file_name = f"{model_name}_{version}.csv"
         self.log_file_path = os.path.join(model_log_folder, file_name)
         self.__cache = []
 

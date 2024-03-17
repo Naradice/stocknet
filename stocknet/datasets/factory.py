@@ -18,6 +18,7 @@ def load_finance_dataset(params: dict, device=None):
     kinds = params["key"]
     Dataset = None
     batch_sizes = None
+    version_suffix = None
 
     for ds_class in finance_dataset:
         if kinds == ds_class.key:
@@ -33,8 +34,8 @@ def load_finance_dataset(params: dict, device=None):
         Dataset = finance_dataset[kinds]
         args = params["args"]
         ds = Dataset(data_client, device=device, **args)
-        return ds, batch_sizes
-    return None, None
+        return ds, batch_sizes, version_suffix
+    return None, None, None
 
 
 def load_seq2seq_dataset(params: dict, device=None):
@@ -42,6 +43,7 @@ def load_seq2seq_dataset(params: dict, device=None):
     kinds = params["key"]
     Dataset = None
     batch_sizes = None
+    version_suffix = None
 
     for ds_class in seq2seq_pandas_dataset:
         if kinds == ds_class.key:
@@ -87,10 +89,16 @@ def load_seq2seq_dataset(params: dict, device=None):
                 default_batch_sizes = [int(default_batch_sizes)]
             elif not isinstance(default_batch_sizes, Sequence):
                 default_batch_sizes = batch_sizes
+        else:
+            default_batch_sizes = [64]
 
         for file_info in files_info:
             df = utils.read_csv(**file_info)
             args = params["args"].copy()
+
+            if "version_suffix" in file_info:
+                version_suffix = file_info["version_suffix"]
+
             if "processes" in file_info:
                 preprocesses_params_list = file_info["processes"]
             elif "processes" in args:
@@ -137,8 +145,11 @@ def load_seq2seq_dataset(params: dict, device=None):
                     args["observation_length"] = obs_length
                     args["prediction_length"] = pre_length
                     ds = Dataset(df, **args)
-                    yield ds, batch_sizes
-    return None, None
+                    if version_suffix is None:
+                        yield ds, batch_sizes, f"{obs_length}_{pre_length}"
+                    else:
+                        yield ds, batch_sizes, f"{obs_length}_{pre_length}_{version_suffix}"
+    return None, None, None
 
 
 def load_simlation_dataset(params: dict, device=None):
@@ -155,4 +166,4 @@ def load_simlation_dataset(params: dict, device=None):
         pre_processes = utils.load_fproceses(params["processes"])
         data_generator = Dataset(processes=pre_processes, device=device, **params)
         return data_generator, batch_sizes
-    return None, None
+    return None, None, None

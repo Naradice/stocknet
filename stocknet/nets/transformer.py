@@ -37,13 +37,15 @@ class PositionalEncoding(nn.Module):
 
 
 class EmbeddingPositionalEncoding(nn.Module):
-    def __init__(self, num_embedding, d_model, device=None, **kwargs):
+    def __init__(self, num_embedding, d_model, dropout=0.1, device=None, **kwargs):
         super().__init__()
         self.args = {"num_embedding": num_embedding, "d_model": d_model}
         self.pe = nn.Embedding(num_embedding, d_model, device=device)
+        self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, time_ids):
         position = self.pe(time_ids)
+        position = self.dropout(position)
         return position
 
 
@@ -118,7 +120,7 @@ class Seq2SeqTransformer(nn.Module):
         num_encoder_layers: int,
         num_decoder_layers: int,
         d_model: int,
-        positional_encoding_key: str,
+        positional_encoding: dict,
         output_layer=None,
         dim_feedforward: int = 512,
         dropout: float = 0.1,
@@ -128,14 +130,25 @@ class Seq2SeqTransformer(nn.Module):
         **kwargs,
     ):
         pe = None
+        positional_encoding = positional_encoding.copy()
+        positional_encoding_key = positional_encoding.pop("key")
         if positional_encoding_key == "PositionalEncoding":
-            pe = PositionalEncoding(d_model, dropout=dropout, batch_first=batch_first, device=device)
+            if "dropout" not in positional_encoding:
+                positional_encoding["dropout"] = dropout
+            pe = PositionalEncoding(d_model=d_model, **positional_encoding, batch_first=batch_first, device=device)
         elif positional_encoding_key == "EmbeddingPositionalEncoding":
+            if "dropout" not in positional_encoding:
+                positional_encoding["dropout"] = dropout
+            emmb_num = None
             if "num_embedding" in kwargs:
                 emmb_num = kwargs["num_embedding"]
-                pe = EmbeddingPositionalEncoding(emmb_num, d_model, device=device)
-            else:
+            if "num_embedding" in positional_encoding:
+                emmb_num = positional_encoding.pop("num_embedding")
+            if emmb_num is None:
                 raise ValueError("num_embedding is not found in kwargs to create PositionalEncoding")
+            else:
+                positional_encoding["num_embedding"] = emmb_num
+                pe = EmbeddingPositionalEncoding(d_model=d_model, device=device, **positional_encoding)
         else:
             raise ValueError(f"valid positional encoding is not specified: {positional_encoding_key}")
         model = Seq2SeqTransformer(

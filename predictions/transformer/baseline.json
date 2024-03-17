@@ -7,7 +7,8 @@
         "batch_size": [
           8,
           16
-        ]
+        ],
+        "version_suffix": "5min"
       },
       {
         "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv",
@@ -49,13 +50,16 @@
               "kinds": "MiniMax"
             }
           }
-        ]
+        ],
+        "version_suffix": "30min"
       },
       {
-        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_h1.csv"
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_h1.csv",
+        "version_suffix": "1h"
       },
       {
-        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv"
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv",
+        "version_suffix": "1d"
       }
     ],
     "args": {
@@ -86,9 +90,10 @@
     }
   },
   "model": {
-    "key": "basic_tf",
+    "key": "Seq2SeqTransformer",
     "model_name": "finance_basic_transformer",
-    "configs": "./baseline_params/*.json"
+    "configs": "./baseline_params/*.json",
+    "increment_version": 1
   },
   "trainer": {
     "optimizer": {

@@ -56,15 +56,15 @@ def train_from_config(training_config_file: str):
     dataset_key = dataset_config["key"]
     if "seq2seq" in dataset_key:
         if "sim" in dataset_key:
-            datasets, batch_sizes_4_ds = ds_factory.load_simlation_dataset(dataset_config, device=device)
+            datasets = ds_factory.load_simlation_dataset(dataset_config, device=device)
         else:
-            datasets, batch_sizes_4_ds = ds_factory.load_seq2seq_dataset(dataset_config, device=device)
+            datasets = ds_factory.load_seq2seq_dataset(dataset_config, device=device)
     elif "fc" in dataset_key:
-        datasets, batch_sizes_4_ds = ds_factory.load_finance_dataset(dataset_config, device=device)
+        datasets = ds_factory.load_finance_dataset(dataset_config, device=device)
     else:
         raise ValueError("invalid dataset key")
 
-    for dataset in datasets:
+    for dataset, batch_sizes_4_ds, version_suffix in datasets:
         if dataset is None:
             continue
         print("new dataset loaded")
@@ -76,9 +76,13 @@ def train_from_config(training_config_file: str):
             if model_version is None:
                 global_model_version += 1
                 model_version = global_model_version
+            if version_suffix is None:
+                model_version_str = f"v{model_version}"
+            else:
+                model_version_str = f"{version_suffix}_v{model_version}"
 
             print(f"new model loaded: {model_name}")
-            training_logger = logger.TrainingLogger(model_name, model_version, log_path, storage_handler)
+            training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler)
             opt_config = train_config["optimizer"].copy()
             opt_key = opt_config.pop("key")
             optimizer = tr_factory.load_an_optimizer(opt_key, model, opt_config)
@@ -114,22 +118,23 @@ def train_from_config(training_config_file: str):
             else:
                 batch_sizes = batch_sizes_4_ds
 
-            for trainer_func, eval_func, train_options in tr_factory.load_trainers(model_key, train_config):
-                for batch_size in batch_sizes:
-                    epoch_trainer(
-                        epoch=epoch,
-                        model=model,
-                        dataset=dataset,
-                        patience=patience,
-                        train_method=trainer_func,
-                        eval_method=eval_func,
-                        batch_size=batch_size,
-                        train_options=train_options,
-                        optimizer=optimizer,
-                        criterion=criterion,
-                        scheduler=scheduler,
-                        logger=training_logger,
-                    )
+            trainer_func, eval_func, train_options = tr_factory.load_trainers(model_key, train_config)
+            for batch_size in batch_sizes:
+                print(training_logger.log_file_path, batch_size)
+                epoch_trainer(
+                    epoch=epoch,
+                    model=model,
+                    dataset=dataset,
+                    patience=patience,
+                    train_method=trainer_func,
+                    eval_method=eval_func,
+                    batch_size=batch_size,
+                    train_options=train_options,
+                    optimizer=optimizer,
+                    criterion=criterion,
+                    scheduler=scheduler,
+                    logger=training_logger,
+                )
 
 
 def epoch_trainer(
