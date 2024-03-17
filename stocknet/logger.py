@@ -265,7 +265,7 @@ class TrainingLogger:
     def save_checkpoint(self, model, optimizer, scheduler, model_name, model_version, best_loss, **kwargs):
         if model is not None:
             data_folder = os.path.dirname(self.log_file_path)
-            model_path = os.path.join(data_folder, f"{model_name}_v{model_version}.torch")
+            model_path = os.path.join(data_folder, f"{model_name}_{model_version}.torch")
             save_checkpoint(model_path, model, optimizer, scheduler, best_loss, **kwargs)
             if self.__use_cloud_storage:
                 self.__store_files_to_cloud_storage(model_path)
