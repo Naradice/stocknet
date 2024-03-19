@@ -1,8 +1,8 @@
 {
     "nhead": 1,
-    "dim_feedforward": 10,
-    "num_encoder_layers": 2,
-    "num_decoder_layers": 2,
+    "dim_feedforward": 100,
+    "num_encoder_layers": 8,
+    "num_decoder_layers": 8,
     "dropout": 0.1,
     "d_model": 4,
     "positional_encoding": {
