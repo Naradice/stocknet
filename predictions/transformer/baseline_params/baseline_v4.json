@@ -7,5 +7,6 @@
     "d_model": 4,
     "positional_encoding": {
         "key": "PositionalEncoding"
-    }
+    },
+    "model_version": 4
 }

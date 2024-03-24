@@ -4,6 +4,8 @@ import os
 import time
 from typing import Sequence
 
+import torch
+
 from . import logger
 from .datasets import factory as ds_factory
 from .nets import factory as mdl_factory
@@ -49,6 +51,7 @@ def train_from_config(training_config_file: str):
         patience = 2
     if "device" in train_config:
         device = train_config["device"]
+        device = torch.device(device)
     else:
         device = None
 

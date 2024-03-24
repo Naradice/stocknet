@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-import threading
 from datetime import datetime
 
 import numpy as np
@@ -146,7 +145,7 @@ class TrainingLogger:
 
         Args:
             model_name (str): It create a folder {base_path}/{model_name}/.
-            verison (str): It create a file {base_path}/{model_name}/{model_name}_v{version}.csv.
+            verison (str): It create a file {base_path}/{model_name}/{model_name}_{version}.csv.
             base_path (str, optional): Base path to store logs. If you use cloud storage, this is used as temporal folder. Defaults to None.
             storage_handler (str|BaseHandler, optional): It change storage service. 'colab' can be selected. Defaults to 'colab'.
             max_retry (int, optional): max count of retry when store logs via network. Defaults to 3.
@@ -244,7 +243,10 @@ class TrainingLogger:
 
     def save_params(self, params: dict, model_name, model_version):
         data_folder = os.path.dirname(self.log_file_path)
-        param_file_path = os.path.join(data_folder, f"{model_name}_v{model_version}_params.json")
+        if isinstance(model_version, int):
+            param_file_path = os.path.join(data_folder, f"{model_name}_v{model_version}_params.json")
+        else:
+            param_file_path = os.path.join(data_folder, f"{model_name}_{model_version}_params.json")
         if "device" in params:
             device = params["device"]
             if not isinstance(device, str):
@@ -265,19 +267,43 @@ class TrainingLogger:
     def save_checkpoint(self, model, optimizer, scheduler, model_name, model_version, best_loss, **kwargs):
         if model is not None:
             data_folder = os.path.dirname(self.log_file_path)
-            model_path = os.path.join(data_folder, f"{model_name}_{model_version}.torch")
+            if isinstance(model_version, int):
+                model_path = os.path.join(data_folder, f"{model_name}_v{model_version}.torch")
+            else:
+                model_path = os.path.join(data_folder, f"{model_name}_{model_version}.torch")
             save_checkpoint(model_path, model, optimizer, scheduler, best_loss, **kwargs)
             if self.__use_cloud_storage:
                 self.__store_files_to_cloud_storage(model_path)
 
+    def load_model_checkpoint(
+        self,
+        model,
+        optimizer,
+        scheduler,
+        model_name=None,
+        model_version=None,
+        train=False,
+        storage_handler=None,
+        model_folder=None,
+    ):
+        if model_folder is None:
+            data_folder = os.path.dirname(self.log_file_path)
+        else:
+            data_folder = model_folder
+        if model_name is None:
+            model_name = self.model_name
+        if model_version is None:
+            model_version = self.version
+        return load_model_checkpoint(model, model_name, model_version, optimizer, scheduler, data_folder, train, storage_handler)
+
     def load_model_checkpoint_with_creation(
         self,
         create_model_func,
-        model_name,
-        model_version,
         optimizer_class,
         scheduler_class,
-        train=True,
+        model_name=None,
+        model_version=None,
+        train=False,
         storage_handler=None,
         optimizer_kwargs={"lr": 1e-3},
         scheduler_kwargs={"step_size": 1, "gamma": 0.95},
@@ -287,6 +313,11 @@ class TrainingLogger:
             data_folder = os.path.dirname(self.log_file_path)
         else:
             data_folder = model_folder
+        if model_name is None:
+            model_name = self.model_name
+        if model_version is None:
+            model_version = self.version
+
         return load_model_checkpoint_with_creation(
             create_model_func,
             model_name,
