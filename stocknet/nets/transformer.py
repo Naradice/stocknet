@@ -113,7 +113,6 @@ class Seq2SeqTransformer(nn.Module):
             d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout, batch_first=batch_first, device=device
         )
         self.transformer_decoder = TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
-        self.transformer_decoder.forward()
 
     @classmethod
     def load(
