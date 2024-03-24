@@ -6,7 +6,6 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from .. import utils
 from ..envs.render import graph
 
 
@@ -75,7 +74,7 @@ def seq2seq_simulation_train(obs_length, model, generator, optimizer, criterion,
 
         input_tgt = tgt[:, :-1]
 
-        mask_tgt = torch.nn.Transformer.generate_square_subsequent_mask(get_mask_size(input_tgt), device=device)
+        mask_tgt = torch.nn.Transformer.generate_square_subsequent_mask(get_mask_size(input_tgt)).to(device=device)
         logits = model(src=src, tgt=input_tgt, mask_tgt=mask_tgt)
 
         optimizer.zero_grad()

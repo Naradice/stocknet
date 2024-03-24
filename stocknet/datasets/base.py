@@ -59,9 +59,9 @@ class Dataset(Dataset):
         self.output_mask = output_mask
         if output_mask:
             if batch_first is True:
-                self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(1) - 1, device=self.device)
+                self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(1) - 1).to(device=self.device)
             else:
-                self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(0) - 1, device=self.device)
+                self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(0) - 1).to(device=self.device)
         self.observation_length = observation_length
         self.is_training = is_training
         self._data = data[columns]
