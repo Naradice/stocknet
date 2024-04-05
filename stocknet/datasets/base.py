@@ -34,12 +34,12 @@ class Dataset(Dataset):
     ):
         self.seed(seed)
         self.mm_params = {}
-        data = df[columns]
         self.device = device
         # self.org_data = data
         self.dtype = dtype
         self.batch_first = batch_first
         min_length = [1]
+        data = df
         if processes is not None:
             for process in processes:
                 data = process(data)
@@ -58,10 +58,7 @@ class Dataset(Dataset):
 
         self.output_mask = output_mask
         if output_mask:
-            if batch_first is True:
-                self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(1) - 1).to(device=self.device)
-            else:
-                self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(0) - 1).to(device=self.device)
+            self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(prediction_length).to(device=self.device)
         self.observation_length = observation_length
         self.is_training = is_training
         self._data = data[columns]
@@ -247,15 +244,14 @@ class TimeDataset(Dataset):
             is_training (bool, optional): specify training mode or not. Defaults to True.
             randomize (bool, optional): specify randomize the index or not. Defaults to True.
         """
-        if time_column == "index" and isinstance(df.index, pd.DatetimeIndex):
-            self.time_column = "index"
-        else:
-            self.time_column = time_column
-            columns += self.time_column
+
+        self.time_column = time_column
+        self._feature_columns = columns.copy()
+        entire_columns = [*columns, time_column]
 
         super().__init__(
             df,
-            columns,
+            entire_columns,
             observation_length,
             device,
             processes,
@@ -272,51 +268,37 @@ class TimeDataset(Dataset):
         )
 
     def _output_func(self, batch_size):
-        if type(batch_size) == int:
-            index = self._indices[batch_size]
+        batch_indices = batch_size
+        chunk_data = []
+        time_chunk_data = []
+        for index in self._indices[batch_indices]:
             ndx = self.output_indices(index)
-            ans = self._data.iloc[ndx].values.tolist()
-            time = self._data[self.time_column].iloc[ndx].values.tolist()
-            return ans, time
-        elif type(batch_size) == slice:
-            batch_indices = batch_size
-            chunk_data = []
-            time_chunk_data = []
-            for index in self._indices[batch_indices]:
-                ndx = self.output_indices(index)
-                chunk_data.append(self._data.iloc[ndx].values.tolist())
-                time_chunk_data.append(self._data[self.time_column].iloc[ndx].values.tolist())
+            chunk_data.append(self._data[self._feature_columns].iloc[ndx].values.tolist())
+            time_chunk_data.append(self._data[self.time_column].iloc[ndx].values.tolist())
 
-            ans = torch.tensor(chunk_data, device=self.device, dtype=self.dtype)
-            time = torch.tensor(time_chunk_data, device=self.device, dtype=torch.int)
-            if self.batch_first:
-                return (ans, time)
-            else:
-                return (ans.transpose(0, 1), time.transpose(0, 1))
+        ans = torch.tensor(chunk_data, device=self.device, dtype=self.dtype)
+        time = torch.tensor(time_chunk_data, device=self.device, dtype=torch.int)
+        if self.batch_first:
+            return (ans, time)
+        else:
+            return (ans.transpose(0, 1), time.transpose(0, 1))
 
     def _input_func(self, batch_size):
-        if type(batch_size) == int:
-            index = self._indices[batch_size]
+        batch_indices = batch_size
+        chunk_src = []
+        time_chunk_data = []
+        for index in self._indices[batch_indices]:
             ndx = self.input_indices(index)
-            src = self._data[ndx].values.tolist()
-            time = self._data[self.time_column].iloc[ndx].values.tolist()
-            return src, time
-        elif type(batch_size) == slice:
-            batch_indices = batch_size
-            chunk_src = []
-            time_chunk_data = []
-            for index in self._indices[batch_indices]:
-                ndx = self.input_indices(index)
-                chunk_src.append(self._data.iloc[ndx].values.tolist())
-                time_chunk_data.append(self._data[self.time_column].iloc[ndx].values.tolist())
+            chunk_src.append(self._data[self._feature_columns].iloc[ndx].values.tolist())
+            time_chunk_data.append(self._data[self.time_column].iloc[ndx].values.tolist())
 
-            src = torch.tensor(chunk_src, device=self.device, dtype=self.dtype)
-            time = torch.tensor(time_chunk_data, device=self.device, dtype=torch.int)
+        src = torch.tensor(chunk_src, device=self.device, dtype=self.dtype)
+        time = torch.tensor(time_chunk_data, device=self.device, dtype=torch.int)
 
-            if self.batch_first:
-                return (src, time)
-            else:
-                return (src.transpose(0, 1), time.transpose(0, 1))
+        if self.batch_first:
+            return (src, time)
+        else:
+            return (src.transpose(0, 1), time.transpose(0, 1))
 
     def __getitem__(self, ndx):
         src, src_time = self._input_func(ndx)

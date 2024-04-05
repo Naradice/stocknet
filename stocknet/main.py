@@ -84,7 +84,7 @@ def train_from_config(training_config_file: str):
             else:
                 model_version_str = f"{version_suffix}_v{model_version}"
 
-            print(f"new model created: {model_name}")
+            print(f"new model created: {model_name}_{model_version_str}")
             training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler)
             opt_config = train_config["optimizer"].copy()
             opt_key = opt_config.pop("key")
@@ -206,7 +206,7 @@ def epoch_trainer(
         else:
             if train_to_best is False:
                 counter += 1
-            scheduler.step()
+                scheduler.step()
 
         if counter > patience:
             break

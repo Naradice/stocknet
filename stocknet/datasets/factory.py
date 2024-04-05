@@ -60,7 +60,9 @@ def load_seq2seq_dataset(params: dict, device=None):
             raise TypeError(f"invalid type specified as source: {type(souce_info)}")
 
         observation_info = params["observation"]
-        if "length" in observation_info:
+        if isinstance(observation_info, (int, float)):
+            observation_lengths = [observation_info]
+        elif "length" in observation_info:
             observation_length_info = observation_info["length"]
             if isinstance(observation_length_info, (int, float)):
                 observation_lengths = [int(observation_length_info)]
@@ -72,7 +74,9 @@ def load_seq2seq_dataset(params: dict, device=None):
             raise ValueError("length definition required in observation")
 
         prediction_info = params["prediction"]
-        if "length" in prediction_info:
+        if isinstance(prediction_info, (int, float)):
+            prediction_lengths = [prediction_info]
+        elif "length" in prediction_info:
             prediction_length_info = prediction_info["length"]
             if isinstance(prediction_length_info, (int, float)):
                 prediction_lengths = [int(prediction_length_info)]
@@ -113,7 +117,7 @@ def load_seq2seq_dataset(params: dict, device=None):
             elif "features" in args:
                 columns = args.pop("features")
             else:
-                columns = df.columns
+                columns = df.columns.copy()
 
             if "batch_size" in file_info:
                 specific_batch_sizes = file_info["batch_size"]
@@ -138,17 +142,43 @@ def load_seq2seq_dataset(params: dict, device=None):
                         pre_processes.append(process)
                 args["processes"] = pre_processes
 
+            volume_scale_set = []
+            is_scaling = False
+            if "scale_combinations" in file_info:
+                is_scaling = True
+                for scale_params in file_info["scale_combinations"]:
+                    volume_rate = float(scale_params["volume_rate"])
+                    batch_size = int(scale_params["batch_size"])
+                    volume_scale_set.append((volume_rate, [batch_size]))
+            else:
+                if "scale_combinations" in args:
+                    is_scaling = True
+                    for scale_params in file_info["scale_combinations"]:
+                        volume_rate = float(scale_params["volume_rate"])
+                        batch_size = int(scale_params["batch_size"])
+                        volume_scale_set.append((volume_rate, [batch_size]))
+                else:
+                    is_scaling = False
+                    volume_scale_set = [(1.0, batch_sizes)]
+
             args["columns"] = columns
             args["device"] = device
             for obs_length in observation_lengths:
                 for pre_length in prediction_lengths:
-                    args["observation_length"] = obs_length
-                    args["prediction_length"] = pre_length
-                    ds = Dataset(df, **args)
-                    if version_suffix is None:
-                        yield ds, batch_sizes, f"{obs_length}_{pre_length}"
-                    else:
-                        yield ds, batch_sizes, f"{obs_length}_{pre_length}_{version_suffix}"
+                    for volume_rate, batch_sizes in volume_scale_set:
+                        args["observation_length"] = obs_length
+                        args["prediction_length"] = pre_length
+                        data_volume = int(len(df) * volume_rate)
+                        data = df.iloc[:data_volume].copy()
+                        ds = Dataset(data, **args)
+                        if is_scaling:
+                            scale_id = f"_{volume_rate}"
+                        else:
+                            scale_id = ""
+                        if version_suffix is None:
+                            yield ds, batch_sizes, f"{obs_length}_{pre_length}{scale_id}"
+                        else:
+                            yield ds, batch_sizes, f"{obs_length}_{pre_length}_{version_suffix}{scale_id}"
     return None, None, None
 
 

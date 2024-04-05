@@ -185,8 +185,8 @@ class Seq2SeqTransformer(nn.Module):
     def __time_forward(
         self,
         src: Tensor,
-        src_time: Tensor,
         tgt: Tensor,
+        src_time: Tensor,
         tgt_time: Tensor,
         mask_tgt: Tensor,
         mask_src: Tensor = None,
