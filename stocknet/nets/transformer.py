@@ -162,7 +162,7 @@ class Seq2SeqTransformer(nn.Module):
             args["device"] = device
             for name, model_class in getmembers(linear, isclass):
                 if name.lower() == output_layer_key:
-                    if name.lower() == "Perceptron":
+                    if name.lower() == "perceptron":
                         if "input_dim" not in args:
                             args["input_dim"] = d_model
                         if "hidden_dim" not in args:
@@ -176,8 +176,8 @@ class Seq2SeqTransformer(nn.Module):
                                 output_dim = d_model
                             else:
                                 output_dim = vocab_size
-                            args["output_dim"] = vocab_size
-                    output_layer = model_class(**output_layer)
+                            args["output_dim"] = output_dim
+                    output_layer = model_class(**args)
 
         model = Seq2SeqTransformer(
             num_encoder_layers=num_encoder_layers,
