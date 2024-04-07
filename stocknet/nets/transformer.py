@@ -121,10 +121,11 @@ class Seq2SeqTransformer(nn.Module):
         num_decoder_layers: int,
         d_model: int,
         positional_encoding: dict,
-        output_layer=None,
+        output_layer: dict = None,
         dim_feedforward: int = 512,
         dropout: float = 0.1,
         nhead: int = 8,
+        vocab_size=None,
         batch_first=True,
         device=None,
         **kwargs,
@@ -151,6 +152,33 @@ class Seq2SeqTransformer(nn.Module):
                 pe = EmbeddingPositionalEncoding(d_model=d_model, device=device, **positional_encoding)
         else:
             raise ValueError(f"valid positional encoding is not specified: {positional_encoding_key}")
+        if isinstance(output_layer, dict):
+            output_layer_key = output_layer.pop("key").lower()
+            from inspect import getmembers, isclass
+
+            from . import linear
+
+            args = output_layer.copy()
+            args["device"] = device
+            for name, model_class in getmembers(linear, isclass):
+                if name.lower() == output_layer_key:
+                    if name.lower() == "Perceptron":
+                        if "input_dim" not in args:
+                            args["input_dim"] = d_model
+                        if "hidden_dim" not in args:
+                            if vocab_size is None:
+                                hidden_dim = d_model * 2
+                            else:
+                                hidden_dim = vocab_size // 2
+                            args["hidden_dim"] = hidden_dim
+                        if "output_dim" not in args:
+                            if vocab_size is None:
+                                output_dim = d_model
+                            else:
+                                output_dim = vocab_size
+                            args["output_dim"] = vocab_size
+                    output_layer = model_class(**output_layer)
+
         model = Seq2SeqTransformer(
             num_encoder_layers=num_encoder_layers,
             num_decoder_layers=num_decoder_layers,
