@@ -39,7 +39,6 @@ class Dataset(Dataset):
             volume_limit_ratio = 1.0
         self.volume_limit_ratio = volume_limit_ratio
         self.device = device
-        # self.org_data = data
         self.dtype = dtype
         self.batch_first = batch_first
         min_length = [1]
@@ -52,6 +51,11 @@ class Dataset(Dataset):
         else:
             raise TypeError(f"{type(source)} is not supported as source")
         if processes is not None:
+            if isinstance(processes, dict):
+                from finance_client.fprocess import fprocess
+
+                processes = fprocess.load_preprocess(processes)
+
             for process in processes:
                 data = process(data)
                 min_length.append(process.get_minimum_required_length())
@@ -115,7 +119,7 @@ class Dataset(Dataset):
             self._indices = self.eval_indices
 
     def get_params(self):
-        import fprocess
+        from finance_client import fprocess
 
         if self.processes is None:
             process_params = None

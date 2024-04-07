@@ -1,18 +1,8 @@
-import os
 import random
-import sys
 
 import numpy as np
 import pandas as pd
-
-try:
-    from finance_client.fprocess import fprocess
-except ImportError:
-    _dir = os.path.dirname(__file__)
-    module_path = os.path.abspath(f"{_dir}/../../finance_client/finance_client/fprocess")
-    print(module_path)
-    sys.path.append(module_path)
-    import fprocess
+from finance_client.fprocess import fprocess
 
 
 def random_sampling(index, min_index, randomize, split_ratio, observation_length, prediction_length, params=None):
@@ -77,13 +67,12 @@ def k_fold_sampling(index, min_index, randomize, split_ratio, observation_length
 
 
 def dataset_to_params(ds):
-    from finance_client import client_to_params
-
-    params = {}
-    c_params = client_to_params(ds.data_client)
-    params["client"] = c_params
-    params["args"] = ds.args
-    params["kinds"] = ds.key
+    params = ds.get_params()
+    if hasattr(ds, "key"):
+        params["key"] = ds.key
+    else:
+        ds_class_name = ds.__name__
+        params["key"] = ds_class_name
     return params
 
 

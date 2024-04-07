@@ -1,14 +1,16 @@
 from typing import Sequence
 
 from . import utils
+from .base import Dataset, TimeDataset
 from .generator import AgentSimulationTrainDataGenerator, AgentSimulationWeeklyDataGenerator
 from .seq2seq import FeatureDataset, TimeFeatureDataset
 
 seq2seq_pandas_dataset = [FeatureDataset, TimeFeatureDataset]
 simulation_dataset = [AgentSimulationTrainDataGenerator, AgentSimulationWeeklyDataGenerator]
+basic_dataset = [Dataset, TimeDataset]
 
 
-def load_finance_dataset(params: dict, device=None):
+def load_finance_datasets(params: dict, device=None):
     from .finance import ClientDataset, FrameConvertDataset
     from .highlow import HighLowDataset
     from .shift import ShiftDataset
@@ -38,7 +40,7 @@ def load_finance_dataset(params: dict, device=None):
     return None, None, None
 
 
-def load_seq2seq_dataset(params: dict, device=None):
+def load_seq2seq_datasets(params: dict, device=None):
     params = params.copy()
     kinds = params["key"]
     Dataset = None
@@ -181,7 +183,7 @@ def load_seq2seq_dataset(params: dict, device=None):
     return None, None, None
 
 
-def load_simlation_dataset(params: dict, device=None):
+def load_simlation_datasets(params: dict, device=None):
     params = params.copy()
     kinds = params["key"]
     Dataset = None
