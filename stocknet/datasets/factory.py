@@ -165,14 +165,13 @@ def load_seq2seq_dataset(params: dict, device=None):
             args["device"] = device
             for obs_length in observation_lengths:
                 for pre_length in prediction_lengths:
+                    args["observation_length"] = obs_length
+                    args["prediction_length"] = pre_length
+                    ds = Dataset(df, **args)
                     for volume_rate, batch_sizes in volume_scale_set:
-                        args["observation_length"] = obs_length
-                        args["prediction_length"] = pre_length
-                        data_volume = int(len(df) * volume_rate)
-                        data = df.iloc[:data_volume].copy()
-                        ds = Dataset(data, **args)
                         if is_scaling:
                             scale_id = f"_{volume_rate}"
+                            ds.update_volume_limit(volume_rate)
                         else:
                             scale_id = ""
                         if version_suffix is None:

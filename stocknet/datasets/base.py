@@ -15,7 +15,7 @@ class Dataset(Dataset):
 
     def __init__(
         self,
-        df,
+        source,
         columns: list,
         observation_length: int = 60,
         device=None,
@@ -30,16 +30,27 @@ class Dataset(Dataset):
         dtype=torch.float,
         batch_first=False,
         output_mask=True,
+        volume_limit_ratio=None,
         **kwargs,
     ):
         self.seed(seed)
         self.mm_params = {}
+        if volume_limit_ratio is None:
+            volume_limit_ratio = 1.0
+        self.volume_limit_ratio = volume_limit_ratio
         self.device = device
         # self.org_data = data
         self.dtype = dtype
         self.batch_first = batch_first
         min_length = [1]
-        data = df
+        if isinstance(source, (pd.DataFrame, pd.Series)):
+            data = source
+            self.file_path = None
+        elif isinstance(source, str):
+            data = pd.read_csv(source, parse_dates=True, index_col=0)
+            self.file_path = source
+        else:
+            raise TypeError(f"{type(source)} is not supported as source")
         if processes is not None:
             for process in processes:
                 data = process(data)
@@ -57,16 +68,27 @@ class Dataset(Dataset):
             self.index_sampler = index_sampler
 
         self.output_mask = output_mask
-        if output_mask:
-            self.get_mask = lambda tgt: torch.nn.Transformer.generate_square_subsequent_mask(prediction_length).to(device=self.device)
         self.observation_length = observation_length
         self.is_training = is_training
+        self.columns = columns
         self._data = data[columns]
         self._prediction_length = prediction_length
         if indices is None:
             self._init_indicies(data.index, randomize, split_ratio=split_ratio)
         else:
             self._init_indicies_row(indices, randomize, split_ratio=split_ratio)
+
+    def _apply_volume_limit(self, indices):
+        limited_length = int(len(indices) * self.volume_limit_ratio)
+        return indices[:limited_length]
+
+    def update_volume_limit(self, volume_limit_ratio=None):
+        if volume_limit_ratio is not None and volume_limit_ratio <= 1.0:
+            self.volume_limit_ratio = volume_limit_ratio
+        if self.is_training:
+            self._indices = self._apply_volume_limit(self.train_indices)
+        else:
+            self._indices = self._apply_volume_limit(self.eval_indices)
 
     def _init_indicies(self, index, randomize=False, split_ratio=0.8):
         length = len(index) - self.observation_length - self._prediction_length
@@ -76,11 +98,7 @@ class Dataset(Dataset):
         self.train_indices, self.eval_indices = self.index_sampler(
             index, self._min_index, randomize, split_ratio, self.observation_length, self._prediction_length
         )
-
-        if self.is_training:
-            self._indices = self.train_indices
-        else:
-            self._indices = self.eval_indices
+        self.update_volume_limit()
 
     def _init_indicies_row(self, index, randomize=False, split_ratio=0.8):
         length = len(index) - self.observation_length - self._prediction_length
@@ -95,6 +113,25 @@ class Dataset(Dataset):
             self._indices = self.train_indices
         else:
             self._indices = self.eval_indices
+
+    def get_params(self):
+        import fprocess
+
+        if self.processes is None:
+            process_params = None
+        else:
+            process_params = fprocess.preprocess_to_params(self.processes)
+        params = {
+            "source": self.file_path,
+            "columns": self.columns,
+            "observation_length": self.observation_length,
+            "prediction_length": self._prediction_length,
+            "processes": process_params,
+            "seed": self.seed_value,
+            "batch_first": self.batch_first,
+            "output_mask": self.output_mask,
+        }
+        return params
 
     def output_indices(self, index):
         return slice(index + self.observation_length, index + self.observation_length + self._prediction_length)
@@ -149,7 +186,7 @@ class Dataset(Dataset):
         src = self._input_func(ndx)
         tgt = self._output_func(ndx)
         if self.output_mask:
-            mask_tgt = self.get_mask(tgt)
+            mask_tgt = torch.nn.Transformer.generate_square_subsequent_mask(self._prediction_length).to(device=self.device)
             return src, tgt, mask_tgt
         else:
             return src, tgt
@@ -172,11 +209,13 @@ class Dataset(Dataset):
         random.seed(worker_seed)
 
     def eval(self):
-        self._indices = random.sample(self.eval_indices, k=len(self.eval_indices))
+        indices = self._apply_volume_limit(self.eval_indices)
+        self._indices = random.sample(indices, k=len(indices))
         self.is_training = False
 
     def train(self):
-        self._indices = random.sample(self.train_indices, k=len(self.train_indices))
+        indices = self._apply_volume_limit(self.train_indices)
+        self._indices = random.sample(indices, k=len(indices))
         self.is_training = True
 
     def get_index_range(self):
@@ -228,6 +267,7 @@ class TimeDataset(Dataset):
         dtype=torch.float,
         batch_first=False,
         split_ratio=0.8,
+        volume_limit_ratio=None,
         **kwargs,
     ):
         """return time data in addition to the columns data
@@ -243,6 +283,8 @@ class TimeDataset(Dataset):
             seed (int, optional): specify random seed. Defaults to 1017.
             is_training (bool, optional): specify training mode or not. Defaults to True.
             randomize (bool, optional): specify randomize the index or not. Defaults to True.
+            split_ratio (float, optional): specify ratio to split training data and validation data
+            volume_limit_ratio (float, optional): to investigate how data volume affect to model_performance
         """
 
         self.time_column = time_column
@@ -304,7 +346,7 @@ class TimeDataset(Dataset):
         src, src_time = self._input_func(ndx)
         tgt, tgt_time = self._output_func(ndx)
         if self.output_mask:
-            mask_tgt = self.get_mask(tgt)
+            mask_tgt = torch.nn.Transformer.generate_square_subsequent_mask(self._prediction_length).to(device=self.device)
             return src, tgt, src_time, tgt_time, mask_tgt
         else:
             return src, tgt, src_time, tgt_time
