@@ -1,0 +1,81 @@
+{
+  "dataset": {
+    "key": "seq2seq_time",
+    "source": [
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv",
+        "version_suffix": "30min",
+        "scale_combinations": [
+          {
+            "volume_rate": 0.25,
+            "batch_size": 16
+          },
+          {
+            "volume_rate": 0.50,
+            "batch_size": 32
+          },
+          {
+            "volume_rate": 0.75,
+            "batch_size": 64
+          },
+          {
+            "volume_rate": 1.00,
+            "batch_size": 128
+          }
+        ]
+      }
+    ],
+    "args": {
+      "columns": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "processes": [
+        "Diff",
+        "MiniMax",
+        {
+          "wid": {
+            "kinds": "wid",
+            "time_column": "index",
+            "freq": 30
+          }
+        }
+      ],
+      "time_column": "index"
+    },
+    "observation": 60,
+    "prediction": 10
+  },
+  "model": {
+    "key": "Seq2SeqTransformer",
+    "model_name": "wt_linear1_transformer_scalling",
+    "configs": "./weeklytime_params/*.json",
+    "increment_version": 1
+  },
+  "trainer": {
+    "optimizer": {
+      "key": "AdamW",
+      "lr": 0.001
+    },
+    "scheduler": {
+      "key": "StepLR",
+      "step_size": 1,
+      "gamma": 0.1
+    },
+    "loss": {
+      "key": "MSELoss"
+    },
+    "epoch": 300,
+    "patience": 2,
+    "device": "cuda"
+  },
+  "log": {
+    "path": "./logs",
+    "cloud_storage": {
+      "key": "dropbox",
+      "client_id": ""
+    }
+  }
+}
