@@ -7,16 +7,6 @@ from typing import Sequence
 from .. import nets
 
 
-def model_to_params(model):
-    params = {}
-
-    kinds = model.key
-    params["args"] = model.option
-    params["key"] = kinds
-
-    return params
-
-
 def load_a_model(params: dict, key: str = None, device=None):
     if key is None:
         kinds = params["key"].lower()

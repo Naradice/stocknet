@@ -95,7 +95,11 @@ class Seq2SeqTransformer(nn.Module):
             args = {}
             if hasattr(output_layer, "args"):
                 args = output_layer.args
-            self.args["output_layer"] = {"key": output_layer._get_name(), **args}
+            if hasattr(output_layer, "_get_name"):
+                kinds = output_layer._get_name()
+            else:
+                kinds = type(output_layer).__name__
+            self.args["output_layer"] = {"key": kinds, **args}
         if isinstance(positional_encoding, PositionalEncoding):
             self.forward = self.__forward
         elif isinstance(positional_encoding, EmbeddingPositionalEncoding):
@@ -136,7 +140,9 @@ class Seq2SeqTransformer(nn.Module):
         if positional_encoding_key == "PositionalEncoding":
             if "dropout" not in positional_encoding:
                 positional_encoding["dropout"] = dropout
-            pe = PositionalEncoding(d_model=d_model, **positional_encoding, batch_first=batch_first, device=device)
+            if "d_model" not in positional_encoding:
+                positional_encoding["d_model"] = d_model
+            pe = PositionalEncoding(**positional_encoding, batch_first=batch_first, device=device)
         elif positional_encoding_key == "EmbeddingPositionalEncoding":
             if "dropout" not in positional_encoding:
                 positional_encoding["dropout"] = dropout

@@ -41,7 +41,7 @@ class TestBaseDataset(unittest.TestCase):
         with open(self.params_file, "r") as fp:
             params = json.load(fp)
         ds = factory.load_seq2seq_datasets(params, None)
-        os.path.remove(self.params_file)
+        os.remove(self.params_file)
 
 
 if __name__ == "__main__":
