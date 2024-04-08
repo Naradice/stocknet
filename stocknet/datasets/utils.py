@@ -71,7 +71,7 @@ def dataset_to_params(ds):
     if hasattr(ds, "key"):
         params["key"] = ds.key
     else:
-        ds_class_name = ds.__name__
+        ds_class_name = type(ds).__name__
         params["key"] = ds_class_name
     return params
 
