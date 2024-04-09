@@ -86,26 +86,12 @@ def train_from_config(training_config_file: str):
 
             print(f"new model created: {model_name}_{model_version_str}")
             training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler)
-            opt_config = train_config["optimizer"].copy()
-            opt_key = opt_config.pop("key")
-            optimizer = tr_factory.load_an_optimizer(opt_key, model, opt_config)
+            optimizer, criterion, scheduler = tr_factory.load_trainer_options(model=model, params=train_config.copy())
             if optimizer is None:
-                print(f"optimizer {opt_key} not found.")
+                print("optimizer not found.")
                 continue
-            if "scheduler" in train_config:
-                schl_config = train_config["scheduler"].copy()
-                schl_key = schl_config.pop("key")
-                scheduler = tr_factory.load_a_scheduler(schl_key, optimizer, schl_config)
-                if scheduler is None:
-                    print(f"scheduler {schl_key} not found.")
-            else:
-                scheduler = None
-
-            criterion_config = train_config["loss"].copy()
-            criterion_key = criterion_config.pop("key")
-            criterion = tr_factory.load_a_criterion(criterion_key, criterion_config)
             if criterion is None:
-                print(f"criterion {criterion_key} not found.")
+                print("loss function not found.")
 
             if batch_sizes_4_ds is None or len(batch_sizes_4_ds) == 0:
                 if "batch_size" in train_config:
@@ -141,6 +127,11 @@ def train_from_config(training_config_file: str):
                     scheduler=scheduler,
                     logger=training_logger,
                 )
+
+
+def save_params(epoch, model, dataset, patience, train_method, eval_method, batch_size, train_options, optimizer, criterion, scheduler, logger):
+    training_params = {}
+    training_params["dataset"] = dataset.get_params()
 
 
 def epoch_trainer(
