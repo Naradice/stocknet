@@ -1,0 +1,62 @@
+{
+    "dataset": {
+        "key": "seq2seq",
+        "source": [
+            {
+                "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min5.csv"
+            }
+        ],
+        "args": {
+            "columns": [
+                "open",
+                "high",
+                "low",
+                "close"
+            ],
+            "processes": [
+                "Diff",
+                "MiniMax"
+            ]
+        },
+        "observation": 30,
+        "prediction": 3
+    },
+    "model": {
+        "key": "Seq2SeqTransformer",
+        "model_name": "finance_basic_transformer",
+        "params": {
+            "nhead": 2,
+            "dim_feedforward": 1,
+            "num_encoder_layers": 1,
+            "num_decoder_layers": 1,
+            "dropout": 0.1,
+            "d_model": 4,
+            "positional_encoding": {
+                "key": "PositionalEncoding"
+            }
+        }
+    },
+    "trainer": {
+        "optimizer": {
+            "key": "AdamW",
+            "lr": 0.01
+        },
+        "scheduler": {
+            "key": "StepLR",
+            "step_size": 1,
+            "gamma": 0.5
+        },
+        "loss": {
+            "key": "MSELoss"
+        },
+        "batch_size": [
+            32
+        ],
+        "epoch": 3,
+        "patience": 2,
+        "device": "cuda"
+    },
+    "log": {
+        "path": "./logs"
+    }
+}

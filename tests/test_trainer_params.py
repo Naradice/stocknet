@@ -11,7 +11,7 @@ import torch
 from stocknet.trainer import factory, utils
 
 
-class TestBaseDataset(unittest.TestCase):
+class TestTrainerParams(unittest.TestCase):
     params_file = "./test_train_params.json"
 
     def test_01_common_save(self):

@@ -11,7 +11,7 @@ from torch import nn
 from stocknet.nets import PositionalEncoding, Seq2SeqTransformer, factory, utils
 
 
-class TestBaseDataset(unittest.TestCase):
+class TestTransformerModel(unittest.TestCase):
     params_file = "./test_tf_model_params.json"
 
     def test_01_common_save(self):
