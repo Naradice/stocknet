@@ -6,7 +6,6 @@ import unittest
 module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(module_path)
 
-import finance_client
 from torch import nn
 
 from stocknet.nets import PositionalEncoding, Seq2SeqTransformer, factory, utils
@@ -30,7 +29,7 @@ class TestBaseDataset(unittest.TestCase):
             dim_feedforward=10,
             nhead=6,
         )
-        params = utils.model_to_params(model)
+        params = utils.model_to_params(model, "test_tf_model")
         with open(self.params_file, "w") as fp:
             json.dump(params, fp)
 

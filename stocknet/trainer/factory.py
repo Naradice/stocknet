@@ -27,6 +27,40 @@ def load_trainers(model_key: str, configs: dict):
         return trainer, None, {}
 
 
+def load_trainer_options(model, params):
+    if "optimizer" in params:
+        optim_params = params["optimizer"].copy()
+        if "key" in optim_params:
+            optim_key = optim_params.pop("key")
+            optimizer = load_an_optimizer(optimizer_key=optim_key, model=model, params=optim_params)
+        else:
+            optimizer = None
+    else:
+        optimizer = None
+
+    if "loss" in params:
+        loss_params = params["loss"].copy()
+        if "key" in loss_params:
+            loss_key = loss_params.pop("key")
+            criterion = load_a_criterion(loss_key, loss_params)
+        else:
+            criterion = None
+    else:
+        criterion = None
+
+    if "scheduler" in params and optimizer is not None:
+        schl_params = params["scheduler"].copy()
+        if "key" in schl_params:
+            schl_key = schl_params.pop("key")
+            scheduler = load_a_scheduler(scheduler_key=schl_key, optimizer=optimizer, params=schl_params)
+        else:
+            scheduler = None
+    else:
+        scheduler = None
+
+    return optimizer, criterion, scheduler
+
+
 def load_an_optimizer(optimizer_key: str, model, params: dict):
     key = optimizer_key.lower()
     for name, opt_class in getmembers(optim, isclass):
@@ -39,6 +73,10 @@ def load_a_scheduler(scheduler_key: str, optimizer, params: dict):
     key = scheduler_key.lower()
     for name, shl_class in getmembers(lr_scheduler, isclass):
         if name.lower() == key:
+            params["last_epoch"] = -1
+            # The verbose parameter is deprecated
+            if "verbose" in params:
+                params.pop("verbose")
             return shl_class(optimizer, **params)
     return None
 
