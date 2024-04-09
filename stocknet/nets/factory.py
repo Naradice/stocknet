@@ -17,6 +17,8 @@ def load_a_model(params: dict, key: str = None, device=None):
         if name.lower() == kinds:
             if "args" in params:
                 args = params["args"]
+            elif "params" in params:
+                args = params["params"]
             else:
                 args = params
             args["device"] = device
