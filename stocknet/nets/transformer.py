@@ -56,6 +56,7 @@ class Seq2SeqTransformer(nn.Module):
         num_decoder_layers: int,
         d_model: int,
         positional_encoding,
+        input_layer=None,
         output_layer=None,
         dim_feedforward: int = 512,
         dropout: float = 0.1,
@@ -90,6 +91,16 @@ class Seq2SeqTransformer(nn.Module):
         }
 
         self.positional_encoding = positional_encoding
+        self.input_layer = input_layer
+        if input_layer is not None:
+            args = {}
+            if hasattr(input_layer, "args"):
+                args = input_layer.args
+            if hasattr(input_layer, "_get_name"):
+                kinds = input_layer._get_name()
+            else:
+                kinds = type(input_layer).__name__
+            self.args["input_layer"] = {"key": kinds, **args}
         self.output_layer = output_layer
         if output_layer is not None:
             args = {}
@@ -125,6 +136,7 @@ class Seq2SeqTransformer(nn.Module):
         num_decoder_layers: int,
         d_model: int,
         positional_encoding: dict,
+        input_layer: dict = None,
         output_layer: dict = None,
         dim_feedforward: int = 512,
         dropout: float = 0.1,
@@ -158,6 +170,32 @@ class Seq2SeqTransformer(nn.Module):
                 pe = EmbeddingPositionalEncoding(d_model=d_model, device=device, **positional_encoding)
         else:
             raise ValueError(f"valid positional encoding is not specified: {positional_encoding_key}")
+        if isinstance(input_layer, dict):
+            input_layer_key = input_layer.pop("key").lower()
+            from inspect import getmembers, isclass
+
+            from . import linear
+
+            args = input_layer.copy()
+            args["device"] = device
+            for name, model_class in getmembers(linear, isclass):
+                if name.lower() == input_layer_key:
+                    if name.lower() == "perceptron":
+                        if "input_dim" not in args:
+                            args["input_dim"] = d_model
+                        if "hidden_dim" not in args:
+                            if vocab_size is None:
+                                hidden_dim = d_model * 2
+                            else:
+                                hidden_dim = vocab_size // 2
+                            args["hidden_dim"] = hidden_dim
+                        if "output_dim" not in args:
+                            if vocab_size is None:
+                                output_dim = d_model
+                            else:
+                                output_dim = vocab_size
+                            args["output_dim"] = output_dim
+                    input_layer = model_class(**args)
         if isinstance(output_layer, dict):
             output_layer_key = output_layer.pop("key").lower()
             from inspect import getmembers, isclass
@@ -190,6 +228,7 @@ class Seq2SeqTransformer(nn.Module):
             num_decoder_layers=num_decoder_layers,
             d_model=d_model,
             positional_encoding=pe,
+            input_layer=input_layer,
             output_layer=output_layer,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
@@ -209,6 +248,9 @@ class Seq2SeqTransformer(nn.Module):
         padding_mask_tgt: Tensor = None,
         memory_key_padding_mask: Tensor = None,
     ):
+        if self.input_layer is not None:
+            src = self.input_layer(src)
+            tgt = self.input_layer(tgt)
         src, tgt = self.positional_encoding(src, tgt)
         memory = self.transformer_encoder(src, mask_src, padding_mask_src)
         outs = self.transformer_decoder(tgt, memory, mask_tgt, None, padding_mask_tgt, memory_key_padding_mask)
@@ -228,6 +270,9 @@ class Seq2SeqTransformer(nn.Module):
         padding_mask_tgt: Tensor = None,
         memory_key_padding_mask: Tensor = None,
     ):
+        if self.input_layer is not None:
+            src = self.input_layer(src)
+            tgt = self.input_layer(tgt)
         src_time = self.positional_encoding(src_time)
         src = self.dropout(torch.add(src, src_time))
         tgt_time = self.positional_encoding(tgt_time)
