@@ -67,7 +67,17 @@ def k_fold_sampling(index, min_index, randomize, split_ratio, observation_length
 
 
 def dataset_to_params(ds):
-    params = ds.get_params()
+    params = {}
+    args = ds.get_params()
+    source = args.pop("source")
+    params["source"] = source
+    if "observation_length" in args:
+        observation_length = args.pop("observation_length")
+        params["observation"] = observation_length
+    if "prediction_length" in args:
+        prediction_length = args.pop("prediction_length")
+        params["prediction"] = prediction_length
+    params["args"] = args
     if hasattr(ds, "key"):
         params["key"] = ds.key
     else:
@@ -83,12 +93,21 @@ def read_csv(file_path, index_col=0, **kwargs):
 def load_fprocesses(params: dict, columns: list):
     if isinstance(params, dict):
         return fprocess.load_preprocess(params)
+    elif isinstance(params, list):
+        processes = []
+        for param in params:
+            processes.extend(load_fprocesses(param, columns))
+        return processes
     elif isinstance(params, str):
         if columns is not None and len(columns) > 0:
             if "columns" in params:
                 params = params.copy()
                 params.pop("columns")
-            return fprocess.load_default_preprocess(params, columns)
+            process = fprocess.load_default_preprocess(params, columns)
+            if process is None:
+                return []
+            else:
+                return [process]
         else:
             raise ValueError("valid column should be provided to load default proceess")
     else:

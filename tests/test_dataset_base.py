@@ -40,7 +40,7 @@ class TestBaseDataset(unittest.TestCase):
     def test_04_common_load(self):
         with open(self.params_file, "r") as fp:
             params = json.load(fp)
-        ds = factory.load_seq2seq_datasets(params, None)
+        ds, batch_sizes, version_preffix = factory.load_seq2seq_datasets(params, None)
         os.remove(self.params_file)
 
 

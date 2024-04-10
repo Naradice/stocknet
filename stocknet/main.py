@@ -8,8 +8,11 @@ import torch
 
 from . import logger
 from .datasets import factory as ds_factory
+from .datasets import utils as ds_utils
 from .nets import factory as mdl_factory
+from .nets import utils as mdl_utils
 from .trainer import factory as tr_factory
+from .trainer import utils as tr_utils
 
 
 def train_from_config(training_config_file: str):
@@ -111,6 +114,7 @@ def train_from_config(training_config_file: str):
             succ, model, optimizer, scheduler, best_loss = logger.load_model_checkpoint(
                 model, model_name, model_version_str, optimizer, scheduler, log_path, eval_func is None, storage_handler
             )
+            save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_sizes, training_logger)
             for batch_size in batch_sizes:
                 print(f"start training model with batch_size: {batch_size}")
                 epoch_trainer(
@@ -129,9 +133,20 @@ def train_from_config(training_config_file: str):
                 )
 
 
-def save_params(epoch, model, dataset, patience, train_method, eval_method, batch_size, train_options, optimizer, criterion, scheduler, logger):
+def save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_size, logger):
     training_params = {}
-    training_params["dataset"] = dataset.get_params()
+
+    ds_params = ds_utils.dataset_to_params(dataset)
+    training_params["dataset"] = ds_params
+
+    model_params = mdl_utils.model_to_params(model, logger.model_name)
+    training_params["model"] = model_params
+
+    train_option_params = tr_utils.tainer_options_to_params(optimizer, criterion, scheduler, epoch=epoch, patience=patience, batch_size=batch_size)
+    training_params["trainer"] = train_option_params
+
+    training_params["log"] = {"path": logger.base_path}
+    logger.save_params(training_params)
 
 
 def epoch_trainer(

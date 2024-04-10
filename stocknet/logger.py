@@ -241,8 +241,12 @@ class TrainingLogger:
             else:
                 self.__cache.append(log_entry)
 
-    def save_params(self, params: dict, model_name, model_version):
+    def save_params(self, params: dict, model_name=None, model_version=None):
         data_folder = os.path.dirname(self.log_file_path)
+        if model_name is None:
+            model_name = self.model_name
+        if model_version is None:
+            model_version = self.version
         if isinstance(model_version, int):
             param_file_path = os.path.join(data_folder, f"{model_name}_v{model_version}_params.json")
         else:

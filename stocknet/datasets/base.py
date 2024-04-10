@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from .utils import k_fold_sampling, random_sampling, random_sampling_row
+from .utils import k_fold_sampling, random_sampling, random_sampling_row, read_csv
 
 
 class Dataset(Dataset):
@@ -48,6 +48,9 @@ class Dataset(Dataset):
         elif isinstance(source, str):
             data = pd.read_csv(source, parse_dates=True, index_col=0)
             self.file_path = source
+        elif isinstance(source, dict):
+            data = read_csv(**source)
+            self.file_path = source["file_path"]
         else:
             raise TypeError(f"{type(source)} is not supported as source")
         if processes is not None:

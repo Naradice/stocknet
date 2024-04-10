@@ -1,3 +1,4 @@
+import copy
 from inspect import _empty, signature
 
 
@@ -28,7 +29,7 @@ def __get_class_args(instance):
 def optimizer_to_params(optimizer):
     optim_key = type(optimizer).__name__
     if hasattr(optimizer, "defaults"):
-        params = optimizer.defaults
+        params = copy.copy(optimizer.defaults)
 
         class_params = signature(type(optimizer)).parameters
         for key, value in params.copy().items():

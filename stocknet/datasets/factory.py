@@ -58,10 +58,17 @@ def load_seq2seq_datasets(params: dict, device=None):
             files_info = [souce_info]
         elif isinstance(souce_info, list):
             files_info = souce_info
+        elif isinstance(souce_info, str):
+            files_info = [souce_info]
         else:
             raise TypeError(f"invalid type specified as source: {type(souce_info)}")
 
-        observation_info = params["observation"]
+        if "observation" in params:
+            observation_info = params["observation"]
+        elif "observation_length" in params:
+            observation_info = params["observation_length"]
+        else:
+            raise ValueError("observation is required in dataset params")
         if isinstance(observation_info, (int, float)):
             observation_lengths = [observation_info]
         elif "length" in observation_info:
@@ -75,7 +82,12 @@ def load_seq2seq_datasets(params: dict, device=None):
         else:
             raise ValueError("length definition required in observation")
 
-        prediction_info = params["prediction"]
+        if "prediction" in params:
+            prediction_info = params["prediction"]
+        elif "prediction_length" in params:
+            prediction_info = params["prediction_length"]
+        else:
+            raise ValueError("prediction is required in dataset params")
         if isinstance(prediction_info, (int, float)):
             prediction_lengths = [prediction_info]
         elif "length" in prediction_info:
@@ -99,7 +111,6 @@ def load_seq2seq_datasets(params: dict, device=None):
             default_batch_sizes = [64]
 
         for file_info in files_info:
-            df = utils.read_csv(**file_info)
             args = params["args"].copy()
 
             if "version_suffix" in file_info:
@@ -119,7 +130,7 @@ def load_seq2seq_datasets(params: dict, device=None):
             elif "features" in args:
                 columns = args.pop("features")
             else:
-                columns = df.columns.copy()
+                columns = None
 
             if "batch_size" in file_info:
                 specific_batch_sizes = file_info["batch_size"]
@@ -133,15 +144,7 @@ def load_seq2seq_datasets(params: dict, device=None):
                 batch_sizes = default_batch_sizes
 
             if preprocesses_params_list is not None and len(preprocesses_params_list) > 0:
-                pre_processes = []
-                for preprocesses_params in preprocesses_params_list:
-                    process = utils.load_fprocesses(preprocesses_params, columns)
-                    if process is None:
-                        raise ValueError(f"can't load {preprocesses_params} with {columns}")
-                    if isinstance(process, Sequence):
-                        pre_processes.extend(process)
-                    else:
-                        pre_processes.append(process)
+                pre_processes = utils.load_fprocesses(preprocesses_params_list, columns)
                 args["processes"] = pre_processes
 
             volume_scale_set = []
@@ -169,7 +172,7 @@ def load_seq2seq_datasets(params: dict, device=None):
                 for pre_length in prediction_lengths:
                     args["observation_length"] = obs_length
                     args["prediction_length"] = pre_length
-                    ds = Dataset(df, **args)
+                    ds = Dataset(file_info, **args)
                     for volume_rate, batch_sizes in volume_scale_set:
                         if is_scaling:
                             scale_id = f"_{volume_rate}"
