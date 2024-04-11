@@ -30,13 +30,13 @@ def save_checkpoint(model_path, model, optimizer, scheduler, best_loss, **kwargs
 
 def load_model_params(model_folder, model_name, model_version, storage_handler=None):
     default_response = None
-    params_file_name = f"{model_folder}/{model_name}_v{model_version}_params.json"
+    params_file_name = f"{model_folder}/{model_name}_v{model_version}.json"
     if os.path.exists(params_file_name) is False:
         if storage_handler is None:
             print(f"exsisting model params not found on {params_file_name}.")
             return default_response
         else:
-            response = storage_handler.download_file(f"/{model_name}/{model_name}_v{model_version}_params.json", params_file_name)
+            response = storage_handler.download_file(f"/{model_name}/{model_name}_v{model_version}.json", params_file_name)
             if response is None:
                 print("exsisting model params not found.")
                 return default_response
@@ -248,9 +248,9 @@ class TrainingLogger:
         if model_version is None:
             model_version = self.version
         if isinstance(model_version, int):
-            param_file_path = os.path.join(data_folder, f"{model_name}_v{model_version}_params.json")
+            param_file_path = os.path.join(data_folder, f"{model_name}_v{model_version}.json")
         else:
-            param_file_path = os.path.join(data_folder, f"{model_name}_{model_version}_params.json")
+            param_file_path = os.path.join(data_folder, f"{model_name}_{model_version}.json")
         if "device" in params:
             device = params["device"]
             if not isinstance(device, str):
