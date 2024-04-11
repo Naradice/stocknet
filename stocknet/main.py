@@ -141,10 +141,11 @@ def save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler
 
     model_params = mdl_utils.model_to_params(model, logger.model_name)
     training_params["model"] = model_params
+    model_info = mdl_utils.get_params_count(model)
+    training_params["model_info"] = model_info
 
     train_option_params = tr_utils.tainer_options_to_params(optimizer, criterion, scheduler, epoch=epoch, patience=patience, batch_size=batch_size)
     training_params["trainer"] = train_option_params
-
     training_params["log"] = {"path": logger.base_path}
     logger.save_params(training_params)
 
