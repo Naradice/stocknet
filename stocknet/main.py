@@ -143,6 +143,7 @@ def save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler
     training_params["model"] = model_params
     model_info = mdl_utils.get_params_count(model)
     training_params["model_info"] = model_info
+    dataset.train()
     training_params["data_volume"] = len(dataset)
 
     train_option_params = tr_utils.tainer_options_to_params(optimizer, criterion, scheduler, epoch=epoch, patience=patience, batch_size=batch_size)
