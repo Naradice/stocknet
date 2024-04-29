@@ -167,7 +167,9 @@ class Seq2SeqTransformer(nn.Module):
                 raise ValueError("num_embedding is not found in kwargs to create PositionalEncoding")
             else:
                 positional_encoding["num_embedding"] = emmb_num
-                pe = EmbeddingPositionalEncoding(d_model=d_model, device=device, **positional_encoding)
+                if "d_model" not in positional_encoding:
+                    positional_encoding["d_model"] = d_model
+                pe = EmbeddingPositionalEncoding(device=device, **positional_encoding)
         else:
             raise ValueError(f"valid positional encoding is not specified: {positional_encoding_key}")
         if isinstance(input_layer, dict):

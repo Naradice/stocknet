@@ -3,9 +3,10 @@ from typing import Sequence
 from . import utils
 from .base import Dataset, TimeDataset
 from .generator import AgentSimulationTrainDataGenerator, AgentSimulationWeeklyDataGenerator
+from .id import DiffIDDS
 from .seq2seq import FeatureDataset, TimeFeatureDataset
 
-seq2seq_pandas_dataset = [FeatureDataset, TimeFeatureDataset]
+seq2seq_pandas_dataset = [FeatureDataset, TimeFeatureDataset, DiffIDDS]
 simulation_dataset = [AgentSimulationTrainDataGenerator, AgentSimulationWeeklyDataGenerator]
 basic_dataset = [Dataset, TimeDataset]
 

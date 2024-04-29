@@ -58,7 +58,7 @@ class TimeFeatureDataset(TimeDataset):
         self,
         df,
         columns: list,
-        time_column: str,
+        time_column: str = "index",
         observation_length: int = 60,
         device=None,
         processes=None,

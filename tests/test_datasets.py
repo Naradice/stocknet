@@ -11,9 +11,8 @@ import stocknet.datasets as ds
 
 finance_client_module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../finance_client"))
 sys.path.append(finance_client_module_path)
-import torch
-
 import finance_client as fc
+import torch
 
 file_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../finance_client/finance_client/data_source/mt5/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv")

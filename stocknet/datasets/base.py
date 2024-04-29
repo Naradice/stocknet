@@ -7,7 +7,8 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from .utils import k_fold_sampling, random_sampling, random_sampling_row, read_csv
+from .utils import (k_fold_sampling, random_sampling, random_sampling_row,
+                    read_csv)
 
 
 class Dataset(Dataset):
@@ -357,3 +358,8 @@ class TimeDataset(Dataset):
             return src, tgt, src_time, tgt_time, mask_tgt
         else:
             return src, tgt, src_time, tgt_time
+
+    def get_params(self):
+        params = super().get_params()
+        params.update({"columns": self._feature_columns, "time_column": self.time_column})
+        return params
