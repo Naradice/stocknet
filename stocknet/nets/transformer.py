@@ -5,6 +5,8 @@ import torch.nn as nn
 from torch import Tensor
 from torch.nn import TransformerDecoder, TransformerDecoderLayer, TransformerEncoder, TransformerEncoderLayer
 
+from .utils import get_class_args
+
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=5000, dropout=0.05, batch_first=True, device=None, **kwargs):
@@ -96,6 +98,8 @@ class Seq2SeqTransformer(nn.Module):
             args = {}
             if hasattr(input_layer, "args"):
                 args = input_layer.args
+            else:
+                args = get_class_args(input_layer)
             if hasattr(input_layer, "_get_name"):
                 kinds = input_layer._get_name()
             else:
@@ -106,6 +110,8 @@ class Seq2SeqTransformer(nn.Module):
             args = {}
             if hasattr(output_layer, "args"):
                 args = output_layer.args
+            else:
+                args = get_class_args(output_layer)
             if hasattr(output_layer, "_get_name"):
                 kinds = output_layer._get_name()
             else:
@@ -128,6 +134,43 @@ class Seq2SeqTransformer(nn.Module):
             d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout, batch_first=batch_first, device=device
         )
         self.transformer_decoder = TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
+
+    @staticmethod
+    def __init_layer(args, layer_key, d_model, vocab_size, device):
+        from inspect import getmembers, isclass
+
+        from . import linear
+
+        args["device"] = device
+        layer = None
+        for name, model_class in getmembers(linear, isclass):
+            if name.lower() == layer_key:
+                if name.lower() == "perceptron":
+                    if "input_dim" not in args:
+                        args["input_dim"] = d_model
+                    if "hidden_dim" not in args:
+                        if vocab_size is None:
+                            hidden_dim = d_model * 2
+                        else:
+                            hidden_dim = vocab_size // 2
+                        args["hidden_dim"] = hidden_dim
+                    if "output_dim" not in args:
+                        if vocab_size is None:
+                            output_dim = d_model
+                        else:
+                            output_dim = vocab_size
+                        args["output_dim"] = output_dim
+                layer = model_class(**args)
+        if layer is None:
+            for name, model_class in getmembers(nn, isclass):
+                if name.lower() == layer_key:
+                    if name.lower() == "embedding":
+                        if "num_embeddings" not in args:
+                            args["num_embeddings"] = vocab_size
+                        if "embedding_dim" not in args:
+                            args["embedding_dim"] = d_model
+                    layer = model_class(**args)
+        return layer
 
     @classmethod
     def load(
@@ -174,56 +217,12 @@ class Seq2SeqTransformer(nn.Module):
             raise ValueError(f"valid positional encoding is not specified: {positional_encoding_key}")
         if isinstance(input_layer, dict):
             input_layer_key = input_layer.pop("key").lower()
-            from inspect import getmembers, isclass
-
-            from . import linear
-
             args = input_layer.copy()
-            args["device"] = device
-            for name, model_class in getmembers(linear, isclass):
-                if name.lower() == input_layer_key:
-                    if name.lower() == "perceptron":
-                        if "input_dim" not in args:
-                            args["input_dim"] = d_model
-                        if "hidden_dim" not in args:
-                            if vocab_size is None:
-                                hidden_dim = d_model * 2
-                            else:
-                                hidden_dim = vocab_size // 2
-                            args["hidden_dim"] = hidden_dim
-                        if "output_dim" not in args:
-                            if vocab_size is None:
-                                output_dim = d_model
-                            else:
-                                output_dim = vocab_size
-                            args["output_dim"] = output_dim
-                    input_layer = model_class(**args)
+            input_layer = self.__init_layer(args, input_layer_key, d_model, vocab_size, device)
         if isinstance(output_layer, dict):
             output_layer_key = output_layer.pop("key").lower()
-            from inspect import getmembers, isclass
-
-            from . import linear
-
             args = output_layer.copy()
-            args["device"] = device
-            for name, model_class in getmembers(linear, isclass):
-                if name.lower() == output_layer_key:
-                    if name.lower() == "perceptron":
-                        if "input_dim" not in args:
-                            args["input_dim"] = d_model
-                        if "hidden_dim" not in args:
-                            if vocab_size is None:
-                                hidden_dim = d_model * 2
-                            else:
-                                hidden_dim = vocab_size // 2
-                            args["hidden_dim"] = hidden_dim
-                        if "output_dim" not in args:
-                            if vocab_size is None:
-                                output_dim = d_model
-                            else:
-                                output_dim = vocab_size
-                            args["output_dim"] = output_dim
-                    output_layer = model_class(**args)
+            output_layer = self.__init_layer(args, output_layer_key, d_model, vocab_size, device)
 
         model = Seq2SeqTransformer(
             num_encoder_layers=num_encoder_layers,

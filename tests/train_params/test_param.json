@@ -30,9 +30,21 @@
             "num_encoder_layers": 1,
             "num_decoder_layers": 1,
             "dropout": 0.1,
-            "d_model": 4,
+            "d_model": 12,
             "positional_encoding": {
                 "key": "PositionalEncoding"
+            },
+            "input_layer": {
+                "key": "Perceptron",
+                "input_dim": 4,
+                "output_dim": 12,
+                "num_layers": 1
+            },
+            "output_layer": {
+                "key": "Perceptron",
+                "input_dim": 12,
+                "output_dim": 4,
+                "num_layers": 1
             }
         }
     },
