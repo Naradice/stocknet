@@ -9,7 +9,7 @@ from .utils import read_csv
 
 
 class DiffIDDS:
-    key = "did"
+    key = "seq2seq_did"
 
     def __init__(
         self,
@@ -24,6 +24,7 @@ class DiffIDDS:
         clip_range=None,
         with_close_column: str = None,
         with_mean: int = None,
+        output_mask: bool = True,
         **kwargs,
     ):
         self.seed(seed)
@@ -44,6 +45,7 @@ class DiffIDDS:
         self.with_close_column = with_close_column
         self.with_mean = with_mean
 
+        self.output_mask = output_mask
         self.observation_length = observation_length
         self.device = device
         self.prediction_length = prediction_length
@@ -63,6 +65,7 @@ class DiffIDDS:
             "clip_range": self.clip_range,
             "with_close_column": self.with_close_column,
             "with_mean: int": self.with_mean,
+            "utput_mask": self.output_mask,
         }
         return params
 
@@ -111,7 +114,11 @@ class DiffIDDS:
         id_df = ohlc_diff_df * 10**decimal_digits + lower_value
         self.ohlc_lower = lower_value
         id_df = id_df.astype("int64")
-        self.ohlc_range_size = lower_value + upper_value + 1
+        vocab_size = lower_value + upper_value + 1
+        if vocab_size % 2 == 0:
+            self.vocab_size = vocab_size
+        else:
+            self.vocab_size = vocab_size + 1
         return id_df
 
     def __len__(self):
@@ -128,12 +135,16 @@ class DiffIDDS:
         ohlc_ids = torch.tensor(ohlc_chunk_data, device=self.device, dtype=torch.int64)
         if self.batch_first:
             src = ohlc_ids[:, : -self.prediction_length]
-            tgt = ohlc_ids[:, -self.prediction_length :]
+            tgt = ohlc_ids[:, -self.prediction_length - 1 :]
         else:
             ohlc_ids = ohlc_ids.transpose(0, 1)
             src = ohlc_ids[: -self.prediction_length]
-            tgt = ohlc_ids[-self.prediction_length :]
-        return src, tgt
+            tgt = ohlc_ids[-self.prediction_length - 1 :]
+        if self.output_mask:
+            mask_tgt = torch.nn.Transformer.generate_square_subsequent_mask(self.prediction_length).to(device=self.device)
+            return src, tgt, mask_tgt
+        else:
+            return src, tgt
 
     def seed(self, seed=None):
         """ """

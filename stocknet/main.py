@@ -75,7 +75,7 @@ def train_from_config(training_config_file: str):
             continue
         print("new dataset loaded")
         model_key = model_config["key"]
-        models = mdl_factory.load_models(model_config.copy(), device=device)
+        models = mdl_factory.load_models(model_config.copy(), dataset=dataset, device=device)
         for model, model_name, model_version in models:
             if model is None:
                 continue

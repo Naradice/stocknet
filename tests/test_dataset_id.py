@@ -30,13 +30,13 @@ class TestDiffIDDataset(unittest.TestCase):
         batch_size = 16
         device = "cpu"
         ds = self.__default_init()
-        self.assertGreater(ds.ohlc_range_size, 0)
+        self.assertGreater(ds.vocab_size, 0)
         src, tgt = ds[0:batch_size]
         self.assertEqual(src.shape, (batch_size, self.observation_length))
         self.assertEqual(tgt.shape, (batch_size, self.prediction_length))
 
-        d_model = int(math.sqrt(ds.ohlc_range_size))
-        emb_layer = torch.nn.Embedding(ds.ohlc_range_size, d_model, device=device)
+        d_model = int(math.sqrt(ds.vocab_size))
+        emb_layer = torch.nn.Embedding(ds.vocab_size, d_model, device=device)
         emb_src = emb_layer(src)
         self.assertEqual(emb_src.shape, (batch_size, self.observation_length, d_model))
 

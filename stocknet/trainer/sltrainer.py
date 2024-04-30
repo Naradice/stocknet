@@ -20,18 +20,34 @@ def __sqe2seq_main(index, model, ds, criterion, batch_size, split_tgt_func):
     return loss
 
 
+def __seq2seq_emb_main(index, model, ds, criterion, batch_size, split_tgt_func):
+    temp = ds[index : index + batch_size]
+    src, tgt = temp[:2]
+    option_args = temp[2:]
+
+    input_tgt, output_tgt = split_tgt_func(tgt)
+    logits_c = model(src, input_tgt, *option_args)
+    out_c_tgt = torch.nn.functional.one_hot(output_tgt, ds.vocab_size).to(dtype=torch.float)
+    loss = criterion(logits_c, out_c_tgt)
+    return loss
+
+
 def seq2seq_eval(model, ds, criterion, batch_size, batch_first=True):
     model.eval()
     ds.eval()
     losses = []
 
     if batch_first is True:
-        split_tgt = lambda tensor: (tensor[:, :-1, :], tensor[:, 1:, :])
+        split_tgt = lambda tensor: (tensor[:, :-1], tensor[:, 1:])
     else:
         split_tgt = lambda tensor: (tensor[:-1], tensor[1:])
+    if isinstance(criterion, torch.nn.CrossEntropyLoss):
+        train_main_func = __seq2seq_emb_main
+    else:
+        train_main_func = __sqe2seq_main
     end_index = len(ds)
     for index in tqdm(range(0, end_index - batch_size, batch_size)):
-        loss = __sqe2seq_main(index, model, ds, criterion, batch_size, split_tgt)
+        loss = train_main_func(index, model, ds, criterion, batch_size, split_tgt)
         losses.append(loss.item())
 
     return np.mean(losses)
@@ -43,13 +59,17 @@ def seq2seq_train(model, ds, optimizer, criterion, batch_size, batch_first=True)
     losses = []
 
     if batch_first is True:
-        split_tgt = lambda tensor: (tensor[:, :-1, :], tensor[:, 1:, :])
+        split_tgt = lambda tensor: (tensor[:, :-1], tensor[:, 1:])
     else:
         split_tgt = lambda tensor: (tensor[:-1], tensor[1:])
+    if isinstance(criterion, torch.nn.CrossEntropyLoss):
+        train_main_func = __seq2seq_emb_main
+    else:
+        train_main_func = __sqe2seq_main
     end_index = len(ds)
     for index in tqdm(range(0, end_index - batch_size, batch_size)):
         optimizer.zero_grad()
-        loss = __sqe2seq_main(index, model, ds, criterion, batch_size, split_tgt)
+        loss = train_main_func(index, model, ds, criterion, batch_size, split_tgt)
         loss.backward()
         optimizer.step()
         losses.append(loss.item())

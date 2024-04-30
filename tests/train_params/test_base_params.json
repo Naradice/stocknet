@@ -1,0 +1,58 @@
+{
+    "source": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv",
+    "observation": 60,
+    "prediction": 10,
+    "args": {
+        "columns": [
+            "open",
+            "high",
+            "low",
+            "close"
+        ],
+        "processes": {
+            "diff_1": {
+                "periods": 1,
+                "columns": null,
+                "kinds": "Diff"
+            },
+            "minmax": {
+                "columns": [
+                    "open",
+                    "high",
+                    "low",
+                    "close",
+                    "tick_volume",
+                    "spread",
+                    "real_volume"
+                ],
+                "scale": [
+                    -1,
+                    1
+                ],
+                "min_values": {
+                    "open": -2.3980000000000103,
+                    "high": -2.2590000000000003,
+                    "low": -4.453000000000003,
+                    "close": -2.397999999999996,
+                    "tick_volume": -44288.0,
+                    "spread": -182.0,
+                    "real_volume": -17105248000.0
+                },
+                "max_values": {
+                    "open": 1.5020000000000095,
+                    "high": 2.088000000000008,
+                    "low": 2.289999999999992,
+                    "close": 1.5010000000000048,
+                    "tick_volume": 52690.0,
+                    "spread": 197.0,
+                    "real_volume": 14772602000.0
+                },
+                "kinds": "MiniMax"
+            }
+        },
+        "seed": 1017,
+        "batch_first": false,
+        "output_mask": true
+    },
+    "key": "Dataset"
+}

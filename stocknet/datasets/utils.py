@@ -77,6 +77,9 @@ def dataset_to_params(ds):
     if "prediction_length" in args:
         prediction_length = args.pop("prediction_length")
         params["prediction"] = prediction_length
+    if "device" in args:
+        device = str(args["device"])
+        args["device"] = device
     params["args"] = args
     if hasattr(ds, "key"):
         params["key"] = ds.key
