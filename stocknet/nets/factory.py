@@ -38,7 +38,9 @@ def replace_params_vars(params: dict, dataset):
         return params
     new_params = {}
     for key, value_key in params.items():
-        if isinstance(value_key, str):
+        if isinstance(value_key, dict):
+            replace_params_vars(value_key, dataset)
+        elif isinstance(value_key, str):
             if value_key.startswith("$"):
                 variable = value_key[1:]
                 vars = variable.split(".")

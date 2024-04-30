@@ -31,6 +31,8 @@
             },
             "output_layer": {
                 "key": "Perceptron",
+                "input_dim": 100,
+                "output_dim": "$dataset.vocab_size",
                 "num_layers": 1
             }
         }
