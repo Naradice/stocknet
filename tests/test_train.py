@@ -29,20 +29,20 @@ class TestTrainer(unittest.TestCase):
         stocknet.train_from_config(params_file)
 
 
-# class TestDIDTrainer(unittest.TestCase):
-#     params_file = f"{base_folder}/train_params/test_did_param.json"
+class TestDIDTrainer(unittest.TestCase):
+    params_file = f"{base_folder}/train_params/test_did_param.json"
 
-#     def test_01_did_train(self):
-#         stocknet.train_from_config(self.params_file)
+    def test_01_did_train(self):
+        stocknet.train_from_config(self.params_file)
 
-#     def test_02_reproduce_train(self):
-#         with open(self.params_file, "r") as fp:
-#             params = json.load(fp)
-#         model_name = params["model"]["model_name"]
-#         log_param_file = f"./logs/{model_name}/{model_name}*.json"
-#         params_files = glob.glob(log_param_file)
-#         params_file = params_files[0]
-#         stocknet.train_from_config(params_file)
+    def test_02_reproduce_train(self):
+        with open(self.params_file, "r") as fp:
+            params = json.load(fp)
+        model_name = params["model"]["model_name"]
+        log_param_file = f"./logs/{model_name}/{model_name}*.json"
+        params_files = glob.glob(log_param_file)
+        params_file = params_files[0]
+        stocknet.train_from_config(params_file)
 
 
 if __name__ == "__main__":
