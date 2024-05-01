@@ -119,7 +119,7 @@ def train_from_config(training_config_file: str):
             else:
                 batch_sizes = batch_sizes_4_ds
 
-            trainer_func, eval_func, train_options = tr_factory.load_trainers(model_key, train_config)
+            trainer_func, eval_func, train_options = tr_factory.load_trainers(model_key, train_config, parent_dir)
             succ, model, optimizer, scheduler, best_loss = logger.load_model_checkpoint(
                 model, model_name, model_version_str, optimizer, scheduler, log_path, eval_func is None, storage_handler
             )

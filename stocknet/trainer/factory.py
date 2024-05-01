@@ -14,16 +14,51 @@ models_4_seq2seq = [nets.Seq2SeqTransformer.__name__]
 models_4_seq2seq_sim = []
 
 
-def load_trainers(model_key: str, configs: dict):
-    if model_key in models_4_seq2seq:
-        options = {}
-        if "batch_first" in configs:
-            batch_first = bool(configs["batch_first"])
-            options["batch_first"] = batch_first
-        return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options.copy()
+def __load_a_module(module_key: str, custom_key: str, module_path: str):
+    if "." in module_key:
+        dirs = module_key.split(".")
+        # need to check submodules
+        module_name = dirs[-2]
+        attr_name = dirs[-1]
+        sys.path.append(module_path)
+        module = importlib.import_module(f"{custom_key}.{module_name}")
+        attr = getattr(module, attr_name)
+        return attr
+    return None
+
+
+def load_custom_trainer(trainer_config: dict, base_path: str):
+    custom_folder = os.path.join(base_path, "custom")
+    if "train_key" in trainer_config:
+        train_key = trainer_config["train_key"]
+        trainer_func = __load_a_module(train_key, "trainer", custom_folder)
+    else:
+        trainer_func = None
+    if "eval_key" in trainer_config:
+        eval_key = trainer_config["eval_key"]
+        eval_func = __load_a_module(eval_key, "trainer", custom_folder)
+    else:
+        eval_func = None
+    return trainer_func, eval_func
+
+
+def load_trainers(model_key: str, configs: dict, base_path: str):
+    # initialize options
+    options = {}
+    if "batch_first" in configs:
+        batch_first = bool(configs["batch_first"])
+        options["batch_first"] = batch_first
+
+    # load trainer
+    if "trainer" in configs:
+        trainer_config = configs["trainer"]
+        trainer_func, eval_func = load_custom_trainer(trainer_config, base_path)
+        return trainer_func, eval_func, options
+    elif model_key in models_4_seq2seq:
+        return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options
     elif model_key in models_4_seq2seq_sim:
-        # return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options.copy()
-        return None, None, options.copy()
+        # return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options
+        return None, None, options
     else:
         # dummy
         trainer = sltrainer.Trainer()
@@ -104,16 +139,9 @@ def load_a_custom_criterion(criterion_key: str, params: dict, base_dir: str):
     """
 
     if len(criterion_key) > 0:
-        custom_folder = os.path.join(base_dir, "loss")
+        custom_folder = os.path.join(base_dir, "custom")
         if "." in criterion_key:
-            dirs = criterion_key.split(".")
-            # need to check submodules
-            module_name = dirs[-2]
-            class_name = dirs[-1]
-            sys.path.append(custom_folder)
-            module = importlib.import_module(module_name)
-            custom_loss = getattr(module, class_name)
-
+            custom_loss = __load_a_module(criterion_key, "loss", custom_folder)
             return custom_loss(**params)
         else:
             # since folder name was not specified, search class name from all files.
