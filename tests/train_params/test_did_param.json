@@ -37,7 +37,7 @@
             }
         }
     },
-    "trainer": {
+    "training": {
         "optimizer": {
             "key": "AdamW",
             "lr": 0.01

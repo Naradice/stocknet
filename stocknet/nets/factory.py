@@ -5,6 +5,7 @@ from inspect import getmembers, isclass
 from typing import Sequence
 
 from .. import nets
+from ..utils import replace_params_vars
 
 
 def load_a_model(params: dict, key: str = None, device=None):
@@ -33,30 +34,7 @@ def load_a_model(params: dict, key: str = None, device=None):
     return None
 
 
-def replace_params_vars(params: dict, dataset):
-    if dataset is None:
-        return params
-    new_params = {}
-    for key, value_key in params.items():
-        if isinstance(value_key, dict):
-            replace_params_vars(value_key, dataset)
-        elif isinstance(value_key, str):
-            if value_key.startswith("$"):
-                variable = value_key[1:]
-                vars = variable.split(".")
-                # currently dataset is supported only
-                if len(vars) == 2:
-                    if vars[0] == "dataset":
-                        value = getattr(dataset, vars[1])
-                        new_params[key] = value
-                    else:
-                        raise ValueError(f"unkown variable is specified in model params: {key}:{value_key}")
-                else:
-                    raise ValueError(f"unkown variable is specified in model params: {key}:{value_key}")
-    params.update(new_params)
-
-
-def load_models(model_configs: dict, dataset=None, device=None):
+def load_models(model_configs: dict, dataset=None, device=None, base_path=None):
     model_key = model_configs["key"]
     if "model_name" in model_configs:
         model_name = model_configs["model_name"]
@@ -71,7 +49,10 @@ def load_models(model_configs: dict, dataset=None, device=None):
     if "configs" in model_configs:
         config_files_path = model_configs["configs"]
         if isinstance(config_files_path, str):
-            formatted_path = os.path.abspath(os.path.join(os.getcwd(), config_files_path))
+            if base_path is None:
+                formatted_path = os.path.abspath(os.path.join(os.getcwd(), config_files_path))
+            else:
+                formatted_path = os.path.abspath(os.path.join(base_path, config_files_path))
             config_files = glob.glob(formatted_path)
         elif isinstance(config_files_path, Sequence):
             config_files = config_files_path

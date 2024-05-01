@@ -95,7 +95,7 @@
     "configs": "./baseline_params/*.json",
     "increment_version": 1
   },
-  "trainer": {
+  "training": {
     "optimizer": {
       "key": "AdamW",
       "lr": 0.01

@@ -6,7 +6,7 @@ from typing import Sequence
 
 import torch
 
-from . import logger
+from . import logger, utils
 from .datasets import factory as ds_factory
 from .datasets import utils as ds_utils
 from .nets import factory as mdl_factory
@@ -16,6 +16,9 @@ from .trainer import utils as tr_utils
 
 
 def train_from_config(training_config_file: str):
+    parent_file_path = utils.get_caller_directory()
+    parent_dir = os.path.dirname(parent_file_path)
+
     if os.path.exists(training_config_file):
         training_config_file_path = training_config_file
     else:
@@ -37,23 +40,23 @@ def train_from_config(training_config_file: str):
         raise ValueError("unsupported extension")
 
     dataset_config = config["dataset"]
-    model_config = config["model"]
-    train_config = config["trainer"]
+    model_config_org = config["model"]
+    train_config_org = config["training"]
     logger_config = config["log"]
     log_path = logger_config["path"]
     global_model_version = 0
     storage_handler = None
 
-    if "epoch" in train_config:
-        epoch = train_config["epoch"]
+    if "epoch" in train_config_org:
+        epoch = train_config_org["epoch"]
     else:
         epoch = 100
-    if "patience" in train_config:
-        patience = train_config["patience"]
+    if "patience" in train_config_org:
+        patience = train_config_org["patience"]
     else:
         patience = 2
-    if "device" in train_config:
-        device = train_config["device"]
+    if "device" in train_config_org:
+        device = train_config_org["device"]
         device = torch.device(device)
     else:
         device = None
@@ -74,8 +77,10 @@ def train_from_config(training_config_file: str):
         if dataset is None:
             continue
         print("new dataset loaded")
+        model_config = model_config_org.copy()
+        utils.replace_params_vars(model_config, dataset)
         model_key = model_config["key"]
-        models = mdl_factory.load_models(model_config.copy(), dataset=dataset, device=device)
+        models = mdl_factory.load_models(model_config, dataset=dataset, device=device, base_path=parent_dir)
         for model, model_name, model_version in models:
             if model is None:
                 continue
@@ -89,7 +94,11 @@ def train_from_config(training_config_file: str):
 
             print(f"new model created: {model_name}_{model_version_str}")
             training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler)
-            optimizer, criterion, scheduler = tr_factory.load_trainer_options(model=model, params=train_config.copy())
+            print("logger is initialized")
+
+            train_config = train_config_org.copy()
+            utils.replace_params_vars(train_config_org, dataset)
+            optimizer, criterion, scheduler = tr_factory.load_trainer_options(model=model, params=train_config, base_path=parent_dir)
             if optimizer is None:
                 print("optimizer not found.")
                 continue
