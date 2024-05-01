@@ -89,6 +89,18 @@ class DiffIDDS:
         else:
             self._indices = self.eval_indices
 
+    def _apply_volume_limit(self, indices):
+        limited_length = int(len(indices) * self.volume_limit_ratio)
+        return indices[:limited_length]
+
+    def update_volume_limit(self, volume_limit_ratio=None):
+        if volume_limit_ratio is not None and volume_limit_ratio <= 1.0:
+            self.volume_limit_ratio = volume_limit_ratio
+        if self.is_training:
+            self._indices = self._apply_volume_limit(self.train_indices)
+        else:
+            self._indices = self._apply_volume_limit(self.eval_indices)
+
     def revert_diff(self, prediction, ndx, last_values=None):
         pass
 
