@@ -1,0 +1,1 @@
+{"source": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv", "observation": 30, "prediction": 5, "args": {"columns": "close", "device": "cpu", "seed": 1017, "batch_first": true, "clip_range": null, "with_close_column": null, "with_mean: int": null}, "key": "did"}

@@ -30,3 +30,10 @@ data_source/
 /dist
 *.ipynb
 *.logs
+predictions/transformer/*_params/
+predictions/transformer/*.json
+# exclude samples
+!predictions/transformer/baseline.json
+!predictions/transformer/baseline_scaling.json
+!predictions/transformer/baseline_params/
+!predictions/transformer/weeklytime_params/
