@@ -1,5 +1,8 @@
+import importlib
+import os
+import sys
+from glob import glob
 from inspect import getmembers, isclass
-from typing import Sequence
 
 from torch import nn, optim
 from torch.optim import lr_scheduler
@@ -27,7 +30,7 @@ def load_trainers(model_key: str, configs: dict):
         return trainer, None, {}
 
 
-def load_trainer_options(model, params):
+def load_trainer_options(model, params, base_path):
     if "optimizer" in params:
         optim_params = params["optimizer"].copy()
         if "key" in optim_params:
@@ -43,6 +46,8 @@ def load_trainer_options(model, params):
         if "key" in loss_params:
             loss_key = loss_params.pop("key")
             criterion = load_a_criterion(loss_key, loss_params)
+            if criterion is None:
+                criterion = load_a_custom_criterion(loss_key, loss_params, base_path)
         else:
             criterion = None
     else:
@@ -87,3 +92,31 @@ def load_a_criterion(criterion_key: str, params: dict):
         if name.endswith("Loss"):
             if name.lower() == key:
                 return nn_class(**params)
+
+
+def load_a_custom_criterion(criterion_key: str, params: dict, base_dir: str):
+    """load a custom criterion which user defined
+
+    Args:
+        criterion_key (str): expected format is {directory}.{class_name}
+        params (dict): params to initialize a criterion
+        base_dir (str): parent folder path. cutom loss function must exist in {base_dir}/loss/{your_class}.py
+    """
+
+    if len(criterion_key) > 0:
+        custom_folder = os.path.join(base_dir, "loss")
+        if "." in criterion_key:
+            dirs = criterion_key.split(".")
+            # need to check submodules
+            module_name = dirs[-2]
+            class_name = dirs[-1]
+            sys.path.append(custom_folder)
+            module = importlib.import_module(module_name)
+            custom_loss = getattr(module, class_name)
+
+            return custom_loss(**params)
+        else:
+            # since folder name was not specified, search class name from all files.
+            pass
+    else:
+        return None
