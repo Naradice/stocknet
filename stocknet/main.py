@@ -124,6 +124,7 @@ def train_from_config(training_config_file: str):
                 model, model_name, model_version_str, optimizer, scheduler, log_path, eval_func is None, storage_handler
             )
             save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_sizes, training_logger)
+            init_uniform(model)
             for batch_size in batch_sizes:
                 print(f"start training model with batch_size: {batch_size}")
                 epoch_trainer(
@@ -140,6 +141,12 @@ def train_from_config(training_config_file: str):
                     scheduler=scheduler,
                     logger=training_logger,
                 )
+
+
+def init_uniform(model):
+    for name, p in model.named_parameters():
+        if p.dim() > 1:
+            torch.nn.init.xavier_uniform_(p)
 
 
 def save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_size, logger):
