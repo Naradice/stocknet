@@ -1,0 +1,32 @@
+{
+    "dataset": {
+        "key": "seq2seq",
+        "source": [
+            {
+                "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min5.csv"
+            }
+        ],
+        "args": {
+            "columns": [
+                "open",
+                "high",
+                "low",
+                "close"
+            ],
+            "processes": [
+                "Diff",
+                "MiniMax"
+            ]
+        },
+        "observation": [
+            10,
+            30,
+            60
+        ],
+        "prediction": [
+            1,
+            3,
+            10
+        ]
+    }
+}
