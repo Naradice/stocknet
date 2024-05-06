@@ -171,9 +171,11 @@ class DiffIDDS:
         self.seed_value = seed
 
     def eval(self):
-        self._indices = self.eval_indices
+        indices = self._apply_volume_limit(self.eval_indices)
+        self._indices = random.sample(indices, k=len(indices))
         self.is_training = False
 
     def train(self):
-        self._indices = self.train_indices
-        self.is_training = False
+        indices = self._apply_volume_limit(self.train_indices)
+        self._indices = random.sample(indices, k=len(indices))
+        self.is_training = True
