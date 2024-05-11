@@ -1,5 +1,7 @@
+from inspect import getmembers, isclass
 from typing import Sequence
 
+from ..utils import load_a_custom_module
 from . import utils
 from .base import Dataset, TimeDataset
 from .generator import AgentSimulationTrainDataGenerator, AgentSimulationWeeklyDataGenerator
@@ -41,7 +43,7 @@ def load_finance_datasets(params: dict, device=None):
     return None, None, None
 
 
-def load_seq2seq_datasets(params: dict, device=None):
+def load_datasets(params: dict, device=None):
     params = params.copy()
     kinds = params["key"]
     Dataset = None
@@ -202,3 +204,61 @@ def load_simlation_datasets(params: dict, device=None):
         data_generator = Dataset(processes=pre_processes, device=device, **params)
         return data_generator, batch_sizes
     return None, None, None
+
+
+def load_custom_dataset(key: str, params: dict, base_path: str, device=None):
+    ds_class = load_a_custom_module(key, "dataset", base_path)
+    if ds_class is not None:
+        ds_args = {"device": device}
+        params = params.copy()
+        if "args" in params:
+            ds_args = params.pop("args")
+        seq_params = {}
+        for param_key, values in params.items():
+            if isinstance(values, Sequence):
+                seq_params[param_key] = values
+            else:
+                ds_args[param_key] = values
+        if len(seq_params) > 0:
+            seq_args_set = []
+            while len(seq_params) > 0:
+                item = seq_params.popitem()
+                if len(seq_args_set) == 0:
+                    seq_key, values = item
+                    for value in values:
+                        seq_args_set.append({seq_key: value})
+                else:
+                    new_seq_args_set = []
+                    while len(seq_args_set) > 0:
+                        seq_args = seq_args_set.pop()
+                        seq_key, values = item
+                        for value in values:
+                            new_seq_args = seq_args.copy()
+                            new_seq_args.update({seq_key: value})
+                            new_seq_args_set.append(new_seq_args)
+                    seq_args_set = new_seq_args_set
+
+    else:
+        return None
+
+
+def load_a_dataset(key: str, params: dict, device=None):
+    from .. import datasets
+
+    kinds = key.lower()
+    for name, model_class in getmembers(datasets, isclass):
+        if name.lower() == kinds:
+            pass
+
+
+def load(params: dict, device=None):
+    dataset_key = params["key"]
+    if dataset_key.startswith("seq2seq"):
+        if "sim" in dataset_key:
+            return load_simlation_datasets(params, device=device)
+        else:
+            return load_datasets(params, device=device)
+    elif "fc" in dataset_key:
+        return load_finance_datasets(params, device=device)
+    else:
+        return load_custom_dataset(params, device=device)

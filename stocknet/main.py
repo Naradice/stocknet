@@ -61,17 +61,7 @@ def train_from_config(training_config_file: str):
     else:
         device = None
 
-    # create dataset
-    dataset_key = dataset_config["key"]
-    if "seq2seq" in dataset_key:
-        if "sim" in dataset_key:
-            datasets = ds_factory.load_simlation_datasets(dataset_config, device=device)
-        else:
-            datasets = ds_factory.load_seq2seq_datasets(dataset_config, device=device)
-    elif "fc" in dataset_key:
-        datasets = ds_factory.load_finance_datasets(dataset_config, device=device)
-    else:
-        raise ValueError("invalid dataset key")
+    datasets = ds_factory.load(dataset_config, device=device)
 
     for dataset, batch_sizes_4_ds, version_suffix in datasets:
         if dataset is None:

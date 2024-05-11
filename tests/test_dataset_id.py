@@ -54,7 +54,7 @@ class TestDiffIDDataset(unittest.TestCase):
     def test_12_load(self):
         with open(self.params_file, "r") as fp:
             params = json.load(fp)
-        datasets = factory.load_seq2seq_datasets(params, None)
+        datasets = factory.load_datasets(params, None)
         ds, batch_sizes, version_preffix = next(datasets)
 
 
