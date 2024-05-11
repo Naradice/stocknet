@@ -154,15 +154,21 @@ def load_seq2seq_datasets(params: dict, device=None):
                 is_scaling = True
                 for scale_params in file_info["scale_combinations"]:
                     volume_rate = float(scale_params["volume_rate"])
-                    batch_size = int(scale_params["batch_size"])
-                    volume_scale_set.append((volume_rate, [batch_size]))
+                    if isinstance(scale_params["batch_size"], (list, set)):
+                        batch_size = scale_params["batch_size"]
+                    else:
+                        batch_size = [int(scale_params["batch_size"])]
+                    volume_scale_set.append((volume_rate, batch_size))
             else:
                 if "scale_combinations" in args:
                     is_scaling = True
                     for scale_params in file_info["scale_combinations"]:
                         volume_rate = float(scale_params["volume_rate"])
-                        batch_size = int(scale_params["batch_size"])
-                        volume_scale_set.append((volume_rate, [batch_size]))
+                        if isinstance(scale_params["batch_size"], (list, set)):
+                            batch_size = scale_params["batch_size"]
+                        else:
+                            batch_size = [int(scale_params["batch_size"])]
+                        volume_scale_set.append((volume_rate, batch_size))
                 else:
                     is_scaling = False
                     volume_scale_set = [(1.0, batch_sizes)]

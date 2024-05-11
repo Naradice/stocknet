@@ -121,10 +121,11 @@ def train_from_config(training_config_file: str):
 
             trainer_func, eval_func, train_options = tr_factory.load_trainers(model_key, train_config, parent_dir)
             succ, model, optimizer, scheduler, best_loss = logger.load_model_checkpoint(
-                model, model_name, model_version_str, optimizer, scheduler, log_path, eval_func is None, storage_handler
+                model, model_name, model_version_str, optimizer, scheduler, log_path, True, storage_handler
             )
             save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_sizes, training_logger)
-            init_uniform(model)
+            if succ is False:
+                init_uniform(model)
             for batch_size in batch_sizes:
                 print(f"start training model with batch_size: {batch_size}")
                 epoch_trainer(
