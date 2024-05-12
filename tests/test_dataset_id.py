@@ -16,6 +16,7 @@ base_path = os.path.dirname(__file__)
 
 class TestDiffIDDataset(unittest.TestCase):
     params_file = f"{base_path}/train_params/test_diffid_params.json"
+    train_params_file = f"{base_path}/train_params/test_did_param.json"
     src_file = "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv"
     observation_length = 30
     prediction_length = 5
@@ -31,9 +32,9 @@ class TestDiffIDDataset(unittest.TestCase):
         device = "cpu"
         ds = self.__default_init()
         self.assertGreater(ds.vocab_size, 0)
-        src, tgt = ds[0:batch_size]
+        src, tgt, options = ds[0:batch_size]
         self.assertEqual(src.shape, (batch_size, self.observation_length))
-        self.assertEqual(tgt.shape, (batch_size, self.prediction_length))
+        self.assertEqual(tgt.shape, (batch_size, self.prediction_length + 1))
 
         d_model = int(math.sqrt(ds.vocab_size))
         emb_layer = torch.nn.Embedding(ds.vocab_size, d_model, device=device)
@@ -51,11 +52,19 @@ class TestDiffIDDataset(unittest.TestCase):
         with open(self.params_file, "w") as fp:
             json.dump(params, fp)
 
-    def test_12_load(self):
+    def test_12_load_saved_params(self):
         with open(self.params_file, "r") as fp:
             params = json.load(fp)
         datasets = factory.load_datasets(params, None)
         ds, batch_sizes, version_preffix = next(datasets)
+
+    def test_13_load_specified_params(self):
+        with open(self.train_params_file, "r") as fp:
+            params = json.load(fp)
+        ds_params = params["dataset"]
+        datasets = factory.load_datasets(ds_params)
+        ds, batch_sizes, version_preffix = next(datasets)
+        self.assertEqual(ds.vocab_size, 4002)
 
 
 if __name__ == "__main__":

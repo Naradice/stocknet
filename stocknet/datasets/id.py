@@ -25,6 +25,8 @@ class DiffIDDS:
         with_close_column: str = None,
         with_mean: int = None,
         output_mask: bool = True,
+        min_value=None,
+        max_value=None,
         **kwargs,
     ):
         self.seed(seed)
@@ -40,7 +42,9 @@ class DiffIDDS:
             self.file_path = source["file_path"]
         else:
             raise TypeError(f"{type(source)} is not supported as source")
-        self.ohlc_idf = self.__init_ohlc(data, columns, clip_range=clip_range, with_close=with_close_column, with_mean=with_mean)
+        self.ohlc_idf = self.__init_ohlc(
+            data, columns, clip_range=clip_range, with_close=with_close_column, with_mean=with_mean, min_value=min_value, max_value=max_value
+        )
         self.clip_range = clip_range
         self.with_close_column = with_close_column
         self.with_mean = with_mean
@@ -64,8 +68,10 @@ class DiffIDDS:
             "batch_first": self.batch_first,
             "clip_range": self.clip_range,
             "with_close_column": self.with_close_column,
-            "with_mean: int": self.with_mean,
+            "with_mean": self.with_mean,
             "utput_mask": self.output_mask,
+            "min_value": self.min_value,
+            "max_value": self.max_value,
         }
         return params
 
@@ -107,7 +113,7 @@ class DiffIDDS:
     def revert(self, diff):
         pass
 
-    def __init_ohlc(self, df, ohlc_columns, decimal_digits=3, clip_range=None, with_close=False, with_mean=None):
+    def __init_ohlc(self, df, ohlc_columns, decimal_digits=3, clip_range=None, with_close=False, with_mean=None, min_value=None, max_value=None):
         if with_mean is not None:
             df = df.rolling(window=with_mean).mean().dropna()
         if with_close is not None:
@@ -118,11 +124,19 @@ class DiffIDDS:
         ohlc_diff_df.dropna(inplace=True)
         if clip_range is not None:
             ohlc_diff_df = ohlc_diff_df.clip(lower=clip_range[0], upper=clip_range[1])
-        min_value = ohlc_diff_df.min().min()
-        min_value_abs = abs(min_value)
+        if min_value is None:
+            self.min_value = ohlc_diff_df.min().min()
+        else:
+            self.min_value = float(min_value)
+        min_value_abs = abs(self.min_value)
+
+        if max_value is None:
+            self.max_value = ohlc_diff_df.max().max()
+        else:
+            self.max_value = float(max_value)
 
         lower_value = math.ceil(min_value_abs) * 10**decimal_digits
-        upper_value = math.ceil(ohlc_diff_df.max().max()) * 10**decimal_digits
+        upper_value = math.ceil(self.max_value) * 10**decimal_digits
         id_df = ohlc_diff_df * 10**decimal_digits + lower_value
         self.ohlc_lower = lower_value
         id_df = id_df.astype("int64")

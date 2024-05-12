@@ -7,7 +7,9 @@
             }
         ],
         "args": {
-            "columns": "close"
+            "columns": "close",
+            "min_value": -2.0,
+            "max_value": 2.0
         },
         "observation": 30,
         "prediction": 3
