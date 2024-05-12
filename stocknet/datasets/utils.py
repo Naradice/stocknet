@@ -71,12 +71,6 @@ def dataset_to_params(ds):
     args = ds.get_params()
     source = args.pop("source")
     params["source"] = source
-    if "observation_length" in args:
-        observation_length = args.pop("observation_length")
-        params["observation"] = observation_length
-    if "prediction_length" in args:
-        prediction_length = args.pop("prediction_length")
-        params["prediction"] = prediction_length
     if "device" in args:
         device = str(args["device"])
         args["device"] = device
