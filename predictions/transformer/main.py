@@ -8,5 +8,5 @@ except ImportError:
     sys.path.append(stocknet_module_path)
     import stocknet
 
-config_file = "./did_num_scaling.json"
+config_file = "./cid_scaling.json"
 stocknet.train_from_config(config_file)

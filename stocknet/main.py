@@ -61,7 +61,7 @@ def train_from_config(training_config_file: str):
     else:
         device = None
 
-    datasets = ds_factory.load(dataset_config, device=device)
+    datasets = ds_factory.load(dataset_config, device=device, base_path=parent_dir)
 
     for dataset, batch_sizes_4_ds, version_suffix in datasets:
         if dataset is None:
@@ -113,7 +113,10 @@ def train_from_config(training_config_file: str):
             succ, model, optimizer, scheduler, best_loss = logger.load_model_checkpoint(
                 model, model_name, model_version_str, optimizer, scheduler, log_path, True, storage_handler
             )
-            save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_sizes, training_logger)
+            try:
+                save_params(epoch, model, dataset, patience, optimizer, criterion, scheduler, batch_sizes, training_logger)
+            except Exception as e:
+                print(f"failed to save training params in log folder. {e}")
             if succ is False:
                 init_uniform(model)
             for batch_size in batch_sizes:

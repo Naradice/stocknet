@@ -36,4 +36,6 @@ predictions/transformer/*.json
 !predictions/transformer/baseline.json
 !predictions/transformer/baseline_scaling.json
 !predictions/transformer/baseline_params/
+!predictions/transformer/cd_scaling.json
+!predictions/transformer/cd_params/
 !predictions/transformer/weeklytime_params/

@@ -1,0 +1,12 @@
+{
+    "nhead": 4,
+    "dim_feedforward": 40,
+    "num_encoder_layers": 6,
+    "num_decoder_layers": 6,
+    "dropout": 0.1,
+    "d_model": 32,
+    "positional_encoding": {
+        "key": "PositionalEncoding"
+    },
+    "model_version": 2
+}
