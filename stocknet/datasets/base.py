@@ -7,8 +7,7 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from .utils import (k_fold_sampling, random_sampling, random_sampling_row,
-                    read_csv)
+from .utils import k_fold_sampling, random_sampling, random_sampling_row, read_csv
 
 
 class Dataset(Dataset):
@@ -131,7 +130,7 @@ class Dataset(Dataset):
             process_params = fprocess.preprocess_to_params(self.processes)
         params = {
             "source": self.file_path,
-            "columns": self.columns,
+            "columns": list(self.columns),
             "observation_length": self.observation_length,
             "prediction_length": self._prediction_length,
             "processes": process_params,
