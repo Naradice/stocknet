@@ -69,7 +69,7 @@ class DiffIDDS:
             "clip_range": self.clip_range,
             "with_close_column": self.with_close_column,
             "with_mean": self.with_mean,
-            "utput_mask": self.output_mask,
+            "output_mask": self.output_mask,
             "min_value": self.min_value,
             "max_value": self.max_value,
         }
