@@ -62,6 +62,8 @@ def _handle_files_info(files_info: list, params: dict, default_batch_sizes: list
 
         if "version_suffix" in file_info:
             version_suffix = file_info["version_suffix"]
+        else:
+            version_suffix = None
 
         if "processes" in file_info:
             preprocesses_params_list = file_info["processes"]
