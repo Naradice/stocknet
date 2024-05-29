@@ -27,6 +27,7 @@ class DiffIDDS:
         output_mask: bool = True,
         min_value=None,
         max_value=None,
+        filter_volatility_from_mean: int = None,
         **kwargs,
     ):
         self.seed(seed)
@@ -45,6 +46,8 @@ class DiffIDDS:
         self.ohlc_idf = self.__init_ohlc(
             data, columns, clip_range=clip_range, with_close=with_close_column, with_mean=with_mean, min_value=min_value, max_value=max_value
         )
+        mean_ids = self.ohlc_idf.mean()
+        filter_range = (mean_ids - filter_volatility_from_mean, mean_ids + filter_volatility_from_mean)
         self.clip_range = clip_range
         self.with_close_column = with_close_column
         self.with_mean = with_mean
@@ -54,7 +57,7 @@ class DiffIDDS:
         self.device = device
         self.prediction_length = prediction_length
         self.is_training = is_training
-        self.__init_indicies(self.ohlc_idf)
+        self.__init_indicies(self.ohlc_idf, filter_range=filter_range)
         self.batch_first = batch_first
 
     def get_params(self):
@@ -75,19 +78,32 @@ class DiffIDDS:
         }
         return params
 
-    def __init_indicies(self, data, split_ratio=0.8):
-        length = len(data) - self.observation_length - self.prediction_length
-        if length < 0:
+    def __init_indicies(self, data, split_ratio=0.8, filter_range: tuple = None):
+        if filter_range is None:
+            length = len(data) - self.observation_length - self.prediction_length
+            indices = list(range(length))
+        else:
+            min_value = filter_range[0]
+            max_value = filter_range[1]
+            indices = []
+            for i in range(len(data) - self.prediction_length - self.observation_length):
+                id_df = data.iloc[i : i + self.observation_length + self.prediction_length]
+                conditions = id_df[(id_df > max_value) | (id_df < min_value)]
+                if not conditions.any().any():
+                    indices.append(i)
+            length = len(indices)
+
+        if length < self.observation_length:
             raise Exception(f"date length {length} is less than observation_length {self.observation_length}")
 
         to_index = int(length * split_ratio)
         from_index = 0
-        train_indices = list(range(from_index, to_index))
+        train_indices = indices[from_index:to_index]
         self.train_indices = random.sample(train_indices, k=to_index - from_index)
 
         from_index = int(length * split_ratio) + self.observation_length + self.prediction_length
         to_index = length
-        eval_indices = list(range(from_index, to_index))
+        eval_indices = indices[from_index:to_index]
         self.eval_indices = random.sample(eval_indices, k=to_index - from_index)
 
         if self.is_training:
