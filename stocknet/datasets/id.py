@@ -47,7 +47,11 @@ class DiffIDDS:
             data, columns, clip_range=clip_range, with_close=with_close_column, with_mean=with_mean, min_value=min_value, max_value=max_value
         )
         mean_ids = self.ohlc_idf.mean()
-        filter_range = (mean_ids - filter_volatility_from_mean, mean_ids + filter_volatility_from_mean)
+        if filter_volatility_from_mean is None:
+            filter_range = None
+        else:
+            filter_range = (mean_ids - filter_volatility_from_mean, mean_ids + filter_volatility_from_mean)
+        self.filter_volatility_from_mean = filter_volatility_from_mean
         self.clip_range = clip_range
         self.with_close_column = with_close_column
         self.with_mean = with_mean
@@ -75,6 +79,7 @@ class DiffIDDS:
             "output_mask": self.output_mask,
             "min_value": self.min_value,
             "max_value": self.max_value,
+            "filter_volatility_from_mean": self.filter_volatility_from_mean,
         }
         return params
 
