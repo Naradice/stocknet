@@ -1,0 +1,22 @@
+{
+    "nhead": 2,
+    "dim_feedforward": 10,
+    "num_encoder_layers": 2,
+    "num_decoder_layers": 2,
+    "dropout": 0.1,
+    "d_model": 6,
+    "vocab_size": 32,
+    "positional_encoding": {
+        "key": "PositionalEncoding"
+    },
+    "input_layer": {
+        "key": "Embedding"
+    },
+    "output_layer": {
+        "key": "Perceptron",
+        "input_dim": 6,
+        "output_dim": 32,
+        "num_layers": 2
+    },
+    "model_version": 1
+}
