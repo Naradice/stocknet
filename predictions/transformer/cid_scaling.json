@@ -1,0 +1,63 @@
+{
+    "dataset": {
+        "key": "cluster.ClusterIDDataset",
+        "source": [
+            {
+                "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv",
+                "version_suffix": "30min",
+                "scale_combinations": [
+                    {
+                        "volume_rate": 0.5,
+                        "batch_size": 32
+                    },
+                    {
+                        "volume_rate": 1.00,
+                        "batch_size": 32
+                    }
+                ]
+            }
+        ],
+        "args": {
+            "columns": [
+                "open",
+                "high",
+                "low",
+                "close"
+            ],
+            "observation_length": 60,
+            "prediction_length": 10,
+            "label_num_k": 32,
+            "freq": 30
+        }
+    },
+    "model": {
+        "key": "Seq2SeqTransformer",
+        "model_name": "cid_transformer_scaling",
+        "configs": "./cid_params/*.json",
+        "increment_version": 1
+    },
+    "training": {
+        "optimizer": {
+            "key": "Adam",
+            "lr": 0.001
+        },
+        "scheduler": {
+            "key": "StepLR",
+            "step_size": 1,
+            "gamma": 0.9
+        },
+        "loss": {
+            "key": "CrossEntropyLoss"
+        },
+        "epoch": 100,
+        "patience": 2,
+        "device": "cuda"
+    },
+    "log": {
+        "path": "./logs",
+        "cloud_storage": {
+            "key": "dropbox",
+            "client_id": ""
+        }
+    }
+}
