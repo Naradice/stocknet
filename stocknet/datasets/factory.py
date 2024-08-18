@@ -308,7 +308,7 @@ def load_custom_dataset(key: str, params: dict, base_path: str, device=None):
                             predictions = file_args.pop(pre_key_candidate)
                             if type(predictions) != list:
                                 predictions = [predictions]
-                            obs_key = pre_key_candidate
+                            pre_key = pre_key_candidate
                             break
                     if pre_key is None:
                         # dummy param
