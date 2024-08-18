@@ -5,7 +5,8 @@ import pandas as pd
 from ..utils import load_a_custom_module
 from . import utils
 from .base import Dataset, TimeDataset
-from .generator import AgentSimulationTrainDataGenerator, AgentSimulationWeeklyDataGenerator
+from .generator import (AgentSimulationTrainDataGenerator,
+                        AgentSimulationWeeklyDataGenerator)
 from .id import DiffIDDS
 from .seq2seq import FeatureDataset, TimeFeatureDataset
 
@@ -128,6 +129,24 @@ def _handle_file_dict(file_dict):
     return data
 
 
+def _generate_suffix(observation=None, prediction=None, version_suffix=None, scale_id=None):
+    suffix_strings = []
+    if observation is not None and observation != "":
+        suffix_strings.append(str(observation))
+    if prediction is not None and prediction != "":
+        suffix_strings.append(str(prediction))
+    if version_suffix is not None:
+        if type(version_suffix) is str and version_suffix.endswith("_"):
+            version_suffix = version_suffix[:-1]
+        suffix_strings.append(version_suffix)
+    if scale_id is not None:
+        if type(scale_id) is str and scale_id.startswith("_"):
+            scale_id = scale_id[1:]
+        suffix_strings.append(scale_id)
+    suffix = "_".join(suffix_strings)
+    return suffix
+
+
 def load_finance_datasets(params: dict, device=None):
     from .finance import ClientDataset, FrameConvertDataset
     from .highlow import HighLowDataset
@@ -192,10 +211,9 @@ def load_datasets(params: dict, device=None):
                             ds.update_volume_limit(volume_rate)
                         else:
                             scale_id = ""
-                        if version_suffix is None:
-                            yield ds, batch_sizes, f"{obs_length}_{pre_length}{scale_id}"
-                        else:
-                            yield ds, batch_sizes, f"{obs_length}_{pre_length}_{version_suffix}{scale_id}"
+                        yield ds, batch_sizes, _generate_suffix(
+                            observation=obs_length, prediction=pre_length, version_suffix=version_suffix, scale_id=scale_id
+                        )
     return None, None, None
 
 
@@ -267,27 +285,60 @@ def load_custom_dataset(key: str, params: dict, base_path: str, device=None):
                 if option is not None:
                     file_info, file_args, version_suffix, batch_sizes, is_scaling, volume_scale_set = option
                     data = _handle_file_dict(file_info)
+
+                    # handle multiple observation parameters
+                    observation_key_candidates = ["observation", "observation_length"]
+                    obs_key = None
+                    for obs_key_candidate in observation_key_candidates:
+                        if obs_key_candidate in file_args:
+                            observations = file_args.pop(obs_key_candidate)
+                            if type(observations) != list:
+                                observations = [observations]
+                            obs_key = obs_key_candidate
+                            break
+                    if obs_key is None:
+                        observations = [None]
+                        obs_key = ""
+
+                    # handle multiple prediction parameters
+                    prediction_key_candidates = ["prediction", "prediction_length"]
+                    pre_key = None
+                    for pre_key_candidate in prediction_key_candidates:
+                        if pre_key_candidate in file_args:
+                            predictions = file_args.pop(pre_key_candidate)
+                            if type(predictions) != list:
+                                predictions = [predictions]
+                            obs_key = pre_key_candidate
+                            break
+                    if pre_key is None:
+                        # dummy param
+                        predictions = [None]
+                        pre_key = ""
+
                     args.update(file_args)
-                    for volume_rate, batch_sizes in volume_scale_set:
-                        if is_scaling:
-                            scale_id = f"_{volume_rate}"
-                            if hasattr(ds_class, "update_volume_limit"):
-                                ds = ds_class(data, **args)
-                                ds.update_volume_limit(volume_rate)
-                            else:
-                                length = len(data)
-                                temp_data = data.iloc[: int(length * volume_rate)].copy()
-                                ds = ds_class(temp_data, **args)
-                        else:
-                            ds = ds_class(data, **args)
-                            scale_id = ""
-                        if version_suffix is None:
-                            yield ds, batch_sizes, f"{scale_id}"
-                        else:
-                            yield ds, batch_sizes, f"{version_suffix}{scale_id}"
+                    for observation in observations:
+                        for prediction in predictions:
+                            args[obs_key] = observation
+                            args[pre_key] = prediction
+                            for volume_rate, batch_sizes in volume_scale_set:
+                                if is_scaling:
+                                    scale_id = f"_{volume_rate}"
+                                    if hasattr(ds_class, "update_volume_limit"):
+                                        ds = ds_class(data, **args)
+                                        ds.update_volume_limit(volume_rate)
+                                    else:
+                                        length = len(data)
+                                        temp_data = data.iloc[: int(length * volume_rate)].copy()
+                                        ds = ds_class(temp_data, **args)
+                                else:
+                                    ds = ds_class(data, **args)
+                                    scale_id = ""
+                                yield ds, batch_sizes, _generate_suffix(
+                                    observation=observation, prediction=prediction, version_suffix=version_suffix, scale_id=scale_id
+                                )
                 else:
                     ds = ds_class(**args)
-                    yield ds, default_batch_sizes, ""
+                    yield ds, default_batch_sizes, f"{observation}_{prediction}"
     else:
         return None, None, None
 

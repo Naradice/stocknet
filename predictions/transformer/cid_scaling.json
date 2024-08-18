@@ -24,11 +24,14 @@
                 "low",
                 "close"
             ],
-            "observation_length": 60,
             "prediction_length": 10,
             "label_num_k": 32,
             "freq": 30
-        }
+        },
+        "observation": [
+            30,
+            60
+        ]
     },
     "model": {
         "key": "Seq2SeqTransformer",
