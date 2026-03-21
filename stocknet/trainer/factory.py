@@ -8,10 +8,11 @@ from torch import nn, optim
 from torch.optim import lr_scheduler
 
 from .. import nets
-from . import sltrainer
+from . import gantrainer, sltrainer
 
 models_4_seq2seq = [nets.Seq2SeqTransformer.__name__]
 models_4_seq2seq_sim = []
+models_4_gan = [nets.TimeGAN.__name__]
 
 
 def __load_a_module(module_key: str, custom_key: str, module_path: str):
@@ -59,6 +60,8 @@ def load_trainers(model_key: str, configs: dict, base_path: str):
     elif model_key in models_4_seq2seq_sim:
         # return sltrainer.seq2seq_train, sltrainer.seq2seq_eval, options
         return None, None, options
+    elif model_key in models_4_gan:
+        return gantrainer.gan_train, gantrainer.gan_eval, options
     else:
         # dummy
         trainer = sltrainer.Trainer()
