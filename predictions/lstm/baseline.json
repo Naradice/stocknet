@@ -1,0 +1,86 @@
+{
+  "dataset": {
+    "key": "seq2seq",
+    "source": [
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min5.csv",
+        "version_suffix": "5min"
+      },
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_min30.csv",
+        "version_suffix": "30min"
+      },
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_h1.csv",
+        "version_suffix": "1h"
+      },
+      {
+        "file_path": "L://data/fx/OANDA-Japan MT5 Live/mt5_USDJPY_d1.csv",
+        "version_suffix": "1d"
+      }
+    ],
+    "args": {
+      "columns": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ],
+      "processes": [
+        {
+          "diff_1": {
+            "periods": 1,
+            "columns": [
+              "open",
+              "high",
+              "low",
+              "close"
+            ],
+            "kinds": "Diff"
+          }
+        }
+      ],
+      "prediction_length": 1
+    },
+    "observation": [
+      30,
+      60,
+      120
+    ]
+  },
+  "model": {
+    "key": "LSTM",
+    "model_name": "finance_lstm",
+    "configs": "./baseline_params/*.json",
+    "increment_version": 1
+  },
+  "training": {
+    "optimizer": {
+      "key": "AdamW",
+      "lr": 0.001
+    },
+    "scheduler": {
+      "key": "StepLR",
+      "step_size": 1,
+      "gamma": 0.5
+    },
+    "loss": {
+      "key": "MSELoss"
+    },
+    "trainer": {
+      "train_key": "lstm_trainer.lstm_train",
+      "eval_key": "lstm_trainer.lstm_eval"
+    },
+    "batch_size": [
+      16,
+      32,
+      64
+    ],
+    "epoch": 300,
+    "patience": 3,
+    "device": "cuda"
+  },
+  "log": {
+    "path": "./logs"
+  }
+}
