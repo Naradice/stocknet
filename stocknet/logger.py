@@ -105,7 +105,7 @@ def load_model_checkpoint(
     else:
         print("checkpoint is not available.")
         model.load_state_dict(check_point)
-        return False, model, optimizer, scheduler, np.inf
+        return True, model, optimizer, scheduler, np.inf
 
 
 def load_model_checkpoint_with_creation(

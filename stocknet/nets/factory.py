@@ -27,7 +27,7 @@ def load_a_model(params: dict, key: str = None, device=None):
                 # if args include another nn.Module, create it in load function.
                 model = model_class.load(**args)
             else:
-                model = model_class(*args)
+                model = model_class(**args)
             return model
         else:
             continue

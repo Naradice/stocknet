@@ -87,7 +87,7 @@ def train_from_config(training_config_file: str):
             print("logger is initialized")
 
             train_config = train_config_org.copy()
-            utils.replace_params_vars(train_config_org, dataset)
+            utils.replace_params_vars(train_config, dataset)
             optimizer, criterion, scheduler = tr_factory.load_trainer_options(model=model, params=train_config, base_path=parent_dir)
             if optimizer is None:
                 print("optimizer not found.")

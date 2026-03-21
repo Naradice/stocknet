@@ -104,7 +104,7 @@ def _handle_files_info(files_info: list, params: dict, default_batch_sizes: list
         else:
             if "scale_combinations" in args:
                 is_scaling = True
-                for scale_params in file_info["scale_combinations"]:
+                for scale_params in args["scale_combinations"]:
                     volume_rate = float(scale_params["volume_rate"])
                     if isinstance(scale_params["batch_size"], (list, set)):
                         batch_size = scale_params["batch_size"]
@@ -170,7 +170,6 @@ def load_finance_datasets(params: dict, device=None):
         c_params = params["client"]
         data_client = load_client(c_params)
 
-        Dataset = finance_dataset[kinds]
         args = params["args"]
         ds = Dataset(data_client, device=device, **args)
         return ds, batch_sizes, version_suffix
