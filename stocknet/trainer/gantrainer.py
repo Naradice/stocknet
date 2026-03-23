@@ -1,7 +1,11 @@
+import sys
+
 import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+
+from .sltrainer import _console
 
 
 def gan_train(model, ds, optimizer, criterion, batch_size, **kwargs):
@@ -33,7 +37,7 @@ def gan_train(model, ds, optimizer, criterion, batch_size, **kwargs):
     d_losses, g_losses = [], []
 
     end_index = len(ds)
-    for index in tqdm(range(0, end_index - batch_size, batch_size)):
+    for index in tqdm(range(0, end_index - batch_size, batch_size), file=_console):
         batch = ds[index : index + batch_size]
         src, tgt = batch[0].to(device), batch[1].to(device)
         bs = src.size(0)
@@ -96,7 +100,7 @@ def gan_eval(model, ds, criterion, batch_size, **kwargs):
 
     end_index = len(ds)
     with torch.no_grad():
-        for index in tqdm(range(0, end_index - batch_size, batch_size)):
+        for index in tqdm(range(0, end_index - batch_size, batch_size), file=_console):
             batch = ds[index : index + batch_size]
             src = batch[0].to(device)
             bs = src.size(0)

@@ -172,8 +172,8 @@ def load_finance_datasets(params: dict, device=None):
 
         args = params["args"]
         ds = Dataset(data_client, device=device, **args)
-        return ds, batch_sizes, version_suffix
-    return None, None, None
+        return [(ds, batch_sizes, version_suffix, {})]
+    return []
 
 
 def load_datasets(params: dict, device=None):
@@ -210,10 +210,11 @@ def load_datasets(params: dict, device=None):
                             ds.update_volume_limit(volume_rate)
                         else:
                             scale_id = ""
+                        metadata = {"volume_rate": volume_rate} if is_scaling else {}
                         yield ds, batch_sizes, _generate_suffix(
                             observation=obs_length, prediction=pre_length, version_suffix=version_suffix, scale_id=scale_id
-                        )
-    return None, None, None
+                        ), metadata
+    return None, None, None, None
 
 
 def load_simlation_datasets(params: dict, device=None):
@@ -229,8 +230,8 @@ def load_simlation_datasets(params: dict, device=None):
     if Dataset is not None:
         pre_processes = utils.load_fproceses(params["processes"])
         data_generator = Dataset(processes=pre_processes, device=device, **params)
-        return data_generator, batch_sizes
-    return None, None, None
+        return [(data_generator, batch_sizes, None, {})]
+    return [], None
 
 
 def load_custom_dataset(key: str, params: dict, base_path: str, device=None):
@@ -332,14 +333,15 @@ def load_custom_dataset(key: str, params: dict, base_path: str, device=None):
                                 else:
                                     ds = ds_class(data, **args)
                                     scale_id = ""
+                                metadata = {"volume_rate": volume_rate} if is_scaling else {}
                                 yield ds, batch_sizes, _generate_suffix(
                                     observation=observation, prediction=prediction, version_suffix=version_suffix, scale_id=scale_id
-                                )
+                                ), metadata
                 else:
                     ds = ds_class(**args)
-                    yield ds, default_batch_sizes, f"{observation}_{prediction}"
+                    yield ds, default_batch_sizes, f"{observation}_{prediction}", {}
     else:
-        return None, None, None
+        return None, None, None, None
 
 
 def load_a_dataset(key: str, params: dict, device=None):

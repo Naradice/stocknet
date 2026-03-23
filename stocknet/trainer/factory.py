@@ -63,9 +63,7 @@ def load_trainers(model_key: str, configs: dict, base_path: str):
     elif model_key in models_4_gan:
         return gantrainer.gan_train, gantrainer.gan_eval, options
     else:
-        # dummy
-        trainer = sltrainer.Trainer()
-        return trainer, None, {}
+        return None, None, options
 
 
 def load_trainer_options(model, params, base_path):

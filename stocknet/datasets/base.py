@@ -170,7 +170,7 @@ class Dataset(Dataset):
         if type(batch_size) == int:
             index = self._indices[batch_size]
             ndx = self.input_indices(index)
-            src = self._data[ndx].values.tolist()
+            src = self._data.iloc[ndx].values.tolist()
             src = torch.tensor(src, device=self.device, dtype=self.dtype)
             return src
         elif type(batch_size) == slice:

@@ -1,0 +1,359 @@
+
+=== Training started at 2026-03-23T14:15:06.720Z ===
+=== Launcher: C:\Users\ksato\workspace\python\stock\stocknet\model_configs\test_launcher.py ===
+=== Config:   C:\Users\ksato\workspace\python\stock\stocknet\model_configs\test.json ===
+
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.2.6 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "C:\Users\ksato\workspace\python\stock\stocknet\model_configs\test_launcher.py", line 13, in <module>
+    stocknet.train_from_config(r'C:/Users/ksato/workspace/python/stock/stocknet/model_configs/test.json')
+  File "C:\Users/ksato/workspace/python/stock/stocknet\stocknet\main.py", line 88, in train_from_config
+    for dataset, batch_sizes_4_ds, version_suffix, run_metadata in datasets:
+  File "C:\Users/ksato/workspace/python/stock/stocknet\stocknet\datasets\factory.py", line 206, in load_datasets
+    ds = Dataset(file_info, **args)
+  File "C:\Users/ksato/workspace/python/stock/stocknet\stocknet\datasets\seq2seq.py", line 28, in __init__
+    super().__init__(
+  File "C:\Users/ksato/workspace/python/stock/stocknet\stocknet\datasets\base.py", line 36, in __init__
+    self.seed(seed)
+  File "C:\Users/ksato/workspace/python/stock/stocknet\stocknet\datasets\base.py", line 208, in seed
+    torch.manual_seed(seed)
+  File "C:\Users\ksato\workspace\python\stock\sn_venv\lib\site-packages\torch\random.py", line 42, in manual_seed
+    return default_generator.manual_seed(seed)
+C:\Users\ksato\workspace\python\stock\sn_venv\lib\site-packages\torch\random.py:42: UserWarning: Failed to initialize NumPy: _ARRAY_API not found (Triggered internally at  ..\torch\csrc\utils\tensor_numpy.cpp:68.)
+  return default_generator.manual_seed(seed)
+new dataset loaded
+new model created: test_60_10_0.25_v1
+PostgreSQL logger connected. run_id=1
+logger is initialized
+exsisting model not found.
+start training model with batch_size: 16
+[1/100] train loss: 0.0221505873, valid loss: 0.0012783759  [31s] count: 0, 
+[2/100] train loss: 0.0025567575, valid loss: 0.0012459584  [31s] count: 1, 
+[3/100] train loss: 0.0021462262, valid loss: 0.0013774416  [33s] count: 2, 
+[4/100] train loss: 0.0020713400, valid loss: 0.0012738096  [33s] count: 3, 
+[5/100] train loss: 0.0020538357, valid loss: 0.0012434061  [33s] count: 4, 
+[6/100] train loss: 0.0017894493, valid loss: 0.0008131695  [32s] count: 5, 
+new dataset loaded
+new model created: test_60_10_0.5_v2
+PostgreSQL logger connected. run_id=3
+logger is initialized
+exsisting model not found.
+start training model with batch_size: 32
+[1/100] train loss: 0.0224489876, valid loss: 0.0012887701  [50s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[2/100] train loss: 0.0029231803, valid loss: 0.0013119144  [47s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[3/100] train loss: 0.0022322629, valid loss: 0.0012497400  [47s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[4/100] train loss: 0.0020139692, valid loss: 0.0010740310  [48s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[5/100] train loss: 0.0015723052, valid loss: 0.0008075960  [47s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[6/100] train loss: 0.0013972869, valid loss: 0.0007814689  [47s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[7/100] train loss: 0.0013377395, valid loss: 0.0007718050  [50s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[8/100] train loss: 0.0013017828, valid loss: 0.0007860113  [48s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[9/100] train loss: 0.0012802712, valid loss: 0.0007547214  [46s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[10/100] train loss: 0.0012584491, valid loss: 0.0007753252  [47s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[11/100] train loss: 0.0012427210, valid loss: 0.0007704164  [47s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[12/100] train loss: 0.0012340238, valid loss: 0.0007372584  [47s] count: 2, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[13/100] train loss: 0.0012154397, valid loss: 0.0007383187  [47s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[14/100] train loss: 0.0012061109, valid loss: 0.0007259943  [47s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[15/100] train loss: 0.0011945677, valid loss: 0.0007276362  [48s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[16/100] train loss: 0.0011881294, valid loss: 0.0007264663  [48s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[17/100] train loss: 0.0011847423, valid loss: 0.0007184137  [48s] count: 2, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[18/100] train loss: 0.0011776836, valid loss: 0.0007227720  [48s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[19/100] train loss: 0.0011709997, valid loss: 0.0007213612  [50s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[20/100] train loss: 0.0011684786, valid loss: 0.0007187700  [49s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[21/100] train loss: 0.0011567039, valid loss: 0.0007156914  [47s] count: 3, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[22/100] train loss: 0.0011534425, valid loss: 0.0007249931  [46s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[23/100] train loss: 0.0011529231, valid loss: 0.0007134970  [46s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[24/100] train loss: 0.0011519281, valid loss: 0.0007103912  [46s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+model checkpoint saved at ./logs\test\test_60_10_0.5_v2.torch
+[25/100] train loss: 0.0011493465, valid loss: 0.0007134922  [49s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[26/100] train loss: 0.0011463016, valid loss: 0.0007157157  [47s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[27/100] train loss: 0.0011459279, valid loss: 0.0007207225  [46s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[28/100] train loss: 0.0011426299, valid loss: 0.0007181632  [46s] count: 3, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+[29/100] train loss: 0.0011446764, valid loss: 0.0007132783  [47s] count: 4, 
+[30/100] train loss: 0.0011399490, valid loss: 0.0007177600  [45s] count: 5, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.5_v2.torch
+new dataset loaded
+new model created: test_60_10_0.75_v3
+PostgreSQL logger connected. run_id=4
+logger is initialized
+exsisting model not found.
+start training model with batch_size: 64
+[1/100] train loss: 0.0269884893, valid loss: 0.0013384671  [59s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[2/100] train loss: 0.0030053390, valid loss: 0.0012539685  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[3/100] train loss: 0.0022089998, valid loss: 0.0012379299  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[4/100] train loss: 0.0020537232, valid loss: 0.0011828535  [57s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[5/100] train loss: 0.0018392822, valid loss: 0.0008564220  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[6/100] train loss: 0.0014578066, valid loss: 0.0007918082  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[7/100] train loss: 0.0013669219, valid loss: 0.0007840038  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[8/100] train loss: 0.0013338597, valid loss: 0.0007628161  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[9/100] train loss: 0.0013056988, valid loss: 0.0007686751  [57s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[10/100] train loss: 0.0012861213, valid loss: 0.0007537948  [56s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[11/100] train loss: 0.0012675970, valid loss: 0.0007469615  [56s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[12/100] train loss: 0.0012575634, valid loss: 0.0007494669  [56s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[13/100] train loss: 0.0012433997, valid loss: 0.0007352345  [56s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[14/100] train loss: 0.0012298453, valid loss: 0.0007268022  [59s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[15/100] train loss: 0.0012132197, valid loss: 0.0007249061  [55s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[16/100] train loss: 0.0012032972, valid loss: 0.0007180808  [55s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[17/100] train loss: 0.0011996009, valid loss: 0.0007417931  [55s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[18/100] train loss: 0.0011905142, valid loss: 0.0007335699  [56s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[19/100] train loss: 0.0011863409, valid loss: 0.0007146411  [55s] count: 2, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[20/100] train loss: 0.0011826801, valid loss: 0.0007194043  [55s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[21/100] train loss: 0.0011801989, valid loss: 0.0007106879  [55s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[22/100] train loss: 0.0011741012, valid loss: 0.0007176007  [55s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[23/100] train loss: 0.0011715065, valid loss: 0.0007136130  [55s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[24/100] train loss: 0.0011708141, valid loss: 0.0007240358  [55s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[25/100] train loss: 0.0011686066, valid loss: 0.0007102113  [55s] count: 3, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[26/100] train loss: 0.0011675986, valid loss: 0.0007180328  [55s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[27/100] train loss: 0.0011641895, valid loss: 0.0007054302  [55s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[28/100] train loss: 0.0011564538, valid loss: 0.0007077429  [56s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[29/100] train loss: 0.0011441621, valid loss: 0.0007049340  [55s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[30/100] train loss: 0.0011420023, valid loss: 0.0007037108  [55s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+model checkpoint saved at ./logs\test\test_60_10_0.75_v3.torch
+[31/100] train loss: 0.0011410334, valid loss: 0.0007046009  [55s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[32/100] train loss: 0.0011357614, valid loss: 0.0007128216  [55s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[33/100] train loss: 0.0011366918, valid loss: 0.0007060850  [55s] count: 2, 
+[34/100] train loss: 0.0011366226, valid loss: 0.0007064812  [55s] count: 3, 
+[35/100] train loss: 0.0011328522, valid loss: 0.0007114732  [55s] count: 4, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+[36/100] train loss: 0.0011326355, valid loss: 0.0007083067  [55s] count: 5, 
+model checkpoint saved at ./logs\test\test_train_60_10_0.75_v3.torch
+new dataset loaded
+new model created: test_60_10_1.0_v4
+PostgreSQL logger connected. run_id=5
+logger is initialized
+exsisting model not found.
+start training model with batch_size: 128
+[1/100] train loss: 0.0307046232, valid loss: 0.0013292527  [1m20s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[2/100] train loss: 0.0032393183, valid loss: 0.0012773599  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[3/100] train loss: 0.0024180717, valid loss: 0.0012347588  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[4/100] train loss: 0.0021641342, valid loss: 0.0012378673  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[5/100] train loss: 0.0020645495, valid loss: 0.0012281158  [1m20s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[6/100] train loss: 0.0020091229, valid loss: 0.0011946425  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[7/100] train loss: 0.0018786520, valid loss: 0.0009329255  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[8/100] train loss: 0.0015270845, valid loss: 0.0007825152  [1m20s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[9/100] train loss: 0.0014154954, valid loss: 0.0008009616  [1m20s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[10/100] train loss: 0.0013629828, valid loss: 0.0007625122  [1m19s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[11/100] train loss: 0.0013344706, valid loss: 0.0007848814  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[12/100] train loss: 0.0013095778, valid loss: 0.0007738160  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[13/100] train loss: 0.0012904580, valid loss: 0.0007473545  [1m19s] count: 2, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[14/100] train loss: 0.0012806360, valid loss: 0.0007838042  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[15/100] train loss: 0.0012677093, valid loss: 0.0007548803  [1m20s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[16/100] train loss: 0.0012572433, valid loss: 0.0007513965  [1m20s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[17/100] train loss: 0.0012513979, valid loss: 0.0007466002  [1m19s] count: 3, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[18/100] train loss: 0.0012426724, valid loss: 0.0007437065  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[19/100] train loss: 0.0012352920, valid loss: 0.0007486101  [1m20s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[20/100] train loss: 0.0012274621, valid loss: 0.0007463217  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[21/100] train loss: 0.0012186675, valid loss: 0.0007476968  [1m19s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[22/100] train loss: 0.0012059718, valid loss: 0.0007310749  [1m19s] count: 3, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[23/100] train loss: 0.0012011971, valid loss: 0.0007241842  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[24/100] train loss: 0.0011984601, valid loss: 0.0007238739  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[25/100] train loss: 0.0011933584, valid loss: 0.0007218154  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[26/100] train loss: 0.0011891914, valid loss: 0.0007231883  [1m22s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[27/100] train loss: 0.0011831120, valid loss: 0.0007171814  [1m19s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[28/100] train loss: 0.0011795161, valid loss: 0.0007107485  [1m21s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[29/100] train loss: 0.0011751848, valid loss: 0.0007127458  [1m20s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[30/100] train loss: 0.0011700332, valid loss: 0.0007136290  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[31/100] train loss: 0.0011667381, valid loss: 0.0007114557  [1m19s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[32/100] train loss: 0.0011630925, valid loss: 0.0007081958  [1m19s] count: 3, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[33/100] train loss: 0.0011613280, valid loss: 0.0007069690  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[34/100] train loss: 0.0011568377, valid loss: 0.0007113034  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[35/100] train loss: 0.0011537360, valid loss: 0.0007056408  [1m19s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[36/100] train loss: 0.0011541674, valid loss: 0.0007077130  [1m19s] count: 0, 
+[37/100] train loss: 0.0011471663, valid loss: 0.0007052024  [1m19s] count: 1, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[38/100] train loss: 0.0011434231, valid loss: 0.0007071743  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[39/100] train loss: 0.0011418867, valid loss: 0.0007096069  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[40/100] train loss: 0.0011372531, valid loss: 0.0007121591  [1m19s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[41/100] train loss: 0.0011378874, valid loss: 0.0007091168  [1m19s] count: 3, 
+[42/100] train loss: 0.0011292186, valid loss: 0.0007034009  [1m19s] count: 4, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[43/100] train loss: 0.0011259205, valid loss: 0.0007033302  [1m19s] count: 0, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[44/100] train loss: 0.0011258503, valid loss: 0.0007063755  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[45/100] train loss: 0.0011235816, valid loss: 0.0007036148  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[46/100] train loss: 0.0011213639, valid loss: 0.0007029047  [1m21s] count: 2, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[47/100] train loss: 0.0011193769, valid loss: 0.0007043110  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[48/100] train loss: 0.0011179088, valid loss: 0.0007088054  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[49/100] train loss: 0.0011180412, valid loss: 0.0007036990  [1m19s] count: 2, 
+[50/100] train loss: 0.0011153970, valid loss: 0.0007040212  [1m20s] count: 3, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[51/100] train loss: 0.0011136781, valid loss: 0.0007018012  [1m19s] count: 4, **
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+model checkpoint saved at ./logs\test\test_60_10_1.0_v4.torch
+[52/100] train loss: 0.0011122013, valid loss: 0.0007028760  [1m19s] count: 0, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[53/100] train loss: 0.0011104065, valid loss: 0.0007035672  [1m19s] count: 1, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[54/100] train loss: 0.0011100088, valid loss: 0.0007052326  [1m19s] count: 2, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[55/100] train loss: 0.0011080203, valid loss: 0.0007018810  [1m19s] count: 3, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[56/100] train loss: 0.0011028365, valid loss: 0.0007048545  [1m19s] count: 4, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch
+[57/100] train loss: 0.0011000423, valid loss: 0.0007026647  [1m22s] count: 5, 
+model checkpoint saved at ./logs\test\test_train_60_10_1.0_v4.torch

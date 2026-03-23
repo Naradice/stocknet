@@ -97,9 +97,6 @@ def load_fprocesses(params: dict, columns: list):
         return processes
     elif isinstance(params, str):
         if columns is not None and len(columns) > 0:
-            if "columns" in params:
-                params = params.copy()
-                params.pop("columns")
             process = fprocess.load_default_preprocess(params, columns)
             if process is None:
                 return []

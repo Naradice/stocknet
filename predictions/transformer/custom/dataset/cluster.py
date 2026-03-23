@@ -3,7 +3,7 @@ import random
 import numpy as np
 import pandas as pd
 import torch
-from finance_client.fprocess import fprocess
+from finance_client import fprocess
 
 from stocknet.datasets.base import Dataset
 
@@ -14,7 +14,9 @@ def k_means(src_df, label_num_k, initial_centers=None, max_iter=10000):
 
     count = 0
 
-    labels = np.fromiter(random.choices(range(label_num_k), k=src_df.shape[0]), dtype=int)
+    labels = np.fromiter(
+        random.choices(range(label_num_k), k=src_df.shape[0]), dtype=int
+    )
     labels_prev = np.zeros(src_df.shape[0])
     if initial_centers is None:
         cluster_centers = np.eye(label_num_k, src_df.shape[1])
@@ -32,7 +34,9 @@ def k_means(src_df, label_num_k, initial_centers=None, max_iter=10000):
                 cluster_centers[i, :] = clusters.mean(axis=0)
             else:
                 cluster_centers[i, :] = np.ones(src_df.shape[1])
-        dist = ((src_df.values[:, :, np.newaxis] - cluster_centers.T[np.newaxis, :, :]) ** 2).sum(axis=1)
+        dist = (
+            (src_df.values[:, :, np.newaxis] - cluster_centers.T[np.newaxis, :, :]) ** 2
+        ).sum(axis=1)
         # dist = np.sqrt(dist)
         labels_prev = labels
         labels = dist.argmin(axis=1)
@@ -92,9 +96,13 @@ class ClusterDistDataset(Dataset):
 
         divisions = [i / (label_num_k - 1) for i in range(label_num_k)]
         ini_centers = [np.quantile(src_df, p, axis=0) for p in divisions]
-        labels, centers = k_means(src_df, label_num_k=label_num_k, initial_centers=ini_centers)
+        labels, centers = k_means(
+            src_df, label_num_k=label_num_k, initial_centers=ini_centers
+        )
         self.centers = centers
-        dist = ((src_df.values[:, :, np.newaxis] - centers.T[np.newaxis, :, :]) ** 2).sum(axis=1)
+        dist = (
+            (src_df.values[:, :, np.newaxis] - centers.T[np.newaxis, :, :]) ** 2
+        ).sum(axis=1)
         token_df = pd.DataFrame(dist, index=src_df.index)
         super().__init__(
             token_df,
@@ -116,12 +124,17 @@ class ClusterDistDataset(Dataset):
     def to_labels(self, observations):
         if isinstance(observations, pd.DataFrame):
             observations = observations.values
-        dist = ((observations[:, :, np.newaxis] - self.centers.T[np.newaxis, :, :]) ** 2).sum(axis=1)
+        dist = (
+            (observations[:, :, np.newaxis] - self.centers.T[np.newaxis, :, :]) ** 2
+        ).sum(axis=1)
         labels = dist.argmin(axis=1)
         return labels
 
     def output_indices(self, index):
-        return slice(index + self.observation_length - 1, index + self.observation_length + self._prediction_length)
+        return slice(
+            index + self.observation_length - 1,
+            index + self.observation_length + self._prediction_length,
+        )
 
     def __getitem__(self, ndx):
         src, tgt, options = super().__getitem__(ndx)
@@ -159,7 +172,9 @@ class ClusterIDDataset(Dataset):
 
         divisions = [i / (label_num_k - 1) for i in range(label_num_k)]
         ini_centers = [np.quantile(src_df, p, axis=0) for p in divisions]
-        labels, centers = k_means(src_df, label_num_k=label_num_k, initial_centers=ini_centers)
+        labels, centers = k_means(
+            src_df, label_num_k=label_num_k, initial_centers=ini_centers
+        )
         self.centers = centers
         token_df = pd.DataFrame(labels, index=src_df.index, dtype=int)
         super().__init__(
@@ -180,7 +195,10 @@ class ClusterIDDataset(Dataset):
         )
 
     def output_indices(self, index):
-        return slice(index + self.observation_length - 1, index + self.observation_length + self._prediction_length)
+        return slice(
+            index + self.observation_length - 1,
+            index + self.observation_length + self._prediction_length,
+        )
 
     def __getitem__(self, ndx):
         src, tgt, options = super().__getitem__(ndx)

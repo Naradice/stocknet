@@ -1,10 +1,16 @@
+import copy
 import inspect
 import math
 import os
 import time
+from pathlib import Path
 from typing import Sequence
 
 import torch
+from dotenv import load_dotenv
+
+# Load .env from the project root (two levels up from this file: stocknet/stocknet/main.py)
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from . import logger, utils
 from .datasets import factory as ds_factory
@@ -13,6 +19,21 @@ from .nets import factory as mdl_factory
 from .nets import utils as mdl_utils
 from .trainer import factory as tr_factory
 from .trainer import utils as tr_utils
+
+
+def _db_config_from_env() -> dict | None:
+    """Build a PostgreSQL config dict from environment variables.
+    Returns None if PGHOST is not set, so the logger falls back to CSV."""
+    host = os.environ.get("PGHOST")
+    if not host:
+        return None
+    return {
+        "host": host,
+        "port": int(os.environ.get("PGPORT", 5432)),
+        "dbname": os.environ.get("PGDATABASE", "stocknet"),
+        "user": os.environ.get("PGUSER", "postgres"),
+        "password": os.environ.get("PGPASSWORD", ""),
+    }
 
 
 def train_from_config(training_config_file: str):
@@ -44,6 +65,7 @@ def train_from_config(training_config_file: str):
     train_config_org = config["training"]
     logger_config = config["log"]
     log_path = logger_config["path"]
+    db_config = logger_config.get("db") or _db_config_from_env()
     global_model_version = 0
     storage_handler = None
 
@@ -63,11 +85,11 @@ def train_from_config(training_config_file: str):
 
     datasets = ds_factory.load(dataset_config, device=device, base_path=parent_dir)
 
-    for dataset, batch_sizes_4_ds, version_suffix in datasets:
+    for dataset, batch_sizes_4_ds, version_suffix, run_metadata in datasets:
         if dataset is None:
             continue
         print("new dataset loaded")
-        model_config = model_config_org.copy()
+        model_config = copy.deepcopy(model_config_org)
         utils.replace_params_vars(model_config, dataset)
         model_key = model_config["key"]
         models = mdl_factory.load_models(model_config, dataset=dataset, device=device, base_path=parent_dir)
@@ -83,7 +105,7 @@ def train_from_config(training_config_file: str):
                 model_version_str = f"{version_suffix}_v{model_version}"
 
             print(f"new model created: {model_name}_{model_version_str}")
-            training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler)
+            training_logger = logger.TrainingLogger(model_name, model_version_str, log_path, storage_handler, db_config=db_config, metadata=run_metadata)
             print("logger is initialized")
 
             train_config = train_config_org.copy()
@@ -110,6 +132,9 @@ def train_from_config(training_config_file: str):
                 batch_sizes = batch_sizes_4_ds
 
             trainer_func, eval_func, train_options = tr_factory.load_trainers(model_key, train_config, parent_dir)
+            if trainer_func is None:
+                print(f"trainer not found for model key: {model_key}")
+                continue
             succ, model, optimizer, scheduler, best_loss = logger.load_model_checkpoint(
                 model, model_name, model_version_str, optimizer, scheduler, log_path, True, storage_handler
             )

@@ -221,10 +221,12 @@ class Seq2SeqTransformer(nn.Module):
         else:
             raise ValueError(f"valid positional encoding is not specified: {positional_encoding_key}")
         if isinstance(input_layer, dict):
+            input_layer = input_layer.copy()
             input_layer_key = input_layer.pop("key").lower()
             args = input_layer.copy()
             input_layer = self.__init_layer(args, input_layer_key, d_model, vocab_size, device)
         if isinstance(output_layer, dict):
+            output_layer = output_layer.copy()
             output_layer_key = output_layer.pop("key").lower()
             args = output_layer.copy()
             output_layer = self.__init_layer(args, output_layer_key, d_model, vocab_size, device)

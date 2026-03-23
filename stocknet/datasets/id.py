@@ -61,6 +61,7 @@ class DiffIDDS:
         self.device = device
         self.prediction_length = prediction_length
         self.is_training = is_training
+        self.volume_limit_ratio = 1.0
         self.__init_indicies(self.ohlc_idf, filter_range=filter_range)
         self.batch_first = batch_first
 

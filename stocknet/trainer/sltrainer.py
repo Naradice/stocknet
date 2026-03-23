@@ -1,5 +1,6 @@
 import copy
 import datetime
+import sys
 import threading
 
 import numpy as np
@@ -7,6 +8,18 @@ import torch
 from tqdm import tqdm
 
 from ..envs.render import graph
+
+
+def _get_console():
+    try:
+        if sys.platform == "win32":
+            return open("CONOUT$", "w")
+        return open("/dev/tty", "w")
+    except (OSError, IOError):
+        return sys.stderr
+
+
+_console = _get_console()
 
 
 def __sqe2seq_main(index, model, ds, criterion, batch_size, split_tgt_func):
@@ -46,7 +59,7 @@ def seq2seq_eval(model, ds, criterion, batch_size, batch_first=True):
     else:
         train_main_func = __sqe2seq_main
     end_index = len(ds)
-    for index in tqdm(range(0, end_index - batch_size, batch_size)):
+    for index in tqdm(range(0, end_index - batch_size, batch_size), file=_console):
         loss = train_main_func(index, model, ds, criterion, batch_size, split_tgt)
         losses.append(loss.item())
 
@@ -67,7 +80,7 @@ def seq2seq_train(model, ds, optimizer, criterion, batch_size, batch_first=True)
     else:
         train_main_func = __sqe2seq_main
     end_index = len(ds)
-    for index in tqdm(range(0, end_index - batch_size, batch_size)):
+    for index in tqdm(range(0, end_index - batch_size, batch_size), file=_console):
         optimizer.zero_grad()
         loss = train_main_func(index, model, ds, criterion, batch_size, split_tgt)
         loss.backward()
@@ -149,7 +162,7 @@ class Trainer:
 
     def check(self, model):
         self.model_copy(model)
-        threading.Thread(target=self.__check())
+        threading.Thread(target=self.__check)
 
     def plot_validation_results(self):
         graph.line_plot(self.validation_losses, 10, True, f"{self.name}.png")

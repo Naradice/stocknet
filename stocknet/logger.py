@@ -8,6 +8,96 @@ import pandas as pd
 import torch
 
 
+class PostgresHandler:
+    """Handles PostgreSQL connection and schema for training logs."""
+
+    def __init__(self, db_config: dict):
+        import psycopg2
+
+        cfg = {k: v for k, v in db_config.items() if v != "" and v is not None}
+        if "dsn" in cfg:
+            self._conn = psycopg2.connect(cfg["dsn"])
+        else:
+            self._conn = psycopg2.connect(**cfg)
+        self._init_schema()
+
+    def _init_schema(self):
+        with self._conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS training_runs (
+                    id SERIAL PRIMARY KEY,
+                    model_name VARCHAR(255) NOT NULL,
+                    version VARCHAR(255) NOT NULL,
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    params JSONB,
+                    metadata JSONB,
+                    UNIQUE(model_name, version)
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS training_logs (
+                    id SERIAL PRIMARY KEY,
+                    run_id INTEGER REFERENCES training_runs(id) ON DELETE CASCADE,
+                    epoch INTEGER NOT NULL,
+                    timestamp TIMESTAMP NOT NULL,
+                    train_loss DOUBLE PRECISION NOT NULL,
+                    val_loss DOUBLE PRECISION NOT NULL,
+                    elapsed_time DOUBLE PRECISION
+                )
+            """)
+        self._conn.commit()
+
+    def upsert_run(self, model_name: str, version: str, metadata: dict = None) -> int:
+        with self._conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO training_runs (model_name, version, metadata)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (model_name, version) DO UPDATE
+                    SET metadata = EXCLUDED.metadata
+                RETURNING id
+                """,
+                (model_name, version, json.dumps(metadata) if metadata else None),
+            )
+            run_id = cur.fetchone()[0]
+        self._conn.commit()
+        return run_id
+
+    def update_params(self, run_id: int, params: dict):
+        with self._conn.cursor() as cur:
+            cur.execute(
+                "UPDATE training_runs SET params = %s WHERE id = %s",
+                (json.dumps(params), run_id),
+            )
+        self._conn.commit()
+
+    def insert_log(self, run_id: int, epoch: int, timestamp: str, train_loss: float, val_loss: float, elapsed_time=None):
+        with self._conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO training_logs (run_id, epoch, timestamp, train_loss, val_loss, elapsed_time)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (run_id, epoch, timestamp, float(train_loss), float(val_loss), elapsed_time),
+            )
+        self._conn.commit()
+
+    def get_min_losses(self, run_id: int):
+        with self._conn.cursor() as cur:
+            cur.execute(
+                "SELECT MIN(train_loss), MIN(val_loss) FROM training_logs WHERE run_id = %s",
+                (run_id,),
+            )
+            row = cur.fetchone()
+        if row is None or row[0] is None:
+            return np.inf, np.inf
+        return float(row[0]), float(row[1])
+
+    def close(self):
+        if self._conn and not self._conn.closed:
+            self._conn.close()
+
+
 def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -140,7 +230,7 @@ class TrainingLogger:
 
         drive.mount(mount_path)
 
-    def __init__(self, model_name, version, base_path=None, storage_handler="colab", max_retry=3, local_cache_period=10):
+    def __init__(self, model_name, version, base_path=None, storage_handler="colab", max_retry=3, local_cache_period=10, db_config=None, metadata=None):
         """Logging class to store training logs
 
         Args:
@@ -195,6 +285,18 @@ class TrainingLogger:
         self.log_file_path = os.path.join(model_log_folder, file_name)
         self.__cache = []
 
+        # PostgreSQL support
+        self._db = None
+        self._run_id = None
+        self._db_epoch = 0
+        if db_config is not None:
+            try:
+                self._db = PostgresHandler(db_config)
+                self._run_id = self._db.upsert_run(model_name, version, metadata or {})
+                print(f"PostgreSQL logger connected. run_id={self._run_id}")
+            except Exception as e:
+                print(f"Warning: Failed to connect to PostgreSQL: {e}. Falling back to CSV.")
+
     def __init_colab(self):
         from google.colab import drive
 
@@ -242,6 +344,15 @@ class TrainingLogger:
                 self.__cache.append(log_entry)
 
     def save_params(self, params: dict, model_name=None, model_version=None):
+        if self._db is not None and self._run_id is not None:
+            try:
+                params_for_db = params.copy()
+                if "device" in params_for_db and not isinstance(params_for_db["device"], str):
+                    params_for_db["device"] = str(params_for_db["device"])
+                self._db.update_params(self._run_id, params_for_db)
+            except Exception as e:
+                print(f"Warning: Failed to save params to PostgreSQL: {e}")
+
         data_folder = os.path.dirname(self.log_file_path)
         if model_name is None:
             model_name = self.model_name
@@ -336,6 +447,10 @@ class TrainingLogger:
         )
 
     def save_logs(self):
+        if self._db is not None and self._run_id is not None:
+            self._db.close()
+            return
+
         if len(self.__cache) > 0:
             with open(self.log_file_path, "a", newline="") as log_file:
                 if len(self.__cache) > 0:
@@ -344,8 +459,15 @@ class TrainingLogger:
         if self.__use_cloud_storage:
             self.__store_files_to_cloud_storage(self.log_file_path)
 
-    def add_training_log(self, training_loss, validation_loss, log_entry: list = None):
+    def add_training_log(self, training_loss, validation_loss, log_entry=None):
         timestamp = datetime.now().isoformat()
+
+        if self._db is not None and self._run_id is not None:
+            elapsed_time = log_entry if isinstance(log_entry, (int, float)) else None
+            self._db_epoch += 1
+            self._db.insert_log(self._run_id, self._db_epoch, timestamp, training_loss, validation_loss, elapsed_time)
+            return
+
         basic_entry = [timestamp, training_loss, validation_loss]
         if log_entry is not None:
             if type(log_entry) is list and len(log_entry) > 0:
@@ -358,10 +480,13 @@ class TrainingLogger:
                 self.__store_files_to_cloud_storage(self.log_file_path)
 
     def get_min_losses(self, train_loss_column=1, val_loss_column=2):
+        if self._db is not None and self._run_id is not None:
+            return self._db.get_min_losses(self._run_id)
+
         logs = None
         if os.path.exists(self.log_file_path) is False:
             if self.__cloud_handler is not None:
-                file_name = os.path.dirname(self.log_file_path)
+                file_name = os.path.basename(self.log_file_path)
                 destination_path = f"/{self.model_name}/{file_name}"
                 response = self.__cloud_handler.download_file(destination_path, self.log_file_path)
                 if response is not None:

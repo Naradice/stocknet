@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(grep -r \"^class \" /c/Users/ksato/workspace/python/stock/stocknet/stocknet/datasets/*.py)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find C:/Users/ksato/workspace/python/stock/stocknet/web -newer C:/Users/ksato/workspace/python/stock/stocknet/web/app/layout.tsx -name *.ts -o -name *.tsx)"
     ]
   }
 }
