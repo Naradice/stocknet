@@ -1,26 +1,28 @@
 "use client";
 
-import { useState } from "react";
 import {
-  Datasource,
   CsvDatasource,
-  SimulatorDatasource,
   DatasetKey,
+  Datasource,
   SimKey,
+  SimulatorDatasource,
   csvToDatasetConfig,
   simToDatasetConfig,
 } from "@/lib/datasourceTypes";
+import { useState } from "react";
 import FilePicker from "./FilePicker";
 
 interface Props {
   onClose: () => void;
   onSaved: (ds: Datasource) => void;
   initial?: Datasource;
+  /** Pre-fill CSV fields (e.g. from a completed simulation) */
+  csvPrefill?: { filePath: string; description: string };
 }
 
 const CSV_KEYS: DatasetKey[] = ["seq2seq", "seq2seq_time", "seq2seq_did"];
 const SIM_KEYS: SimKey[] = ["seq2seq_sim", "seq2seq_sim_time"];
-const SAMPLER_RULES = ["MIN", "5min", "15min", "30min", "H", "D"];
+const SAMPLER_RULES = ["min", "5min", "15min", "30min", "H", "D"];
 
 const defaultCsv: Omit<CsvDatasource, "name"> = {
   type: "csv",
@@ -39,7 +41,7 @@ const defaultSim: Omit<SimulatorDatasource, "name"> = {
   agentPerModel: 300,
   modelCount: 4,
   outputLength: 1000,
-  samplerRule: "MIN",
+  samplerRule: "min",
   modelConfig: {
     max_volatility: 0.02,
     min_volatility: 0.01,
@@ -49,13 +51,17 @@ const defaultSim: Omit<SimulatorDatasource, "name"> = {
   },
 };
 
-export default function DatasourceFormModal({ onClose, onSaved, initial }: Props) {
+export default function DatasourceFormModal({ onClose, onSaved, initial, csvPrefill }: Props) {
   const isEdit = initial != null;
 
   const [name, setName] = useState(initial?.name ?? "");
   const [dsType, setDsType] = useState<"csv" | "simulator">(initial?.type ?? "csv");
   const [csv, setCsv] = useState<Omit<CsvDatasource, "name">>(
-    initial?.type === "csv" ? { ...initial } : { ...defaultCsv }
+    initial?.type === "csv"
+      ? { ...initial }
+      : csvPrefill
+        ? { ...defaultCsv, filePath: csvPrefill.filePath, description: csvPrefill.description }
+        : { ...defaultCsv }
   );
   const [sim, setSim] = useState<Omit<SimulatorDatasource, "name">>(
     initial?.type === "simulator" ? { ...initial } : { ...defaultSim }
@@ -124,9 +130,8 @@ export default function DatasourceFormModal({ onClose, onSaved, initial }: Props
         <div className="flex gap-1 px-6 pt-4 flex-shrink-0">
           {(["form", "json"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`text-sm px-4 py-1.5 rounded-md transition-colors ${
-                tab === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"
-              }`}>
+              className={`text-sm px-4 py-1.5 rounded-md transition-colors ${tab === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"
+                }`}>
               {t === "form" ? "Form" : "Dataset Config Preview"}
             </button>
           ))}
@@ -223,6 +228,13 @@ export default function DatasourceFormModal({ onClose, onSaved, initial }: Props
                       onChange={(e) => setCsv((c) => ({ ...c, columns: parseCols(e.target.value) }))}
                       placeholder="open,high,low,close"
                     />
+                  </Field>
+                  <Field label="Volume Column (optional)">
+                    <input className={inp} value={csv.volumeColumn ?? ""}
+                      onChange={(e) => setCsv((c) => ({ ...c, volumeColumn: e.target.value || undefined }))}
+                      placeholder="volume"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Used for exogenous validation (weekly seasonality). Leave blank if not available.</p>
                   </Field>
                   <div className="grid grid-cols-2 gap-4">
                     <Field label="Observation Length">

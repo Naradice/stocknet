@@ -30,8 +30,11 @@ data_source/
 /dist
 *.ipynb
 *.logs
+*.sql
+*.db
 predictions/transformer/*_params/
 predictions/transformer/*.json
+model_configs/
 # exclude samples
 !predictions/transformer/baseline.json
 !predictions/transformer/baseline_scaling.json

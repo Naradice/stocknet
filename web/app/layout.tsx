@@ -22,6 +22,7 @@ export default function RootLayout({
             <a href="/" className="text-gray-400 hover:text-white transition-colors">Models</a>
             <a href="/compare" className="text-gray-400 hover:text-white transition-colors">Compare</a>
             <a href="/datasources" className="text-gray-400 hover:text-white transition-colors">Data Sources</a>
+            <a href="/validation" className="text-gray-400 hover:text-white transition-colors">Validation</a>
           </nav>
         </header>
         <main className="px-6 py-8 max-w-7xl mx-auto">{children}</main>
